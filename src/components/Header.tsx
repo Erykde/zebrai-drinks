@@ -12,7 +12,7 @@ const Header = () => {
   const links = [
     { to: '/', label: 'Cardápio' },
     { to: '/cart', label: 'Carrinho' },
-    { to: '/admin', label: 'ADM' },
+    { to: '/admin', label: 'ADM 🔒' },
   ];
 
   return (

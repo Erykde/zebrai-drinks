@@ -12,8 +12,8 @@ interface ProductDetailProps {
 
 const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
   const { addToCart } = useStore();
-  const [selectedMixer, setSelectedMixer] = useState<string | null>(null);
-  const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
+  // Selection per group: { "Energéticos": { mixer: "Bally", flavor: "Tropical" }, "Gelo Saborizado": { mixer: "Gelo Saborizado", flavor: "Morango" } }
+  const [selections, setSelections] = useState<Record<string, { mixer: string; flavor: string | null }>>({});
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -32,19 +32,47 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
 
   const groupNames = Object.keys(grouped);
 
-  const selectedOption = product.mixer_options.find(m => m.mixer === selectedMixer);
-  const currentPrice = hasMixers && selectedOption
-    ? selectedOption.price
+  // Calculate total price: base product price + sum of selected mixer prices
+  const selectedMixerPrices = useMemo(() => {
+    let total = 0;
+    for (const groupName of groupNames) {
+      const sel = selections[groupName];
+      if (sel) {
+        const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
+        if (opt) total = Math.max(total, opt.price); // Use highest price among selections
+      }
+    }
+    return total;
+  }, [selections, groupNames, product.mixer_options]);
+
+  // For products with mixers, use the energético price (highest selected) as the product price
+  const currentPrice = hasMixers
+    ? selectedMixerPrices || product.price
     : product.is_promotion && product.promotion_price
       ? product.promotion_price
       : product.price;
 
-  const hasFlavors = selectedOption?.flavors && selectedOption.flavors.length > 0;
-  const canAdd = !hasMixers || (selectedMixer !== null && (!hasFlavors || selectedFlavor !== null));
+  // Can add if all groups have a selection (and flavor if required)
+  const canAdd = !hasMixers || groupNames.every(g => {
+    const sel = selections[g];
+    if (!sel) return false;
+    const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
+    if (opt?.flavors && opt.flavors.length > 0 && !sel.flavor) return false;
+    return true;
+  });
 
-  const handleSelectMixer = (mixer: string) => {
-    setSelectedMixer(mixer);
-    setSelectedFlavor(null);
+  const handleSelectMixer = (groupName: string, mixer: string) => {
+    setSelections(prev => ({
+      ...prev,
+      [groupName]: { mixer, flavor: null },
+    }));
+  };
+
+  const handleSelectFlavor = (groupName: string, flavor: string) => {
+    setSelections(prev => ({
+      ...prev,
+      [groupName]: { ...prev[groupName], flavor },
+    }));
   };
 
   const handleAddToCart = () => {
@@ -60,9 +88,15 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
       sold: 0,
     };
 
-    const mixerLabel = selectedMixer
-      ? selectedFlavor ? `${selectedMixer} - ${selectedFlavor}` : selectedMixer
-      : undefined;
+    // Build mixer label with all selections: "Bally - Tropical + Gelo Saborizado - Morango"
+    const mixerParts: string[] = [];
+    for (const groupName of groupNames) {
+      const sel = selections[groupName];
+      if (sel) {
+        mixerParts.push(sel.flavor ? `${sel.mixer} (${sel.flavor})` : sel.mixer);
+      }
+    }
+    const mixerLabel = mixerParts.length > 0 ? mixerParts.join(' + ') : undefined;
 
     for (let i = 0; i < quantity; i++) {
       addToCart(cartProduct, mixerLabel, currentPrice);
@@ -119,98 +153,93 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
             )}
           </div>
 
-          {/* Mixer selection - grouped */}
+          {/* Mixer selection - one per group */}
           {hasMixers && (
             <div className="mb-6 space-y-3">
-              <p className="text-sm font-medium text-foreground">Escolha o acompanhamento:</p>
-              {groupNames.map(groupName => (
-                <div key={groupName} className="border border-border rounded-xl overflow-hidden">
-                  {/* Group header */}
-                  <button
-                    type="button"
-                    onClick={() => setExpandedGroup(prev => prev === groupName ? null : groupName)}
-                    className="w-full flex items-center justify-between p-3.5 bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <span className="font-semibold text-sm text-foreground">
-                      {groupName === 'Energéticos' ? '⚡ Energéticos' : groupName === 'Gelo Saborizado' ? '🧊 Gelo Saborizado' : groupName}
-                    </span>
-                    {expandedGroup === groupName
-                      ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                      : <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    }
-                  </button>
+              <p className="text-sm font-medium text-foreground">Monte seu pedido:</p>
+              {groupNames.map(groupName => {
+                const sel = selections[groupName];
+                const isExpanded = expandedGroup === groupName;
+                const hasSelection = !!sel;
 
-                  {/* Group items */}
-                  {expandedGroup === groupName && (
-                    <div className="p-2 space-y-2 bg-card">
-                      {grouped[groupName].map(option => (
-                        <div key={option.mixer}>
-                          <button
-                            onClick={() => handleSelectMixer(option.mixer)}
-                            className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all text-left ${
-                              selectedMixer === option.mixer
-                                ? 'border-primary bg-primary/10'
-                                : 'border-transparent bg-muted/30 hover:bg-muted/50'
-                            }`}
-                          >
-                            <span className={`font-medium text-sm ${selectedMixer === option.mixer ? 'text-primary' : 'text-foreground'}`}>
-                              {option.mixer}
-                            </span>
-                            <span className="font-bold text-sm text-primary">R$ {option.price.toFixed(2)}</span>
-                          </button>
+                return (
+                  <div key={groupName} className="border border-border rounded-xl overflow-hidden">
+                    {/* Group header */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedGroup(prev => prev === groupName ? null : groupName)}
+                      className="w-full flex items-center justify-between p-3.5 bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-foreground">
+                          {groupName === 'Energéticos' ? '⚡ Energéticos' : groupName === 'Gelo Saborizado' ? '🧊 Gelo Saborizado' : groupName}
+                        </span>
+                        {hasSelection && (
+                          <span className="text-xs bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">
+                            {sel.mixer}{sel.flavor ? ` - ${sel.flavor}` : ''}
+                          </span>
+                        )}
+                      </div>
+                      {isExpanded
+                        ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      }
+                    </button>
 
-                          {/* Flavor sub-selection */}
-                          {selectedMixer === option.mixer && option.flavors && option.flavors.length > 0 && (
-                            <div className="mt-2 ml-3 mr-1 space-y-1.5 pb-1">
-                              <p className="text-xs font-medium text-muted-foreground">Escolha o sabor:</p>
-                              <div className="flex flex-wrap gap-2">
-                                {option.flavors.map(flavor => (
-                                  <button
-                                    key={flavor}
-                                    onClick={() => setSelectedFlavor(flavor)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                                      selectedFlavor === flavor
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted text-foreground hover:bg-muted/80'
-                                    }`}
-                                  >
-                                    {flavor}
-                                  </button>
-                                ))}
-                              </div>
+                    {/* Group items */}
+                    {isExpanded && (
+                      <div className="p-2 space-y-2 bg-card">
+                        {grouped[groupName].map(option => {
+                          const isSelected = sel?.mixer === option.mixer;
+                          return (
+                            <div key={option.mixer}>
+                              <button
+                                onClick={() => handleSelectMixer(groupName, option.mixer)}
+                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all text-left ${
+                                  isSelected
+                                    ? 'border-primary bg-primary/10'
+                                    : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                                }`}
+                              >
+                                <span className={`font-medium text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                  {option.mixer}
+                                </span>
+                                <span className="font-bold text-sm text-primary">R$ {option.price.toFixed(2)}</span>
+                              </button>
+
+                              {/* Flavor sub-selection */}
+                              {isSelected && option.flavors && option.flavors.length > 0 && (
+                                <div className="mt-2 ml-3 mr-1 space-y-1.5 pb-1">
+                                  <p className="text-xs font-medium text-muted-foreground">Escolha o sabor:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {option.flavors.map(flavor => (
+                                      <button
+                                        key={flavor}
+                                        onClick={() => handleSelectFlavor(groupName, flavor)}
+                                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                                          sel?.flavor === flavor
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'bg-muted text-foreground hover:bg-muted/80'
+                                        }`}
+                                      >
+                                        {flavor}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {/* Flat mixer (no groups - fallback) */}
-          {hasMixers && groupNames.length === 0 && (
-            <div className="mb-6">
-              <p className="text-sm font-medium text-foreground mb-3">Escolha o acompanhamento:</p>
-              <div className="flex flex-col gap-2">
-                {product.mixer_options.map((option) => (
-                  <button
-                    key={option.mixer}
-                    onClick={() => handleSelectMixer(option.mixer)}
-                    className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all text-left ${
-                      selectedMixer === option.mixer
-                        ? 'border-primary bg-primary/10'
-                        : 'border-transparent bg-muted/30 hover:bg-muted/50'
-                    }`}
-                  >
-                    <span className="font-medium text-foreground">{option.mixer}</span>
-                    <span className="font-bold text-primary">R$ {option.price.toFixed(2)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Products without groups (no mixers) - no extra UI needed */}
 
           {/* Quantity */}
           <div className="flex items-center justify-center gap-4 mb-6">
@@ -237,9 +266,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
           >
             {canAdd
               ? `Adicionar R$ ${(currentPrice * quantity).toFixed(2)}`
-              : hasMixers && !selectedMixer
-                ? 'Selecione o acompanhamento'
-                : 'Selecione o sabor'
+              : 'Selecione todas as opções'
             }
           </button>
         </div>

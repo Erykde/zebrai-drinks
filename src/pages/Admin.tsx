@@ -144,7 +144,8 @@ const Admin = () => {
     if (editingProduct) {
       const { error } = await supabase.from('products').update(productData as any).eq('id', editingProduct.id);
       if (error) {
-        toast.error('Erro ao atualizar produto');
+        console.error('Erro ao atualizar:', error);
+        toast.error(`Erro ao atualizar: ${error.message}`);
         setSaving(false);
         return;
       }

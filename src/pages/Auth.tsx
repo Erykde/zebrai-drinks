@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -7,15 +7,22 @@ import Header from '@/components/Header';
 
 const Auth = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   // If already logged in as admin, redirect
   if (!authLoading && user && isAdmin) {
     return <Navigate to="/admin" replace />;
+  }
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +33,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success('Login realizado!');
-      navigate('/admin');
+      // Don't navigate — the AuthContext will update isAdmin and the redirect above will fire
     } catch (error: any) {
       toast.error(error.message || 'Erro ao autenticar');
     } finally {

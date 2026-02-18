@@ -33,9 +33,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         return;
       }
-      // Always set loading true when we need to verify role
-      setLoading(true);
       setUser(currentUser);
+      if (checkedUserId.current === currentUser.id) {
+        setLoading(false);
+        return;
+      }
+      // New user — keep loading true while we verify role
       checkedUserId.current = currentUser.id;
       const { data } = await supabase.rpc('has_role', {
         _user_id: currentUser.id,

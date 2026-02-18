@@ -52,11 +52,17 @@ const CheckoutForm = () => {
     msg += `\n🍹 *Itens:*\n${itemsList}\n`;
     msg += `\n💰 *Total: R$ ${cartTotal.toFixed(2)}*\n`;
     msg += `💳 *Pagamento:* ${paymentLabels[paymentMethod]}`;
+    if (paymentMethod === 'pix') {
+      msg += `\n\n📲 *Dados PIX:*`;
+      msg += `\n• Chave (Telefone): (41) 99842-9633`;
+      msg += `\n• Nome: Eryk de Paula`;
+    }
     if (paymentMethod === 'cash' && order.cashChange !== undefined && order.cashChange > 0) {
       msg += `\n💵 *Troco para:* R$ ${parseFloat(cashAmount).toFixed(2)} (troco: R$ ${order.cashChange.toFixed(2)})`;
     }
 
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    const whatsappNumber = '5541998429633';
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
     window.open(whatsappUrl, '_blank');
 
     toast.success('Pedido enviado com sucesso! 🎉');

@@ -52,36 +52,42 @@ const Cart = () => {
         <h2 className="font-display text-3xl mb-6 text-foreground">SEU CARRINHO</h2>
 
         <div className="space-y-3">
-          {cart.map(item => (
-            <div key={item.product.id} className="bg-card rounded-lg border border-border p-4 flex items-center gap-4">
-              <span className="text-3xl">{item.product.image}</span>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-card-foreground truncate">{item.product.name}</h3>
-                <p className="text-sm text-primary font-bold">R$ {item.product.price.toFixed(2)}</p>
+          {cart.map(item => {
+            const cartKey = item.selectedMixer ? `${item.product.id}-${item.selectedMixer}` : item.product.id;
+            const displayPrice = item.finalPrice ?? item.product.price;
+            return (
+              <div key={cartKey} className="bg-card rounded-lg border border-border p-4 flex items-center gap-4">
+                <span className="text-3xl">{item.product.image}</span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-card-foreground truncate">
+                    {item.product.name}{item.selectedMixer ? ` + ${item.selectedMixer}` : ''}
+                  </h3>
+                  <p className="text-sm text-primary font-bold">R$ {displayPrice.toFixed(2)}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateCartQuantity(cartKey, item.quantity - 1)}
+                    className="p-1 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="w-8 text-center font-medium">{item.quantity}</span>
+                  <button
+                    onClick={() => updateCartQuantity(cartKey, item.quantity + 1)}
+                    className="p-1 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => removeFromCart(cartKey)}
+                    className="p-1 rounded-full text-destructive hover:bg-destructive/10 transition-colors ml-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
-                  className="p-1 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="w-8 text-center font-medium">{item.quantity}</span>
-                <button
-                  onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
-                  className="p-1 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => removeFromCart(item.product.id)}
-                  className="p-1 rounded-full text-destructive hover:bg-destructive/10 transition-colors ml-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-6 bg-card rounded-lg border border-border p-4">

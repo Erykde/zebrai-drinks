@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useProducts, useCategories, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
@@ -32,11 +33,13 @@ const Index = () => {
       {/* Hero */}
       <section className="bg-gradient-dark text-secondary-foreground py-16 px-4">
         <div className="container mx-auto text-center">
-          <img
-            src={zebraiLogo}
-            alt="Zebrai Drinks"
-            className="w-28 h-28 rounded-full mx-auto mb-6 border-4 border-primary shadow-gold object-cover"
-          />
+          <Link to="/auth">
+            <img
+              src={zebraiLogo}
+              alt="Zebrai Drinks"
+              className="w-28 h-28 rounded-full mx-auto mb-6 border-4 border-primary shadow-gold object-cover cursor-pointer hover:scale-105 transition-transform"
+            />
+          </Link>
           <h1 className="font-display text-5xl md:text-7xl text-primary mb-3 tracking-wider">
             ZEBRAI DRINKS
           </h1>

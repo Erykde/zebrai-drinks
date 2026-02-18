@@ -17,7 +17,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-secondary text-secondary-foreground shadow-lg">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/auth" className="flex items-center gap-3">
           <img src={zebraiLogo} alt="Zebrai Drinks" className="h-12 w-12 rounded-full object-cover border-2 border-primary" />
           <span className="font-display text-2xl tracking-wider text-primary">ZEBRAI DRINKS</span>
         </Link>

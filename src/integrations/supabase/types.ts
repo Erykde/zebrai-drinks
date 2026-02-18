@@ -21,6 +21,7 @@ export type Database = {
           description: string | null
           id: string
           image_emoji: string | null
+          image_url: string | null
           is_promotion: boolean | null
           mixer_options: Json | null
           name: string
@@ -36,6 +37,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_emoji?: string | null
+          image_url?: string | null
           is_promotion?: boolean | null
           mixer_options?: Json | null
           name: string
@@ -51,6 +53,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_emoji?: string | null
+          image_url?: string | null
           is_promotion?: boolean | null
           mixer_options?: Json | null
           name?: string

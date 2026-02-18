@@ -46,9 +46,15 @@ const ProductCard = ({ product, onClick }: ProductCardProps) => {
           🔥 PROMO
         </span>
       )}
-      <div className="text-5xl text-center mb-3 group-hover:scale-110 transition-transform">
-        {product.image_emoji ?? '🍹'}
-      </div>
+      {product.image_url ? (
+        <div className="w-full h-32 rounded-lg overflow-hidden mb-3">
+          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+        </div>
+      ) : (
+        <div className="text-5xl text-center mb-3 group-hover:scale-110 transition-transform">
+          {product.image_emoji ?? '🍹'}
+        </div>
+      )}
       <div className="space-y-1">
         <h3 className="font-display text-lg text-card-foreground">{product.name}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>

@@ -8,6 +8,7 @@ export interface DbProduct {
   price: number;
   category: string;
   image_emoji: string | null;
+  image_url: string | null;
   stock: number | null;
   mixer_options: { mixer: string; price: number }[];
   is_promotion: boolean | null;

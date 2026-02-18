@@ -56,7 +56,16 @@ const Index = () => {
         />
 
         {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Carregando cardápio...</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-card rounded-xl border border-border p-4 animate-pulse">
+                <div className="w-full h-32 bg-muted rounded-lg mb-3" />
+                <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                <div className="h-3 bg-muted rounded w-1/2 mb-3" />
+                <div className="h-5 bg-muted rounded w-1/3" />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
             {filtered.map((product, i) => (

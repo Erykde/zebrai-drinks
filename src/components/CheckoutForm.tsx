@@ -3,24 +3,18 @@ import { useStore } from '@/contexts/StoreContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Order } from '@/data/products';
-import { useDeliveryZones, DeliveryZone } from '@/hooks/useDeliveryZones';
-import { MapPin, Truck } from 'lucide-react';
 
 const CheckoutForm = () => {
   const { cart, cartTotal, addOrder } = useStore();
   const navigate = useNavigate();
-  const { data: zones = [], isLoading: zonesLoading } = useDeliveryZones();
-
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'cash'>('pix');
   const [cashAmount, setCashAmount] = useState('');
-  const [selectedZone, setSelectedZone] = useState<DeliveryZone | null>(null);
 
-  const deliveryFee = deliveryType === 'delivery' && selectedZone ? selectedZone.fee : 0;
-  const orderTotal = cartTotal + deliveryFee;
+  const orderTotal = cartTotal;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +25,6 @@ const CheckoutForm = () => {
     }
     if (deliveryType === 'delivery' && !address.trim()) {
       toast.error('Preencha o endereço para delivery!');
-      return;
-    }
-    if (deliveryType === 'delivery' && !selectedZone) {
-      toast.error('Selecione sua região de entrega!');
       return;
     }
 
@@ -64,14 +54,7 @@ const CheckoutForm = () => {
     let msg = `🦓 *NOVO PEDIDO - ZEBRAI DRINKS*\n\n`;
     msg += `👤 *Cliente:* ${name}\n📱 *Tel:* ${phone}\n`;
     msg += deliveryType === 'delivery' ? `📍 *Endereço:* ${address}\n` : `🏪 *Retirada no local*\n`;
-    if (deliveryType === 'delivery' && selectedZone) {
-      msg += `🚚 *Região:* ${selectedZone.zone_name}\n`;
-    }
     msg += `\n🍹 *Itens:*\n${itemsList}\n`;
-    if (deliveryFee > 0) {
-      msg += `\n🏍️ *Taxa de entrega:* R$ ${deliveryFee.toFixed(2)}`;
-      msg += `\n📦 *Subtotal produtos:* R$ ${cartTotal.toFixed(2)}`;
-    }
     msg += `\n💰 *Total: R$ ${orderTotal.toFixed(2)}*\n`;
     msg += `💳 *Pagamento:* ${paymentLabels[paymentMethod]}`;
     if (paymentMethod === 'pix') {
@@ -138,7 +121,7 @@ const CheckoutForm = () => {
           </button>
           <button
             type="button"
-            onClick={() => { setDeliveryType('pickup'); setSelectedZone(null); }}
+            onClick={() => { setDeliveryType('pickup'); }}
             className={`py-3 rounded-lg border text-sm font-medium transition-all ${
               deliveryType === 'pickup'
                 ? 'border-primary bg-primary/10 text-primary'
@@ -165,41 +148,6 @@ const CheckoutForm = () => {
             />
           </div>
 
-          {/* Delivery zone selector */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              <MapPin className="h-4 w-4 inline mr-1" />
-              Região de entrega (taxa)
-            </label>
-            {zonesLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando regiões...</p>
-            ) : (
-              <div className="space-y-2">
-                {zones.map(zone => (
-                  <button
-                    key={zone.id}
-                    type="button"
-                    onClick={() => setSelectedZone(zone)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all text-left ${
-                      selectedZone?.id === zone.id
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Truck className={`h-4 w-4 ${selectedZone?.id === zone.id ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <span className={`text-sm font-medium ${selectedZone?.id === zone.id ? 'text-primary' : 'text-foreground'}`}>
-                        {zone.zone_name}
-                      </span>
-                    </div>
-                    <span className={`text-sm font-bold ${zone.fee === 0 ? 'text-green-500' : 'text-primary'}`}>
-                      {zone.fee === 0 ? 'Grátis' : `R$ ${zone.fee.toFixed(2)}`}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </>
       )}
 
@@ -250,12 +198,6 @@ const CheckoutForm = () => {
           <span className="text-muted-foreground">Produtos</span>
           <span className="text-foreground">R$ {cartTotal.toFixed(2)}</span>
         </div>
-        {deliveryFee > 0 && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">🏍️ Taxa de entrega</span>
-            <span className="text-foreground">R$ {deliveryFee.toFixed(2)}</span>
-          </div>
-        )}
         {deliveryType === 'pickup' && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">🏪 Retirada no local</span>

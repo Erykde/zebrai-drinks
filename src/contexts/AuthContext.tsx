@@ -24,27 +24,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChange fires INITIAL_SESSION on mount, so no need for getSession
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        const u = session?.user ?? null;
-        setUser(u);
+    let mounted = true;
 
-        if (u) {
+    const checkAndSetAdmin = (u: User | null) => {
+      if (!u) {
+        if (mounted) {
+          setUser(null);
+          setIsAdmin(false);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (mounted) setUser(u);
+
+      // Use setTimeout to avoid blocking the auth state change callback
+      setTimeout(async () => {
+        try {
           const { data } = await supabase.rpc('has_role', {
             _user_id: u.id,
             _role: 'admin',
           });
-          setIsAdmin(!!data);
-        } else {
-          setIsAdmin(false);
+          if (mounted) setIsAdmin(!!data);
+        } catch {
+          if (mounted) setIsAdmin(false);
         }
+        if (mounted) setLoading(false);
+      }, 0);
+    };
 
-        setLoading(false);
+    // Listener must NOT be async (Supabase requirement)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        checkAndSetAdmin(session?.user ?? null);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Fallback: get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      checkAndSetAdmin(session?.user ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

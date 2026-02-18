@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
+import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import { Product } from '@/data/products';
-import { Pencil, Trash2, Plus, Package, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, TrendingUp, DollarSign, BarChart3, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Admin = () => {
   const { products, setProducts, orders } = useStore();
+  const { user, isAdmin, loading, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'finance'>('products');
@@ -82,11 +85,28 @@ const Admin = () => {
     { key: 'finance' as const, label: 'Financeiro', icon: DollarSign },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return <Navigate to="/auth" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="font-display text-4xl mb-6 text-foreground">PAINEL ADM 🦓</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="font-display text-4xl text-foreground">PAINEL ADM 🦓</h1>
+          <button onClick={signOut} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors">
+            <LogOut className="h-4 w-4" /> Sair
+          </button>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

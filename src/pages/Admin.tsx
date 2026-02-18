@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import { Product } from '@/data/products';
 import { Pencil, Trash2, Plus, Package, TrendingUp, DollarSign, BarChart3, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
+import ImageUpload from '@/components/ImageUpload';
 
 const Admin = () => {
   const { products, setProducts, orders } = useStore();
@@ -16,11 +17,11 @@ const Admin = () => {
 
   // Form state
   const [form, setForm] = useState({
-    name: '', description: '', price: '', costPrice: '', category: '', image: '🍹', stock: '',
+    name: '', description: '', price: '', costPrice: '', category: '', image: '🍹', stock: '', imageUrl: '',
   });
 
   const resetForm = () => {
-    setForm({ name: '', description: '', price: '', costPrice: '', category: '', image: '🍹', stock: '' });
+    setForm({ name: '', description: '', price: '', costPrice: '', category: '', image: '🍹', stock: '', imageUrl: '' });
     setEditingProduct(null);
     setShowForm(false);
   };
@@ -34,6 +35,7 @@ const Admin = () => {
       category: product.category,
       image: product.image,
       stock: product.stock.toString(),
+      imageUrl: (product as any).imageUrl || '',
     });
     setEditingProduct(product);
     setShowForm(true);
@@ -164,6 +166,13 @@ const Admin = () => {
                     className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
                   <input value={form.image} onChange={e => setForm({...form, image: e.target.value})} placeholder="Emoji do produto" maxLength={4}
                     className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
+                  <div className="md:col-span-2">
+                    <ImageUpload
+                      currentUrl={form.imageUrl || undefined}
+                      onUpload={(url) => setForm({...form, imageUrl: url})}
+                      onRemove={() => setForm({...form, imageUrl: ''})}
+                    />
+                  </div>
                 </div>
                 <div className="flex gap-3 mt-4">
                   <button type="submit" className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:bg-gold-dark transition-colors">

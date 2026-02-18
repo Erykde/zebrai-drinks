@@ -180,6 +180,14 @@ const Admin = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
   if (!user || !isAdmin) {
     return <Navigate to="/auth" replace />;
   }

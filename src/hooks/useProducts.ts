@@ -11,7 +11,7 @@ export interface DbProduct {
   image_emoji: string | null;
   image_url: string | null;
   stock: number | null;
-  mixer_options: { mixer: string; price: number }[];
+  mixer_options: { mixer: string; price: number; group?: string; flavors?: string[] }[];
   is_promotion: boolean | null;
   promotion_price: number | null;
   sort_order: number | null;

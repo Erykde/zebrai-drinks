@@ -12,6 +12,8 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 interface MixerOption {
   mixer: string;
   price: number;
+  group?: string;
+  flavors?: string[];
 }
 
 interface OrderRow {
@@ -87,15 +89,27 @@ const Admin = () => {
   };
 
   const addMixer = () => {
-    setMixerOptions(prev => [...prev, { mixer: '', price: 0 }]);
+    setMixerOptions(prev => [...prev, { mixer: '', price: 0, group: 'Energéticos', flavors: [] }]);
   };
 
   const removeMixer = (index: number) => {
     setMixerOptions(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateMixer = (index: number, field: keyof MixerOption, value: string | number) => {
+  const updateMixer = (index: number, field: keyof MixerOption, value: string | number | string[]) => {
     setMixerOptions(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
+  };
+
+  const addFlavor = (mixerIndex: number) => {
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: [...(m.flavors || []), ''] } : m));
+  };
+
+  const removeFlavor = (mixerIndex: number, flavorIndex: number) => {
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).filter((_, fi) => fi !== flavorIndex) } : m));
+  };
+
+  const updateFlavor = (mixerIndex: number, flavorIndex: number, value: string) => {
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).map((f, fi) => fi === flavorIndex ? value : f) } : m));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -211,6 +225,9 @@ const Admin = () => {
             onAddMixer={addMixer}
             onRemoveMixer={removeMixer}
             onUpdateMixer={updateMixer}
+            onAddFlavor={addFlavor}
+            onRemoveFlavor={removeFlavor}
+            onUpdateFlavor={updateFlavor}
           />
         )}
       </div>
@@ -284,6 +301,7 @@ const DashboardTab = ({
 const ProductsTab = ({
   products, showForm, editingProduct, form, setForm, mixerOptions, saving,
   onResetForm, onShowForm, onEdit, onDelete, onSubmit, onAddMixer, onRemoveMixer, onUpdateMixer,
+  onAddFlavor, onRemoveFlavor, onUpdateFlavor,
 }: {
   products: DbProduct[];
   showForm: boolean;
@@ -299,7 +317,10 @@ const ProductsTab = ({
   onSubmit: (e: React.FormEvent) => void;
   onAddMixer: () => void;
   onRemoveMixer: (i: number) => void;
-  onUpdateMixer: (i: number, f: keyof MixerOption, v: string | number) => void;
+  onUpdateMixer: (i: number, f: keyof MixerOption, v: string | number | string[]) => void;
+  onAddFlavor: (i: number) => void;
+  onRemoveFlavor: (mi: number, fi: number) => void;
+  onUpdateFlavor: (mi: number, fi: number, v: string) => void;
 }) => (
   <div>
     <button
@@ -338,7 +359,7 @@ const ProductsTab = ({
           </div>
         </div>
 
-        {/* Mixer Options */}
+        {/* Mixer Options with Group and Flavors */}
         <div className="mt-6 border-t border-border pt-4">
           <div className="flex items-center justify-between mb-3">
             <p className="font-medium text-card-foreground">Acompanhamentos (Mixer)</p>
@@ -349,27 +370,57 @@ const ProductsTab = ({
           {mixerOptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum acompanhamento cadastrado.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {mixerOptions.map((m, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <input
-                    value={m.mixer}
-                    onChange={e => onUpdateMixer(i, 'mixer', e.target.value)}
-                    placeholder="Ex: Red Bull, Gelo Saborizado"
-                    className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
-                  />
-                  <input
-                    type="number"
-                    value={m.price}
-                    onChange={e => onUpdateMixer(i, 'price', parseFloat(e.target.value) || 0)}
-                    placeholder="Preço"
-                    step="0.01"
-                    min="0"
-                    className="w-28 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
-                  />
-                  <button type="button" onClick={() => onRemoveMixer(i)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg">
-                    <X className="h-4 w-4" />
-                  </button>
+                <div key={i} className="border border-border rounded-lg p-3 space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <select
+                      value={m.group || 'Energéticos'}
+                      onChange={e => onUpdateMixer(i, 'group', e.target.value)}
+                      className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                    >
+                      <option value="Energéticos">Energéticos</option>
+                      <option value="Gelo Saborizado">Gelo Saborizado</option>
+                    </select>
+                    <input
+                      value={m.mixer}
+                      onChange={e => onUpdateMixer(i, 'mixer', e.target.value)}
+                      placeholder="Nome (ex: Red Bull)"
+                      className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                    />
+                    <input
+                      type="number"
+                      value={m.price}
+                      onChange={e => onUpdateMixer(i, 'price', parseFloat(e.target.value) || 0)}
+                      placeholder="Preço"
+                      step="0.01"
+                      min="0"
+                      className="w-24 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                    />
+                    <button type="button" onClick={() => onRemoveMixer(i)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {/* Flavors */}
+                  <div className="ml-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs text-muted-foreground">Sabores:</span>
+                      <button type="button" onClick={() => onAddFlavor(i)} className="text-xs text-primary hover:underline">+ Sabor</button>
+                    </div>
+                    {(m.flavors || []).map((f, fi) => (
+                      <div key={fi} className="flex gap-1 items-center mb-1">
+                        <input
+                          value={f}
+                          onChange={e => onUpdateFlavor(i, fi, e.target.value)}
+                          placeholder="Nome do sabor"
+                          className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground text-xs"
+                        />
+                        <button type="button" onClick={() => onRemoveFlavor(i, fi)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

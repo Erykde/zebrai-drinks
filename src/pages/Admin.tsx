@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
-import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,7 +33,7 @@ const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
-  const [activeTab, setActiveTab] = useState<'products' | 'dashboard'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'dashboard' | 'delivery'>('products');
 
   // Form state
   const [form, setForm] = useState({
@@ -50,6 +50,19 @@ const Admin = () => {
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // Delivery zones
+  const { data: deliveryZones = [] } = useQuery({
+    queryKey: ['delivery-zones-admin'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('delivery_zones')
+        .select('*')
+        .order('sort_order', { ascending: true });
       if (error) throw error;
       return data ?? [];
     },
@@ -196,6 +209,12 @@ const Admin = () => {
           >
             <BarChart3 className="h-4 w-4 inline mr-1" /> Dashboard
           </button>
+          <button
+            onClick={() => setActiveTab('delivery')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === 'delivery' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+          >
+            <MapPin className="h-4 w-4 inline mr-1" /> Entregas
+          </button>
         </div>
 
         {activeTab === 'dashboard' ? (
@@ -208,6 +227,8 @@ const Admin = () => {
             totalStock={totalStock}
             productsCount={products.length}
           />
+        ) : activeTab === 'delivery' ? (
+          <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
         ) : (
           <ProductsTab
             products={products}
@@ -489,6 +510,152 @@ const ProductsTab = ({
     </div>
   </div>
 );
+
+// === Delivery Tab ===
+const DeliveryTab = ({ zones, queryClient }: { zones: any[]; queryClient: any }) => {
+  const [editingZone, setEditingZone] = useState<any | null>(null);
+  const [showZoneForm, setShowZoneForm] = useState(false);
+  const [zoneForm, setZoneForm] = useState({ zone_name: '', min_km: '', max_km: '', fee: '', sort_order: '' });
+  const [saving, setSaving] = useState(false);
+
+  const resetZoneForm = () => {
+    setZoneForm({ zone_name: '', min_km: '', max_km: '', fee: '', sort_order: '' });
+    setEditingZone(null);
+    setShowZoneForm(false);
+  };
+
+  const handleEditZone = (zone: any) => {
+    setZoneForm({
+      zone_name: zone.zone_name,
+      min_km: zone.min_km.toString(),
+      max_km: zone.max_km.toString(),
+      fee: zone.fee.toString(),
+      sort_order: zone.sort_order.toString(),
+    });
+    setEditingZone(zone);
+    setShowZoneForm(true);
+  };
+
+  const handleDeleteZone = async (id: string) => {
+    const { error } = await supabase.from('delivery_zones').delete().eq('id', id);
+    if (error) { toast.error('Erro ao remover zona'); return; }
+    queryClient.invalidateQueries({ queryKey: ['delivery-zones-admin'] });
+    queryClient.invalidateQueries({ queryKey: ['delivery-zones'] });
+    toast.success('Zona removida!');
+  };
+
+  const handleSubmitZone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    const data = {
+      zone_name: zoneForm.zone_name.trim(),
+      min_km: parseFloat(zoneForm.min_km),
+      max_km: parseFloat(zoneForm.max_km),
+      fee: parseFloat(zoneForm.fee),
+      sort_order: parseInt(zoneForm.sort_order) || 0,
+      is_active: true,
+    };
+
+    if (editingZone) {
+      const { error } = await supabase.from('delivery_zones').update(data as any).eq('id', editingZone.id);
+      if (error) { toast.error('Erro ao atualizar zona'); setSaving(false); return; }
+      toast.success('Zona atualizada!');
+    } else {
+      const { error } = await supabase.from('delivery_zones').insert(data as any);
+      if (error) { toast.error('Erro ao adicionar zona'); setSaving(false); return; }
+      toast.success('Zona adicionada!');
+    }
+    queryClient.invalidateQueries({ queryKey: ['delivery-zones-admin'] });
+    queryClient.invalidateQueries({ queryKey: ['delivery-zones'] });
+    setSaving(false);
+    resetZoneForm();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-xl text-foreground">Regiões de Entrega</h2>
+        <button
+          onClick={() => { resetZoneForm(); setShowZoneForm(true); }}
+          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium text-sm hover:opacity-90 transition-colors"
+        >
+          <Plus className="h-4 w-4" /> Nova Região
+        </button>
+      </div>
+
+      <p className="text-sm text-muted-foreground mb-4">
+        📍 Referência: Rua Monte Sinai 38, Costeira, São José dos Pinhais
+      </p>
+
+      {showZoneForm && (
+        <form onSubmit={handleSubmitZone} className="bg-card rounded-lg border border-border p-6 mb-6 animate-fade-in">
+          <h3 className="font-display text-lg mb-4 text-card-foreground">
+            {editingZone ? 'EDITAR REGIÃO' : 'NOVA REGIÃO'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input value={zoneForm.zone_name} onChange={e => setZoneForm({...zoneForm, zone_name: e.target.value})} placeholder="Nome da região (ex: Centro / Costeira)" required
+              className="px-4 py-2 rounded-lg border border-input bg-background text-foreground md:col-span-2" />
+            <input type="number" value={zoneForm.min_km} onChange={e => setZoneForm({...zoneForm, min_km: e.target.value})} placeholder="Distância mín (km)" required step="0.1" min="0"
+              className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
+            <input type="number" value={zoneForm.max_km} onChange={e => setZoneForm({...zoneForm, max_km: e.target.value})} placeholder="Distância máx (km)" required step="0.1" min="0"
+              className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
+            <input type="number" value={zoneForm.fee} onChange={e => setZoneForm({...zoneForm, fee: e.target.value})} placeholder="Taxa (R$)" required step="0.01" min="0"
+              className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
+            <input type="number" value={zoneForm.sort_order} onChange={e => setZoneForm({...zoneForm, sort_order: e.target.value})} placeholder="Ordem" min="0"
+              className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
+          </div>
+          <div className="flex gap-3 mt-4">
+            <button type="submit" disabled={saving} className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50">
+              {saving ? 'Salvando...' : editingZone ? 'Salvar' : 'Adicionar'}
+            </button>
+            <button type="button" onClick={resetZoneForm} className="px-6 py-2 rounded-lg border border-border text-muted-foreground hover:bg-muted transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary text-secondary-foreground">
+              <tr>
+                <th className="text-left p-3">Região</th>
+                <th className="text-center p-3">Distância</th>
+                <th className="text-right p-3">Taxa</th>
+                <th className="text-right p-3">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {zones.map(z => (
+                <tr key={z.id} className="border-t border-border hover:bg-muted/50">
+                  <td className="p-3 font-medium text-card-foreground">{z.zone_name}</td>
+                  <td className="p-3 text-center text-muted-foreground">{z.min_km}-{z.max_km} km</td>
+                  <td className="p-3 text-right text-primary font-medium">
+                    {z.fee === 0 ? 'Grátis' : `R$ ${Number(z.fee).toFixed(2)}`}
+                  </td>
+                  <td className="p-3 text-right">
+                    <div className="flex gap-1 justify-end">
+                      <button onClick={() => handleEditZone(z)} className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => handleDeleteZone(z.id)} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {zones.length === 0 && (
+                <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">Nenhuma região cadastrada.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color?: string }) => (
   <div className="bg-card rounded-lg border border-border p-4">

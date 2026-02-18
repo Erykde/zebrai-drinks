@@ -44,7 +44,11 @@ const CheckoutForm = () => {
     addOrder(order);
 
     // Build WhatsApp message
-    const itemsList = cart.map(i => `• ${i.quantity}x ${i.product.name} - R$${(i.product.price * i.quantity).toFixed(2)}`).join('\n');
+    const itemsList = cart.map(i => {
+      const price = i.finalPrice ?? i.product.price;
+      const name = i.selectedMixer ? `${i.product.name} + ${i.selectedMixer}` : i.product.name;
+      return `• ${i.quantity}x ${name} - R$${(price * i.quantity).toFixed(2)}`;
+    }).join('\n');
     const paymentLabels = { pix: 'PIX', card: 'Cartão', cash: 'Dinheiro' };
     let msg = `🦓 *NOVO PEDIDO - ZEBRAI DRINKS*\n\n`;
     msg += `👤 *Cliente:* ${name}\n📱 *Tel:* ${phone}\n`;

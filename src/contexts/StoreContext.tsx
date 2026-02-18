@@ -5,7 +5,7 @@ interface StoreContextType {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   cart: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, selectedMixer?: string, finalPrice?: number) => void;
   removeFromCart: (productId: string) => void;
   updateCartQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -23,39 +23,49 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: Product, selectedMixer?: string, finalPrice?: number) => {
     setCart(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
+      const cartKey = selectedMixer ? `${product.id}-${selectedMixer}` : product.id;
+      const existing = prev.find(item => {
+        const itemKey = item.selectedMixer ? `${item.product.id}-${item.selectedMixer}` : item.product.id;
+        return itemKey === cartKey;
+      });
       if (existing) {
-        return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        return prev.map(item => {
+          const itemKey = item.selectedMixer ? `${item.product.id}-${item.selectedMixer}` : item.product.id;
+          return itemKey === cartKey ? { ...item, quantity: item.quantity + 1 } : item;
+        });
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: 1, selectedMixer, finalPrice }];
     });
   }, []);
 
-  const removeFromCart = useCallback((productId: string) => {
-    setCart(prev => prev.filter(item => item.product.id !== productId));
+  const removeFromCart = useCallback((cartKey: string) => {
+    setCart(prev => prev.filter(item => {
+      const itemKey = item.selectedMixer ? `${item.product.id}-${item.selectedMixer}` : item.product.id;
+      return itemKey !== cartKey;
+    }));
   }, []);
 
-  const updateCartQuantity = useCallback((productId: string, quantity: number) => {
+  const updateCartQuantity = useCallback((cartKey: string, quantity: number) => {
     if (quantity <= 0) {
-      setCart(prev => prev.filter(item => item.product.id !== productId));
+      setCart(prev => prev.filter(item => {
+        const itemKey = item.selectedMixer ? `${item.product.id}-${item.selectedMixer}` : item.product.id;
+        return itemKey !== cartKey;
+      }));
       return;
     }
     setCart(prev =>
-      prev.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
+      prev.map(item => {
+        const itemKey = item.selectedMixer ? `${item.product.id}-${item.selectedMixer}` : item.product.id;
+        return itemKey === cartKey ? { ...item, quantity } : item;
+      })
     );
   }, []);
 
   const clearCart = useCallback(() => setCart([]), []);
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const cartTotal = cart.reduce((sum, item) => sum + (item.finalPrice ?? item.product.price) * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const addOrder = useCallback((order: Order) => {

@@ -1,17 +1,29 @@
 import { useState } from 'react';
-import { useStore } from '@/contexts/StoreContext';
+import { useProducts, useCategories, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
+import ProductDetail from '@/components/ProductDetail';
 import CategoryFilter from '@/components/CategoryFilter';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 
 const Index = () => {
-  const { products } = useStore();
+  const { data: products = [], isLoading } = useProducts();
+  const { data: categories = ['Todos'] } = useCategories();
   const [category, setCategory] = useState('Todos');
+  const [selectedProduct, setSelectedProduct] = useState<DbProduct | null>(null);
 
   const filtered = category === 'Todos'
     ? products
     : products.filter(p => p.category === category);
+
+  if (selectedProduct) {
+    return (
+      <ProductDetail
+        product={selectedProduct}
+        onBack={() => setSelectedProduct(null)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,17 +49,28 @@ const Index = () => {
       {/* Cardápio */}
       <main className="container mx-auto px-4 py-8">
         <h2 className="font-display text-3xl mb-6 text-foreground">CARDÁPIO</h2>
-        <CategoryFilter selected={category} onSelect={setCategory} />
+        <CategoryFilter
+          categories={categories}
+          selected={category}
+          onSelect={setCategory}
+        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
-          {filtered.map((product, i) => (
-            <div key={product.id} style={{ animationDelay: `${i * 80}ms` }}>
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">Carregando cardápio...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
+            {filtered.map((product, i) => (
+              <div key={product.id} style={{ animationDelay: `${i * 80}ms` }}>
+                <ProductCard
+                  product={product}
+                  onClick={() => setSelectedProduct(product)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
-        {filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <p className="text-center text-muted-foreground py-12">
             Nenhum produto encontrado nesta categoria.
           </p>

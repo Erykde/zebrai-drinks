@@ -1,11 +1,10 @@
-import { categories } from '@/data/products';
-
 interface CategoryFilterProps {
+  categories: string[];
   selected: string;
   onSelect: (category: string) => void;
 }
 
-const CategoryFilter = ({ selected, onSelect }: CategoryFilterProps) => {
+const CategoryFilter = ({ categories, selected, onSelect }: CategoryFilterProps) => {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       {categories.map(cat => (

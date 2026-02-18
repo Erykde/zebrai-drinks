@@ -65,7 +65,7 @@ const CheckoutForm = () => {
       msg += `\n💵 *Troco para:* R$ ${parseFloat(cashAmount).toFixed(2)} (troco: R$ ${order.cashChange.toFixed(2)})`;
     }
 
-    const whatsappNumber = '5541998429633';
+    const whatsappNumber = '5541984296633';
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
     window.open(whatsappUrl, '_blank');
 

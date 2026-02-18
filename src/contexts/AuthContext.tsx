@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -22,42 +22,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const checkedUserId = useRef<string | null>(null);
 
-  useEffect(() => {
-    const checkRole = async (currentUser: User | null) => {
-      if (!currentUser) {
-        setUser(null);
-        setIsAdmin(false);
-        checkedUserId.current = null;
-        setLoading(false);
-        return;
-      }
-      setUser(currentUser);
-      if (checkedUserId.current === currentUser.id) {
-        setLoading(false);
-        return;
-      }
-      // New user — set loading true while we verify role
-      setLoading(true);
-      checkedUserId.current = currentUser.id;
+  const checkAdmin = async (u: User | null) => {
+    if (!u) {
+      setUser(null);
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
+    setUser(u);
+    try {
       const { data } = await supabase.rpc('has_role', {
-        _user_id: currentUser.id,
+        _user_id: u.id,
         _role: 'admin',
       });
       setIsAdmin(!!data);
-      setLoading(false);
-    };
+    } catch {
+      setIsAdmin(false);
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
+    // 1. Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      checkAdmin(session?.user ?? null);
+    });
+
+    // 2. Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        checkRole(session?.user ?? null);
+        setLoading(true);
+        checkAdmin(session?.user ?? null);
       }
     );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      checkRole(session?.user ?? null);
-    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -65,8 +63,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     setUser(null);
     setIsAdmin(false);
-    checkedUserId.current = null;
-    await supabase.auth.signOut();
+    setLoading(false);
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore signOut errors
+    }
   };
 
   return (

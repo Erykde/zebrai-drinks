@@ -14,9 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      orders: {
+        Row: {
+          cost_price: number
+          created_at: string
+          id: string
+          mixer: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          cost_price?: number
+          created_at?: string
+          id?: string
+          mixer?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          total: number
+          unit_price: number
+        }
+        Update: {
+          cost_price?: number
+          created_at?: string
+          id?: string
+          mixer?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string
+          cost_price: number
           created_at: string | null
           description: string | null
           id: string
@@ -33,6 +78,7 @@ export type Database = {
         }
         Insert: {
           category?: string
+          cost_price?: number
           created_at?: string | null
           description?: string | null
           id?: string
@@ -49,6 +95,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          cost_price?: number
           created_at?: string | null
           description?: string | null
           id?: string

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -6,41 +6,41 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const checkedUserId = useRef<string | null>(null);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          // Check admin role using the has_role function
-          const { data } = await supabase.rpc('has_role', {
-            _user_id: currentUser.id,
-            _role: 'admin',
-          });
-          setIsAdmin(!!data);
-        } else {
-          setIsAdmin(false);
-        }
+    const checkRole = async (currentUser: User | null) => {
+      setUser(currentUser);
+      if (!currentUser) {
+        setIsAdmin(false);
+        checkedUserId.current = null;
         setLoading(false);
+        return;
+      }
+      // Skip if already checked for this user
+      if (checkedUserId.current === currentUser.id) {
+        setLoading(false);
+        return;
+      }
+      checkedUserId.current = currentUser.id;
+      const { data } = await supabase.rpc('has_role', {
+        _user_id: currentUser.id,
+        _role: 'admin',
+      });
+      setIsAdmin(!!data);
+      setLoading(false);
+    };
+
+    // Set up listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        checkRole(session?.user ?? null);
       }
     );
 
+    // Then get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      if (currentUser) {
-        supabase.rpc('has_role', {
-          _user_id: currentUser.id,
-          _role: 'admin',
-        }).then(({ data }) => {
-          setIsAdmin(!!data);
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
+      checkRole(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();

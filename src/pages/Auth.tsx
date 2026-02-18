@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -10,19 +10,11 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // If already logged in as admin, redirect
+  // If already logged in as admin, redirect immediately
   if (!authLoading && user && isAdmin) {
     return <Navigate to="/admin" replace />;
-  }
-
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,10 +22,22 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      toast.success('Login realizado!');
-      // Don't navigate — the AuthContext will update isAdmin and the redirect above will fire
+
+      // Check admin role directly - don't wait for context
+      const { data: isAdminRole } = await supabase.rpc('has_role', {
+        _user_id: authData.user.id,
+        _role: 'admin',
+      });
+
+      if (isAdminRole) {
+        toast.success('Login realizado!');
+        navigate('/admin', { replace: true });
+      } else {
+        toast.error('Você não tem permissão de administrador.');
+        await supabase.auth.signOut();
+      }
     } catch (error: any) {
       toast.error(error.message || 'Erro ao autenticar');
     } finally {

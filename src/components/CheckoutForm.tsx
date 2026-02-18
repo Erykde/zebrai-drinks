@@ -12,6 +12,7 @@ const CheckoutForm = () => {
   const [address, setAddress] = useState('');
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'cash'>('pix');
+  const [cardType, setCardType] = useState<'credit' | 'debit'>('credit');
   const [cashAmount, setCashAmount] = useState('');
 
   const orderTotal = cartTotal;
@@ -50,10 +51,10 @@ const CheckoutForm = () => {
       const itemName = i.selectedMixer ? `${i.product.name} + ${i.selectedMixer}` : i.product.name;
       return `• ${i.quantity}x ${itemName} - R$${(price * i.quantity).toFixed(2)}`;
     }).join('\n');
-    const paymentLabels = { pix: 'PIX', card: 'Cartão', cash: 'Dinheiro' };
+    const paymentLabels: Record<string, string> = { pix: 'PIX', card: cardType === 'credit' ? 'Cartão de Crédito' : 'Cartão de Débito', cash: 'Dinheiro' };
     let msg = `🦓 *NOVO PEDIDO - ZEBRAI DRINKS*\n\n`;
     msg += `👤 *Cliente:* ${name}\n📱 *Tel:* ${phone}\n`;
-    msg += deliveryType === 'delivery' ? `📍 *Endereço:* ${address}\n` : `🏪 *Retirada no local*\n`;
+    msg += deliveryType === 'delivery' ? `📍 *Endereço:* ${address}\n🏍️ *Entrega*\n` : `🏪 *Retirada no local*\n`;
     msg += `\n🍹 *Itens:*\n${itemsList}\n`;
     msg += `\n💰 *Total: R$ ${orderTotal.toFixed(2)}*\n`;
     msg += `💳 *Pagamento:* ${paymentLabels[paymentMethod]}`;
@@ -171,6 +172,36 @@ const CheckoutForm = () => {
           ))}
         </div>
       </div>
+
+      {paymentMethod === 'card' && (
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">Tipo de cartão</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setCardType('credit')}
+              className={`py-3 rounded-lg border text-sm font-medium transition-all ${
+                cardType === 'credit'
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:border-primary/50'
+              }`}
+            >
+              💳 Crédito
+            </button>
+            <button
+              type="button"
+              onClick={() => setCardType('debit')}
+              className={`py-3 rounded-lg border text-sm font-medium transition-all ${
+                cardType === 'debit'
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:border-primary/50'
+              }`}
+            >
+              💳 Débito
+            </button>
+          </div>
+        </div>
+      )}
 
       {paymentMethod === 'cash' && (
         <div>

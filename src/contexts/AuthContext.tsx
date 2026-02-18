@@ -26,17 +26,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const checkRole = async (currentUser: User | null) => {
-      setUser(currentUser);
       if (!currentUser) {
+        setUser(null);
         setIsAdmin(false);
         checkedUserId.current = null;
         setLoading(false);
         return;
       }
-      if (checkedUserId.current === currentUser.id) {
-        setLoading(false);
-        return;
-      }
+      // Always set loading true when we need to verify role
+      setLoading(true);
+      setUser(currentUser);
       checkedUserId.current = currentUser.id;
       const { data } = await supabase.rpc('has_role', {
         _user_id: currentUser.id,

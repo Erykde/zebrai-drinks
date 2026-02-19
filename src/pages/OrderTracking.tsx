@@ -104,17 +104,12 @@ const OrderTracking = () => {
   useEffect(() => {
     fetchOrder();
 
-    // Realtime subscription
-    const channel = supabase
-      .channel(`order-tracking-${orderId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'customer_orders', filter: `id=eq.${orderId}` },
-        () => { fetchOrder(); }
-      )
-      .subscribe();
+    // Poll every 5 seconds for status updates
+    const interval = setInterval(() => {
+      fetchOrder();
+    }, 5000);
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { clearInterval(interval); };
   }, [orderId]);
 
   if (loading) {

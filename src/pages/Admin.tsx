@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
 import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin } from 'lucide-react';
+import AdminDashboard from '@/components/AdminDashboard';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -167,12 +168,6 @@ const Admin = () => {
 
   const totalStock = products.reduce((sum, p) => sum + (p.stock ?? 0), 0);
 
-  // Dashboard calculations
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
-  const totalCost = orders.reduce((sum, o) => sum + (o.cost_price * o.quantity), 0);
-  const totalProfit = totalRevenue - totalCost;
-  const totalSold = orders.reduce((sum, o) => sum + o.quantity, 0);
-
   if (loading || productsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -227,14 +222,10 @@ const Admin = () => {
         </div>
 
         {activeTab === 'dashboard' ? (
-          <DashboardTab
+          <AdminDashboard
             orders={orders}
-            totalRevenue={totalRevenue}
-            totalCost={totalCost}
-            totalProfit={totalProfit}
-            totalSold={totalSold}
-            totalStock={totalStock}
-            productsCount={products.length}
+            products={products}
+            deliveryZones={deliveryZones}
           />
         ) : activeTab === 'delivery' ? (
           <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
@@ -265,67 +256,7 @@ const Admin = () => {
   );
 };
 
-// === Dashboard Tab ===
-const DashboardTab = ({
-  orders, totalRevenue, totalCost, totalProfit, totalSold, totalStock, productsCount,
-}: {
-  orders: OrderRow[];
-  totalRevenue: number;
-  totalCost: number;
-  totalProfit: number;
-  totalSold: number;
-  totalStock: number;
-  productsCount: number;
-}) => (
-  <div>
-    {/* Stats Grid */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <StatCard icon={<DollarSign className="h-5 w-5" />} label="Faturamento" value={`R$ ${totalRevenue.toFixed(2)}`} color="text-primary" />
-      <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Lucro Líquido" value={`R$ ${totalProfit.toFixed(2)}`} color="text-green-500" />
-      <StatCard icon={<BarChart3 className="h-5 w-5" />} label="Vendas" value={totalSold.toString()} />
-      <StatCard icon={<Package className="h-5 w-5" />} label="Estoque Total" value={`${totalStock} un`} />
-    </div>
 
-    {/* Recent Orders */}
-    <h2 className="font-display text-xl text-foreground mb-4">Últimas Vendas</h2>
-    {orders.length === 0 ? (
-      <p className="text-muted-foreground text-center py-8">Nenhuma venda registrada ainda.</p>
-    ) : (
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary text-secondary-foreground">
-              <tr>
-                <th className="text-left p-3">Produto</th>
-                <th className="text-center p-3">Qtd</th>
-                <th className="text-right p-3">Total</th>
-                <th className="text-right p-3">Lucro</th>
-                <th className="text-right p-3">Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.slice(0, 50).map(o => (
-                <tr key={o.id} className="border-t border-border">
-                  <td className="p-3 text-card-foreground">
-                    {o.product_name}{o.mixer ? ` + ${o.mixer}` : ''}
-                  </td>
-                  <td className="p-3 text-center text-muted-foreground">{o.quantity}</td>
-                  <td className="p-3 text-right text-primary font-medium">R$ {o.total.toFixed(2)}</td>
-                  <td className="p-3 text-right text-green-500 font-medium">
-                    R$ {(o.total - (o.cost_price * o.quantity)).toFixed(2)}
-                  </td>
-                  <td className="p-3 text-right text-muted-foreground text-xs">
-                    {new Date(o.created_at).toLocaleDateString('pt-BR')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    )}
-  </div>
-);
 
 // === Products Tab ===
 const ProductsTab = ({

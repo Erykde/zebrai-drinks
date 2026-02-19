@@ -103,57 +103,41 @@ export const createCustomerOrder = async (order: {
     product_name: string;
     quantity: number;
     unit_price: number;
-    cost_price: number;
+    cost_price?: number;
     mixer?: string;
     total: number;
   }[];
 }) => {
-  // Insert order
-  const { data: orderData, error: orderError } = await supabase
-    .from('customer_orders')
-    .insert({
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/create-order`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': anonKey,
+    },
+    body: JSON.stringify({
       customer_name: order.customer_name,
       customer_phone: order.customer_phone || null,
       customer_address: order.customer_address || null,
       notes: order.notes || null,
       delivery_fee: order.delivery_fee ?? 0,
       total: order.total,
-    } as any)
-    .select()
-    .single();
+      items: order.items.map(item => ({
+        product_name: item.product_name,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        mixer: item.mixer || null,
+        total: item.total,
+      })),
+    }),
+  });
 
-  if (orderError) throw orderError;
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Erro ao criar pedido' }));
+    throw new Error(err.error || 'Erro ao criar pedido');
+  }
 
-  // Insert items
-  const itemsToInsert = order.items.map(item => ({
-    order_id: orderData.id,
-    product_id: item.product_id || null,
-    product_name: item.product_name,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    cost_price: item.cost_price,
-    mixer: item.mixer || null,
-    total: item.total,
-  }));
-
-  const { error: itemsError } = await supabase
-    .from('customer_order_items')
-    .insert(itemsToInsert as any);
-
-  if (itemsError) throw itemsError;
-
-  // Also insert into legacy orders table for dashboard compatibility
-  const legacyItems = order.items.map(item => ({
-    product_name: item.product_name,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    cost_price: item.cost_price,
-    mixer: item.mixer || null,
-    total: item.total,
-    product_id: item.product_id || null,
-  }));
-
-  await supabase.from('orders').insert(legacyItems as any);
-
-  return orderData;
+  return await response.json();
 };

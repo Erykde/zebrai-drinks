@@ -85,23 +85,19 @@ const OrderTracking = () => {
 
   const fetchOrder = async () => {
     if (!orderId) return;
-    const { data: orderData } = await supabase
-      .from('customer_orders')
-      .select('*')
-      .eq('id', orderId)
-      .single();
-
-    if (!orderData) return;
-
-    const { data: items } = await supabase
-      .from('customer_order_items')
-      .select('*')
-      .eq('order_id', orderId);
-
-    setOrder({
-      ...orderData,
-      items: items ?? [],
-    });
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/get-order?id=${encodeURIComponent(orderId)}`,
+        { headers: { 'apikey': anonKey } }
+      );
+      if (!response.ok) { setLoading(false); return; }
+      const orderData = await response.json();
+      setOrder(orderData);
+    } catch (e) {
+      console.error('Error fetching order:', e);
+    }
     setLoading(false);
   };
 

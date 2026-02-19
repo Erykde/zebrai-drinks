@@ -34,10 +34,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(u);
 
     try {
-      const { data } = await supabase.rpc('has_role', {
-        _user_id: u.id,
-        _role: 'admin',
-      });
+      const { data } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', u.id)
+        .eq('role', 'admin')
+        .maybeSingle();
       setIsAdmin(!!data);
     } catch {
       setIsAdmin(false);

@@ -23,10 +23,12 @@ export const useAuth = () => {
         return;
       }
       checkedUserId.current = currentUser.id;
-      const { data } = await supabase.rpc('has_role', {
-        _user_id: currentUser.id,
-        _role: 'admin',
-      });
+      const { data } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .eq('role', 'admin')
+        .maybeSingle();
       setIsAdmin(!!data);
       setLoading(false);
     };

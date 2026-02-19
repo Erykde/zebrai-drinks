@@ -31,6 +31,7 @@ const CheckoutForm = () => {
     }
 
     // Save to database
+    let savedOrderId: string | null = null;
     try {
       const orderItems = cart.map(i => ({
         product_name: i.selectedMixer ? `${i.product.name} + ${i.selectedMixer}` : i.product.name,
@@ -41,19 +42,20 @@ const CheckoutForm = () => {
         total: (i.finalPrice ?? i.product.price) * i.quantity,
       }));
 
-      await createCustomerOrder({
+      const result = await createCustomerOrder({
         customer_name: name.trim(),
         customer_phone: phone.trim(),
         customer_address: deliveryType === 'delivery' ? address.trim() : undefined,
         total: orderTotal,
         items: orderItems,
       });
+      savedOrderId = result?.id ?? null;
     } catch (err) {
       console.error('Error saving order:', err);
     }
 
     const order: Order = {
-      id: Date.now().toString(),
+      id: savedOrderId || Date.now().toString(),
       customerName: name.trim(),
       customerPhone: phone.trim(),
       customerAddress: deliveryType === 'delivery' ? address.trim() : undefined,
@@ -68,8 +70,12 @@ const CheckoutForm = () => {
 
     addOrder(order);
 
-    toast.success('Pedido enviado com sucesso! 🎉 Aguarde a confirmação.');
-    navigate('/');
+    toast.success('Pedido enviado com sucesso! 🎉');
+    if (savedOrderId) {
+      navigate(`/pedido?id=${savedOrderId}`);
+    } else {
+      navigate('/');
+    }
   };
 
   return (

@@ -25,12 +25,17 @@ export function useProducts() {
         .from('products')
         .select('*')
         .order('sort_order', { ascending: true });
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading products:', error);
+        throw error;
+      }
       return (data ?? []).map(p => ({
         ...p,
         mixer_options: Array.isArray(p.mixer_options) ? p.mixer_options as any : [],
       }));
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 }
 

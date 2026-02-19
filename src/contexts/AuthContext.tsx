@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -23,59 +23,72 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const checkAdmin = useCallback(async (u: User | null) => {
+    if (!u) {
+      setUser(null);
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
+
+    setUser(u);
+
+    try {
+      const { data } = await supabase.rpc('has_role', {
+        _user_id: u.id,
+        _role: 'admin',
+      });
+      setIsAdmin(!!data);
+    } catch {
+      setIsAdmin(false);
+    }
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
-    let mounted = true;
-
-    const checkAndSetAdmin = (u: User | null) => {
-      if (!u) {
-        if (mounted) {
-          setUser(null);
-          setIsAdmin(false);
-          setLoading(false);
-        }
-        return;
-      }
-
-      if (mounted) setUser(u);
-
-      // Use setTimeout to avoid blocking the auth state change callback
-      setTimeout(async () => {
-        try {
-          const { data } = await supabase.rpc('has_role', {
-            _user_id: u.id,
-            _role: 'admin',
-          });
-          if (mounted) setIsAdmin(!!data);
-        } catch {
-          if (mounted) setIsAdmin(false);
-        }
-        if (mounted) setLoading(false);
-      }, 0);
-    };
-
-    // Listener must NOT be async (Supabase requirement)
+    // Set up listener FIRST (Supabase requirement)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        checkAndSetAdmin(session?.user ?? null);
+        // Use queueMicrotask to avoid lock contention
+        queueMicrotask(() => {
+          checkAdmin(session?.user ?? null);
+        });
       }
     );
 
-    // Fallback: get initial session
+    // Then get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      checkAndSetAdmin(session?.user ?? null);
+      checkAdmin(session?.user ?? null);
+    }).catch(() => {
+      setLoading(false);
     });
 
+    // Safety timeout - never leave user stuck on loading
+    const timeout = setTimeout(() => {
+      setLoading(prev => {
+        if (prev) {
+          console.warn('Auth loading timeout - forcing ready state');
+          return false;
+        }
+        return prev;
+      });
+    }, 5000);
+
     return () => {
-      mounted = false;
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [checkAdmin]);
 
   const signOut = async () => {
     setUser(null);
     setIsAdmin(false);
     setLoading(false);
-    await supabase.auth.signOut().catch(() => {});
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('Sign out error:', e);
+    }
   };
 
   return (

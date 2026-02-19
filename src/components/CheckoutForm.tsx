@@ -68,33 +68,7 @@ const CheckoutForm = () => {
 
     addOrder(order);
 
-    // Build WhatsApp message
-    const itemsList = cart.map(i => {
-      const price = i.finalPrice ?? i.product.price;
-      const itemName = i.selectedMixer ? `${i.product.name} + ${i.selectedMixer}` : i.product.name;
-      return `• ${i.quantity}x ${itemName} - R$${(price * i.quantity).toFixed(2)}`;
-    }).join('\n');
-    const paymentLabels: Record<string, string> = { pix: 'PIX', card: cardType === 'credit' ? 'Cartão de Crédito' : 'Cartão de Débito', cash: 'Dinheiro' };
-    let msg = `🦓 *NOVO PEDIDO - ZEBRAI DRINKS*\n\n`;
-    msg += `👤 *Cliente:* ${name}\n📱 *Tel:* ${phone}\n`;
-    msg += deliveryType === 'delivery' ? `📍 *Endereço:* ${address}\n🏍️ *Entrega*\n` : `🏪 *Retirada no local*\n`;
-    msg += `\n🍹 *Itens:*\n${itemsList}\n`;
-    msg += `\n💰 *Total: R$ ${orderTotal.toFixed(2)}*\n`;
-    msg += `💳 *Pagamento:* ${paymentLabels[paymentMethod]}`;
-    if (paymentMethod === 'pix') {
-      msg += `\n\n📲 *Dados PIX:*`;
-      msg += `\n• Chave (Telefone): (41) 99842-9633`;
-      msg += `\n• Nome: Eryk de Paula`;
-    }
-    if (paymentMethod === 'cash' && order.cashChange !== undefined && order.cashChange > 0) {
-      msg += `\n💵 *Troco para:* R$ ${parseFloat(cashAmount).toFixed(2)} (troco: R$ ${order.cashChange.toFixed(2)})`;
-    }
-
-    const whatsappNumber = '5541984296633';
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
-    window.open(whatsappUrl, '_blank');
-
-    toast.success('Pedido enviado com sucesso! 🎉');
+    toast.success('Pedido enviado com sucesso! 🎉 Aguarde a confirmação.');
     navigate('/');
   };
 
@@ -269,7 +243,7 @@ const CheckoutForm = () => {
         type="submit"
         className="w-full bg-primary text-primary-foreground py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-colors"
       >
-        Enviar Pedido via WhatsApp 📱
+        Enviar Pedido 🎉
       </button>
     </form>
   );

@@ -26,10 +26,13 @@ const Auth = () => {
       if (error) throw error;
 
       // Check admin role directly - don't wait for context
-      const { data: isAdminRole } = await supabase.rpc('has_role', {
-        _user_id: authData.user.id,
-        _role: 'admin',
-      });
+      const { data: adminRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', authData.user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      const isAdminRole = !!adminRole;
 
       if (isAdminRole) {
         toast.success('Login realizado!');

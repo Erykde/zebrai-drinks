@@ -6,7 +6,7 @@ export interface DbProduct {
   name: string;
   description: string | null;
   price: number;
-  cost_price: number;
+  cost_price?: number;
   category: string;
   image_emoji: string | null;
   image_url: string | null;
@@ -23,7 +23,7 @@ export function useProducts() {
     queryFn: async (): Promise<DbProduct[]> => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id, name, description, price, category, image_emoji, image_url, stock, mixer_options, is_promotion, promotion_price, sort_order')
         .order('sort_order', { ascending: true });
       if (error) {
         console.error('Error loading products:', error);

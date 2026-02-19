@@ -4,6 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Order } from '@/data/products';
 import { createCustomerOrder } from '@/hooks/useCustomerOrders';
+import { z } from 'zod';
+
+const checkoutSchema = z.object({
+  name: z.string().trim().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100, 'Nome muito longo'),
+  phone: z.string().trim().min(10, 'Telefone deve ter pelo menos 10 dígitos').max(20, 'Telefone inválido')
+    .regex(/^[\d\s()+-]+$/, 'Telefone deve conter apenas números'),
+  address: z.string().trim().max(200, 'Endereço muito longo').optional(),
+});
 
 const CheckoutForm = () => {
   const { cart, cartTotal, addOrder } = useStore();
@@ -21,23 +29,29 @@ const CheckoutForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !phone.trim()) {
-      toast.error('Preencha nome e telefone!');
-      return;
-    }
-    if (deliveryType === 'delivery' && !address.trim()) {
-      toast.error('Preencha o endereço para delivery!');
+    const validation = checkoutSchema.safeParse({
+      name,
+      phone,
+      address: deliveryType === 'delivery' ? address : undefined,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
-    // Save to database
+    if (deliveryType === 'delivery' && (!address.trim() || address.trim().length < 5)) {
+      toast.error('Preencha o endereço completo para delivery!');
+      return;
+    }
+
     let savedOrderId: string | null = null;
     try {
       const orderItems = cart.map(i => ({
         product_name: i.selectedMixer ? `${i.product.name} + ${i.selectedMixer}` : i.product.name,
         quantity: i.quantity,
         unit_price: i.finalPrice ?? i.product.price,
-        cost_price: i.product.costPrice ?? 0,
         mixer: i.selectedMixer || undefined,
         total: (i.finalPrice ?? i.product.price) * i.quantity,
       }));

@@ -3,7 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
-import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin, ClipboardList } from 'lucide-react';
+import OrderManager from '@/components/OrderManager';
 import AdminDashboard from '@/components/AdminDashboard';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
@@ -34,7 +35,7 @@ const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
-  const [activeTab, setActiveTab] = useState<'products' | 'dashboard' | 'delivery'>('products');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'dashboard' | 'delivery'>('orders');
 
   // Form state
   const [form, setForm] = useState({
@@ -200,28 +201,36 @@ const Admin = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'orders' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+          >
+            <ClipboardList className="h-4 w-4 inline mr-1" /> Pedidos
+          </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === 'products' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'products' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
           >
             <Package className="h-4 w-4 inline mr-1" /> Produtos
           </button>
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === 'dashboard' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'dashboard' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
           >
             <BarChart3 className="h-4 w-4 inline mr-1" /> Dashboard
           </button>
           <button
             onClick={() => setActiveTab('delivery')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === 'delivery' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'delivery' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
           >
             <MapPin className="h-4 w-4 inline mr-1" /> Entregas
           </button>
         </div>
 
-        {activeTab === 'dashboard' ? (
+        {activeTab === 'orders' ? (
+          <OrderManager />
+        ) : activeTab === 'dashboard' ? (
           <AdminDashboard
             orders={orders}
             products={products}

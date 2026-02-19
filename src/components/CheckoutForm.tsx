@@ -3,6 +3,7 @@ import { useStore } from '@/contexts/StoreContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Order } from '@/data/products';
+import { createCustomerOrder } from '@/hooks/useCustomerOrders';
 
 const CheckoutForm = () => {
   const { cart, cartTotal, addOrder } = useStore();
@@ -17,7 +18,7 @@ const CheckoutForm = () => {
 
   const orderTotal = cartTotal;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim() || !phone.trim()) {
@@ -27,6 +28,28 @@ const CheckoutForm = () => {
     if (deliveryType === 'delivery' && !address.trim()) {
       toast.error('Preencha o endereço para delivery!');
       return;
+    }
+
+    // Save to database
+    try {
+      const orderItems = cart.map(i => ({
+        product_name: i.selectedMixer ? `${i.product.name} + ${i.selectedMixer}` : i.product.name,
+        quantity: i.quantity,
+        unit_price: i.finalPrice ?? i.product.price,
+        cost_price: i.product.costPrice ?? 0,
+        mixer: i.selectedMixer || undefined,
+        total: (i.finalPrice ?? i.product.price) * i.quantity,
+      }));
+
+      await createCustomerOrder({
+        customer_name: name.trim(),
+        customer_phone: phone.trim(),
+        customer_address: deliveryType === 'delivery' ? address.trim() : undefined,
+        total: orderTotal,
+        items: orderItems,
+      });
+    } catch (err) {
+      console.error('Error saving order:', err);
     }
 
     const order: Order = {

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useCustomerOrders, CustomerOrder } from '@/hooks/useCustomerOrders';
-import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pendente', icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/10 border-yellow-500/30' },
@@ -17,8 +19,12 @@ const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', curren
 
 const OrderManager = () => {
   const { data: orders = [], isLoading, updateStatus } = useCustomerOrders();
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<CustomerOrder['status'] | 'all'>('all');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [editingOrder, setEditingOrder] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ customer_name: '', customer_phone: '', customer_address: '', notes: '' });
+  const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
@@ -38,6 +44,65 @@ const OrderManager = () => {
     const idx = STATUS_FLOW.indexOf(current);
     if (idx === -1 || idx === STATUS_FLOW.length - 1) return null;
     return STATUS_FLOW[idx + 1];
+  };
+
+  const startEditing = (order: CustomerOrder) => {
+    setEditingOrder(order.id);
+    setEditForm({
+      customer_name: order.customer_name,
+      customer_phone: order.customer_phone || '',
+      customer_address: order.customer_address || '',
+      notes: order.notes || '',
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingOrder(null);
+  };
+
+  const saveEdit = async (orderId: string) => {
+    const { error } = await supabase
+      .from('customer_orders')
+      .update({
+        customer_name: editForm.customer_name.trim(),
+        customer_phone: editForm.customer_phone.trim() || null,
+        customer_address: editForm.customer_address.trim() || null,
+        notes: editForm.notes.trim() || null,
+      } as any)
+      .eq('id', orderId);
+
+    if (error) {
+      toast.error('Erro ao salvar alterações');
+      return;
+    }
+    toast.success('Pedido atualizado!');
+    setEditingOrder(null);
+    queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
+  };
+
+  const handleDelete = async (orderId: string) => {
+    // Delete items first, then order
+    const { error: itemsError } = await supabase
+      .from('customer_order_items')
+      .delete()
+      .eq('order_id', orderId);
+    if (itemsError) {
+      toast.error('Erro ao apagar itens do pedido');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('customer_orders')
+      .delete()
+      .eq('id', orderId);
+    if (error) {
+      toast.error('Erro ao apagar pedido');
+      return;
+    }
+    toast.success('Pedido apagado!');
+    setDeletingOrder(null);
+    setExpandedOrder(null);
+    queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
   };
 
   if (isLoading) {
@@ -70,6 +135,8 @@ const OrderManager = () => {
             const config = STATUS_CONFIG[order.status];
             const StatusIcon = config.icon;
             const isExpanded = expandedOrder === order.id;
+            const isEditing = editingOrder === order.id;
+            const isDeleting = deletingOrder === order.id;
             const nextStatus = getNextStatus(order.status);
 
             return (
@@ -103,22 +170,66 @@ const OrderManager = () => {
                 {/* Expanded details */}
                 {isExpanded && (
                   <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
-                    {/* Customer info */}
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <User className="h-3.5 w-3.5" /> {order.customer_name}
-                      </span>
-                      {order.customer_phone && (
-                        <a href={`tel:${order.customer_phone}`} className="flex items-center gap-1 text-primary hover:underline">
-                          <Phone className="h-3.5 w-3.5" /> {order.customer_phone}
-                        </a>
-                      )}
-                      {order.customer_address && (
+                    {/* Customer info - view or edit mode */}
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <input
+                          value={editForm.customer_name}
+                          onChange={e => setEditForm(f => ({ ...f, customer_name: e.target.value }))}
+                          placeholder="Nome do cliente"
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                        />
+                        <input
+                          value={editForm.customer_phone}
+                          onChange={e => setEditForm(f => ({ ...f, customer_phone: e.target.value }))}
+                          placeholder="Telefone"
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                        />
+                        <input
+                          value={editForm.customer_address}
+                          onChange={e => setEditForm(f => ({ ...f, customer_address: e.target.value }))}
+                          placeholder="Endereço"
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                        />
+                        <textarea
+                          value={editForm.notes}
+                          onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                          placeholder="Observações"
+                          rows={2}
+                          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm resize-none"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => saveEdit(order.id)}
+                            className="flex items-center gap-1 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90"
+                          >
+                            <Save className="h-3.5 w-3.5" /> Salvar
+                          </button>
+                          <button
+                            onClick={cancelEditing}
+                            className="flex items-center gap-1 border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm hover:bg-muted"
+                          >
+                            <X className="h-3.5 w-3.5" /> Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-4 text-sm">
                         <span className="flex items-center gap-1 text-muted-foreground">
-                          <MapPin className="h-3.5 w-3.5" /> {order.customer_address}
+                          <User className="h-3.5 w-3.5" /> {order.customer_name}
                         </span>
-                      )}
-                    </div>
+                        {order.customer_phone && (
+                          <a href={`tel:${order.customer_phone}`} className="flex items-center gap-1 text-primary hover:underline">
+                            <Phone className="h-3.5 w-3.5" /> {order.customer_phone}
+                          </a>
+                        )}
+                        {order.customer_address && (
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <MapPin className="h-3.5 w-3.5" /> {order.customer_address}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Items */}
                     <div className="bg-background/50 rounded-lg p-3">
@@ -139,11 +250,11 @@ const OrderManager = () => {
                       )}
                     </div>
 
-                    {order.notes && (
+                    {order.notes && !isEditing && (
                       <p className="text-xs text-muted-foreground italic">📝 {order.notes}</p>
                     )}
 
-                    {/* Status actions */}
+                    {/* Status actions + edit/delete */}
                     <div className="flex flex-wrap gap-2">
                       {nextStatus && (
                         <button
@@ -161,6 +272,40 @@ const OrderManager = () => {
                           className="border border-destructive/50 text-destructive px-4 py-2 rounded-lg text-sm font-medium hover:bg-destructive/10 transition-colors disabled:opacity-50"
                         >
                           Cancelar
+                        </button>
+                      )}
+
+                      {!isEditing && (
+                        <button
+                          onClick={() => startEditing(order)}
+                          className="flex items-center gap-1 border border-border text-muted-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+                        >
+                          <Pencil className="h-3.5 w-3.5" /> Editar
+                        </button>
+                      )}
+
+                      {isDeleting ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-destructive font-medium">Apagar?</span>
+                          <button
+                            onClick={() => handleDelete(order.id)}
+                            className="bg-destructive text-destructive-foreground px-3 py-2 rounded-lg text-sm font-medium hover:opacity-90"
+                          >
+                            Sim
+                          </button>
+                          <button
+                            onClick={() => setDeletingOrder(null)}
+                            className="border border-border text-muted-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted"
+                          >
+                            Não
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setDeletingOrder(order.id)}
+                          className="flex items-center gap-1 border border-destructive/30 text-destructive px-3 py-2 rounded-lg text-sm hover:bg-destructive/10 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Apagar
                         </button>
                       )}
                     </div>

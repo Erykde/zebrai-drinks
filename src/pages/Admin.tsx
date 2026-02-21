@@ -104,7 +104,7 @@ const Admin = () => {
   };
 
   const addMixer = () => {
-    setMixerOptions(prev => [...prev, { mixer: '', price: 0, group: 'Energéticos', flavors: [] }]);
+    setMixerOptions(prev => [...prev, { mixer: '', price: 0, group: '', flavors: [] }]);
   };
 
   const removeMixer = (index: number) => {
@@ -344,14 +344,12 @@ const ProductsTab = ({
               {mixerOptions.map((m, i) => (
                 <div key={i} className="border border-border rounded-lg p-3 space-y-2">
                   <div className="flex gap-2 items-center">
-                    <select
-                      value={m.group || 'Energéticos'}
+                    <input
+                      value={m.group || ''}
                       onChange={e => onUpdateMixer(i, 'group', e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
-                    >
-                      <option value="Energéticos">Energéticos</option>
-                      <option value="Gelo Saborizado">Gelo Saborizado</option>
-                    </select>
+                      placeholder="Grupo (ex: Energéticos, Gelo...)"
+                      className="w-40 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm"
+                    />
                     <input
                       value={m.mixer}
                       onChange={e => onUpdateMixer(i, 'mixer', e.target.value)}

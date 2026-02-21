@@ -172,7 +172,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-foreground">
-                          {groupName === 'Energéticos' ? '⚡ Energéticos' : groupName === 'Gelo Saborizado' ? '🧊 Gelo Saborizado' : groupName}
+                          {groupName}
                         </span>
                         {hasSelection && (
                           <span className="text-xs bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">

@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Order } from '@/data/products';
 import { createCustomerOrder } from '@/hooks/useCustomerOrders';
+import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
+import { Ticket, X } from 'lucide-react';
 
 const checkoutSchema = z.object({
   name: z.string().trim().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100, 'Nome muito longo'),
@@ -12,6 +14,13 @@ const checkoutSchema = z.object({
     .regex(/^[\d\s()+-]+$/, 'Telefone deve conter apenas números'),
   address: z.string().trim().max(200, 'Endereço muito longo').optional(),
 });
+
+interface AppliedCoupon {
+  code: string;
+  discount_type: string;
+  discount_value: number;
+  discountAmount: number;
+}
 
 const CheckoutForm = () => {
   const { cart, cartTotal, addOrder } = useStore();
@@ -23,8 +32,60 @@ const CheckoutForm = () => {
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'cash'>('pix');
   const [cardType, setCardType] = useState<'credit' | 'debit'>('credit');
   const [cashAmount, setCashAmount] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
-  const orderTotal = cartTotal;
+  const discountAmount = appliedCoupon?.discountAmount ?? 0;
+  const orderTotal = Math.max(0, cartTotal - discountAmount);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setValidatingCoupon(true);
+    const { data, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('code', couponCode.trim().toUpperCase())
+      .eq('is_active', true)
+      .single();
+
+    setValidatingCoupon(false);
+    if (error || !data) {
+      toast.error('Cupom inválido ou expirado');
+      return;
+    }
+
+    const coupon = data as any;
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+      toast.error('Cupom expirado');
+      return;
+    }
+    if (coupon.max_uses && coupon.used_count >= coupon.max_uses) {
+      toast.error('Cupom esgotado');
+      return;
+    }
+    if (cartTotal < coupon.min_order_value) {
+      toast.error(`Pedido mínimo de R$ ${coupon.min_order_value.toFixed(2)} para este cupom`);
+      return;
+    }
+
+    const disc = coupon.discount_type === 'percentage'
+      ? cartTotal * (coupon.discount_value / 100)
+      : coupon.discount_value;
+
+    setAppliedCoupon({
+      code: coupon.code,
+      discount_type: coupon.discount_type,
+      discount_value: coupon.discount_value,
+      discountAmount: Math.min(disc, cartTotal),
+    });
+    toast.success(`Cupom ${coupon.code} aplicado!`);
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +125,26 @@ const CheckoutForm = () => {
         items: orderItems,
       });
       savedOrderId = result?.id ?? null;
+
+      // Increment coupon used_count
+      if (appliedCoupon && savedOrderId) {
+        await supabase
+          .from('coupons')
+          .update({ used_count: undefined } as any) // we'll use rpc or raw increment
+          .eq('code', appliedCoupon.code);
+        // Simple increment via select + update
+        const { data: couponData } = await supabase
+          .from('coupons')
+          .select('id, used_count')
+          .eq('code', appliedCoupon.code)
+          .single();
+        if (couponData) {
+          await supabase
+            .from('coupons')
+            .update({ used_count: (couponData as any).used_count + 1 } as any)
+            .eq('id', (couponData as any).id);
+        }
+      }
     } catch (err) {
       console.error('Error saving order:', err);
     }
@@ -240,16 +321,59 @@ const CheckoutForm = () => {
         </div>
       )}
 
+      {/* Coupon */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-1">
+          <Ticket className="h-4 w-4 inline mr-1" /> Cupom de desconto
+        </label>
+        {appliedCoupon ? (
+          <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-lg px-4 py-3">
+            <Ticket className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary flex-1">
+              {appliedCoupon.code} — {appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : `R$ ${appliedCoupon.discount_value.toFixed(2)}`} off
+            </span>
+            <button type="button" onClick={removeCoupon} className="p-1 text-destructive hover:bg-destructive/10 rounded">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={couponCode}
+              onChange={e => setCouponCode(e.target.value)}
+              placeholder="Digite o código"
+              className="flex-1 px-4 py-3 rounded-lg border border-input bg-card text-card-foreground focus:ring-2 focus:ring-ring outline-none uppercase text-sm"
+              maxLength={20}
+            />
+            <button
+              type="button"
+              onClick={applyCoupon}
+              disabled={validatingCoupon || !couponCode.trim()}
+              className="px-4 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+            >
+              {validatingCoupon ? '...' : 'Aplicar'}
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Summary */}
       <div className="bg-muted rounded-lg p-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Produtos</span>
           <span className="text-foreground">R$ {cartTotal.toFixed(2)}</span>
         </div>
+        {appliedCoupon && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">🎟️ Desconto ({appliedCoupon.code})</span>
+            <span className="text-green-600 font-medium">-R$ {discountAmount.toFixed(2)}</span>
+          </div>
+        )}
         {deliveryType === 'pickup' && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">🏪 Retirada no local</span>
-            <span className="text-green-500 font-medium">Grátis</span>
+            <span className="text-green-600 font-medium">Grátis</span>
           </div>
         )}
         <div className="border-t border-border pt-2 flex justify-between text-lg font-bold">

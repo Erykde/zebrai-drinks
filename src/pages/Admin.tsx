@@ -3,9 +3,13 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
-import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin, ClipboardList } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone } from 'lucide-react';
 import OrderManager from '@/components/OrderManager';
 import AdminDashboard from '@/components/AdminDashboard';
+import QRCodeCard from '@/components/QRCodeCard';
+import CouponsManager from '@/components/CouponsManager';
+import LoyaltyManager from '@/components/LoyaltyManager';
+import CampaignsManager from '@/components/CampaignsManager';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,7 +39,7 @@ const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
-  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'dashboard' | 'delivery'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing'>('orders');
 
   // Form state
   const [form, setForm] = useState({
@@ -226,6 +230,12 @@ const Admin = () => {
           >
             <MapPin className="h-4 w-4 inline mr-1" /> Entregas
           </button>
+          <button
+            onClick={() => setActiveTab('marketing')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'marketing' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+          >
+            <Megaphone className="h-4 w-4 inline mr-1" /> Marketing
+          </button>
         </div>
 
         {activeTab === 'orders' ? (
@@ -238,6 +248,13 @@ const Admin = () => {
           />
         ) : activeTab === 'delivery' ? (
           <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
+        ) : activeTab === 'marketing' ? (
+          <div className="space-y-6">
+            <QRCodeCard />
+            <CouponsManager />
+            <LoyaltyManager />
+            <CampaignsManager />
+          </div>
         ) : (
           <ProductsTab
             products={products}

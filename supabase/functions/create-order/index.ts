@@ -158,6 +158,35 @@ Deno.serve(async (req) => {
 
     await supabase.from("orders").insert(legacyItems);
 
+    // Accumulate loyalty points (1 point per R$1 spent)
+    if (customer_phone?.trim()) {
+      const phone = customer_phone.trim();
+      const points = Math.floor(total);
+      const { data: existing } = await supabase
+        .from("loyalty_points")
+        .select("id, points, total_spent, order_count")
+        .eq("customer_phone", phone)
+        .single();
+
+      if (existing) {
+        await supabase.from("loyalty_points").update({
+          points: existing.points + points,
+          total_spent: existing.total_spent + total,
+          order_count: existing.order_count + 1,
+          customer_name: customer_name.trim(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("loyalty_points").insert({
+          customer_phone: phone,
+          customer_name: customer_name.trim(),
+          points,
+          total_spent: total,
+          order_count: 1,
+        });
+      }
+    }
+
     return new Response(
       JSON.stringify({ id: orderData.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -6,7 +6,7 @@ import { Order } from '@/data/products';
 import { createCustomerOrder } from '@/hooks/useCustomerOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
-import { Ticket, X } from 'lucide-react';
+import { Ticket, X, User, Phone, MapPin, CreditCard, Banknote, QrCode, ShoppingBag, Bike, Store } from 'lucide-react';
 
 const checkoutSchema = z.object({
   name: z.string().trim().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100, 'Nome muito longo'),
@@ -35,6 +35,7 @@ const CheckoutForm = () => {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
   const orderTotal = Math.max(0, cartTotal - discountAmount);
@@ -107,6 +108,7 @@ const CheckoutForm = () => {
       return;
     }
 
+    setSubmitting(true);
     let savedOrderId: string | null = null;
     try {
       const orderItems = cart.map(i => ({
@@ -126,13 +128,7 @@ const CheckoutForm = () => {
       });
       savedOrderId = result?.id ?? null;
 
-      // Increment coupon used_count
       if (appliedCoupon && savedOrderId) {
-        await supabase
-          .from('coupons')
-          .update({ used_count: undefined } as any) // we'll use rpc or raw increment
-          .eq('code', appliedCoupon.code);
-        // Simple increment via select + update
         const { data: couponData } = await supabase
           .from('coupons')
           .select('id, used_count')
@@ -164,7 +160,7 @@ const CheckoutForm = () => {
     };
 
     addOrder(order);
-
+    setSubmitting(false);
     toast.success('Pedido enviado com sucesso! 🎉');
     if (savedOrderId) {
       navigate(`/pedido?id=${savedOrderId}`);
@@ -174,165 +170,203 @@ const CheckoutForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in">
-      <h2 className="font-display text-3xl text-foreground">FINALIZAR PEDIDO</h2>
-
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">Nome completo</label>
-        <input
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg border border-input bg-card text-card-foreground focus:ring-2 focus:ring-ring outline-none"
-          placeholder="Seu nome"
-          required
-          maxLength={100}
-        />
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in pb-6">
+      {/* Title */}
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-gold mb-3">
+          <ShoppingBag className="h-8 w-8 text-primary-foreground" />
+        </div>
+        <h2 className="font-display text-4xl text-foreground tracking-wider">FINALIZAR PEDIDO</h2>
+        <p className="text-sm text-muted-foreground mt-1">{cart.length} item(ns) • R$ {cartTotal.toFixed(2)}</p>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">WhatsApp / Telefone</label>
-        <input
-          type="tel"
-          value={phone}
-          onChange={e => setPhone(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg border border-input bg-card text-card-foreground focus:ring-2 focus:ring-ring outline-none"
-          placeholder="(99) 99999-9999"
-          required
-          maxLength={20}
-        />
+      {/* Items preview */}
+      <div className="bg-card rounded-2xl border border-border p-4 space-y-2">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Seus itens</p>
+        {cart.map((item, i) => {
+          const displayPrice = item.finalPrice ?? item.product.price;
+          return (
+            <div key={i} className="flex items-center gap-3 py-1.5">
+              <span className="text-2xl">{item.product.image}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-card-foreground truncate">
+                  {item.product.name}{item.selectedMixer ? ` + ${item.selectedMixer}` : ''}
+                </p>
+                <p className="text-xs text-muted-foreground">{item.quantity}x R$ {displayPrice.toFixed(2)}</p>
+              </div>
+              <span className="text-sm font-bold text-primary">R$ {(displayPrice * item.quantity).toFixed(2)}</span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Delivery type */}
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Tipo de entrega</label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => { setDeliveryType('delivery'); }}
-            className={`py-3 rounded-lg border text-sm font-medium transition-all ${
-              deliveryType === 'delivery'
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:border-primary/50'
-            }`}
-          >
-            🏍️ Delivery
-          </button>
-          <button
-            type="button"
-            onClick={() => { setDeliveryType('pickup'); }}
-            className={`py-3 rounded-lg border text-sm font-medium transition-all ${
-              deliveryType === 'pickup'
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:border-primary/50'
-            }`}
-          >
-            🏪 Retirada
-          </button>
+      {/* Personal Info */}
+      <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <User className="h-3.5 w-3.5" /> Dados pessoais
+        </p>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-background text-foreground focus:ring-2 focus:ring-ring outline-none text-sm"
+            placeholder="Nome completo"
+            required
+            maxLength={100}
+          />
+        </div>
+        <div className="relative">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-background text-foreground focus:ring-2 focus:ring-ring outline-none text-sm"
+            placeholder="(99) 99999-9999"
+            required
+            maxLength={20}
+          />
         </div>
       </div>
 
-      {deliveryType === 'delivery' && (
-        <>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Endereço de entrega</label>
+      {/* Delivery type */}
+      <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tipo de entrega</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setDeliveryType('delivery')}
+            className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 text-sm font-medium transition-all ${
+              deliveryType === 'delivery'
+                ? 'border-primary bg-primary/10 text-primary shadow-gold'
+                : 'border-border text-muted-foreground hover:border-primary/40'
+            }`}
+          >
+            <Bike className="h-6 w-6" />
+            Delivery
+          </button>
+          <button
+            type="button"
+            onClick={() => setDeliveryType('pickup')}
+            className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 text-sm font-medium transition-all ${
+              deliveryType === 'pickup'
+                ? 'border-primary bg-primary/10 text-primary shadow-gold'
+                : 'border-border text-muted-foreground hover:border-primary/40'
+            }`}
+          >
+            <Store className="h-6 w-6" />
+            Retirada
+          </button>
+        </div>
+
+        {deliveryType === 'delivery' && (
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               value={address}
               onChange={e => setAddress(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-input bg-card text-card-foreground focus:ring-2 focus:ring-ring outline-none"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-background text-foreground focus:ring-2 focus:ring-ring outline-none text-sm"
               placeholder="Rua, número, bairro..."
               required
               maxLength={200}
             />
           </div>
-
-        </>
-      )}
+        )}
+      </div>
 
       {/* Payment */}
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Forma de pagamento</label>
-        <div className="grid grid-cols-3 gap-3">
-          {([['pix', '📲 PIX'], ['card', '💳 Cartão'], ['cash', '💵 Dinheiro']] as const).map(([method, label]) => (
+      <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pagamento</p>
+        <div className="grid grid-cols-3 gap-2">
+          {([
+            ['pix', 'PIX', QrCode],
+            ['card', 'Cartão', CreditCard],
+            ['cash', 'Dinheiro', Banknote],
+          ] as const).map(([method, label, Icon]) => (
             <button
               key={method}
               type="button"
               onClick={() => setPaymentMethod(method)}
-              className={`py-3 rounded-lg border text-sm font-medium transition-all ${
+              className={`flex flex-col items-center gap-2 py-3.5 rounded-xl border-2 text-xs font-medium transition-all ${
                 paymentMethod === method
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/50'
+                  ? 'border-primary bg-primary/10 text-primary shadow-gold'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
               }`}
             >
+              <Icon className="h-5 w-5" />
               {label}
             </button>
           ))}
         </div>
-      </div>
 
-      {paymentMethod === 'card' && (
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Tipo de cartão</label>
+        {paymentMethod === 'card' && (
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setCardType('credit')}
-              className={`py-3 rounded-lg border text-sm font-medium transition-all ${
+              className={`py-3 rounded-xl border-2 text-sm font-medium transition-all ${
                 cardType === 'credit'
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/50'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
               }`}
             >
-              💳 Crédito
+              Crédito
             </button>
             <button
               type="button"
               onClick={() => setCardType('debit')}
-              className={`py-3 rounded-lg border text-sm font-medium transition-all ${
+              className={`py-3 rounded-xl border-2 text-sm font-medium transition-all ${
                 cardType === 'debit'
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/50'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
               }`}
             >
-              💳 Débito
+              Débito
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {paymentMethod === 'cash' && (
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Troco para quanto?</label>
-          <input
-            type="number"
-            value={cashAmount}
-            onChange={e => setCashAmount(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-input bg-card text-card-foreground focus:ring-2 focus:ring-ring outline-none"
-            placeholder={`Total: R$ ${orderTotal.toFixed(2)}`}
-            min={orderTotal}
-            step="0.01"
-          />
-          {cashAmount && parseFloat(cashAmount) > orderTotal && (
-            <p className="text-sm text-primary mt-1">
-              Troco: R$ {(parseFloat(cashAmount) - orderTotal).toFixed(2)}
-            </p>
-          )}
-        </div>
-      )}
+        {paymentMethod === 'cash' && (
+          <div className="relative">
+            <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="number"
+              value={cashAmount}
+              onChange={e => setCashAmount(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-background text-foreground focus:ring-2 focus:ring-ring outline-none text-sm"
+              placeholder={`Troco para quanto? (Total: R$ ${orderTotal.toFixed(2)})`}
+              min={orderTotal}
+              step="0.01"
+            />
+            {cashAmount && parseFloat(cashAmount) > orderTotal && (
+              <p className="text-xs text-primary mt-2 font-medium">
+                💰 Troco: R$ {(parseFloat(cashAmount) - orderTotal).toFixed(2)}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Coupon */}
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
-          <Ticket className="h-4 w-4 inline mr-1" /> Cupom de desconto
-        </label>
+      <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <Ticket className="h-3.5 w-3.5" /> Cupom de desconto
+        </p>
         {appliedCoupon ? (
-          <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-lg px-4 py-3">
-            <Ticket className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary flex-1">
-              {appliedCoupon.code} — {appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : `R$ ${appliedCoupon.discount_value.toFixed(2)}`} off
-            </span>
-            <button type="button" onClick={removeCoupon} className="p-1 text-destructive hover:bg-destructive/10 rounded">
+          <div className="flex items-center gap-3 bg-primary/10 border-2 border-primary/30 rounded-xl px-4 py-3">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <Ticket className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-primary">{appliedCoupon.code}</p>
+              <p className="text-xs text-muted-foreground">
+                {appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}% off` : `R$ ${appliedCoupon.discount_value.toFixed(2)} off`}
+              </p>
+            </div>
+            <button type="button" onClick={removeCoupon} className="p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -343,14 +377,14 @@ const CheckoutForm = () => {
               value={couponCode}
               onChange={e => setCouponCode(e.target.value)}
               placeholder="Digite o código"
-              className="flex-1 px-4 py-3 rounded-lg border border-input bg-card text-card-foreground focus:ring-2 focus:ring-ring outline-none uppercase text-sm"
+              className="flex-1 px-4 py-3 rounded-xl border border-input bg-background text-foreground focus:ring-2 focus:ring-ring outline-none uppercase text-sm"
               maxLength={20}
             />
             <button
               type="button"
               onClick={applyCoupon}
               disabled={validatingCoupon || !couponCode.trim()}
-              className="px-4 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+              className="px-5 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 disabled:opacity-50 transition-colors"
             >
               {validatingCoupon ? '...' : 'Aplicar'}
             </button>
@@ -359,35 +393,43 @@ const CheckoutForm = () => {
       </div>
 
       {/* Summary */}
-      <div className="bg-muted rounded-lg p-4 space-y-2">
+      <div className="bg-gradient-dark rounded-2xl p-5 space-y-3 text-zebra-white">
+        <p className="text-xs font-semibold uppercase tracking-wider opacity-60">Resumo do pedido</p>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Produtos</span>
-          <span className="text-foreground">R$ {cartTotal.toFixed(2)}</span>
+          <span className="opacity-70">Subtotal ({cart.length} itens)</span>
+          <span>R$ {cartTotal.toFixed(2)}</span>
         </div>
         {appliedCoupon && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">🎟️ Desconto ({appliedCoupon.code})</span>
-            <span className="text-green-600 font-medium">-R$ {discountAmount.toFixed(2)}</span>
+            <span className="opacity-70">🎟️ Desconto</span>
+            <span className="text-green-400 font-medium">-R$ {discountAmount.toFixed(2)}</span>
           </div>
         )}
         {deliveryType === 'pickup' && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">🏪 Retirada no local</span>
-            <span className="text-green-600 font-medium">Grátis</span>
+            <span className="opacity-70">🏪 Retirada</span>
+            <span className="text-green-400 font-medium">Grátis</span>
           </div>
         )}
-        <div className="border-t border-border pt-2 flex justify-between text-lg font-bold">
-          <span className="text-foreground">Total</span>
-          <span className="text-primary">R$ {orderTotal.toFixed(2)}</span>
+        <div className="border-t border-zebra-white/20 pt-3 flex justify-between items-center">
+          <span className="font-medium">Total</span>
+          <span className="font-display text-3xl text-primary">R$ {orderTotal.toFixed(2)}</span>
         </div>
-        <p className="text-xs text-muted-foreground">{cart.length} item(ns) no pedido</p>
       </div>
 
       <button
         type="submit"
-        className="w-full bg-primary text-primary-foreground py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-colors"
+        disabled={submitting}
+        className="w-full bg-gradient-gold text-primary-foreground py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-gold disabled:opacity-50 active:scale-[0.98]"
       >
-        Enviar Pedido 🎉
+        {submitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+            Enviando...
+          </span>
+        ) : (
+          'Enviar Pedido 🎉'
+        )}
       </button>
     </form>
   );

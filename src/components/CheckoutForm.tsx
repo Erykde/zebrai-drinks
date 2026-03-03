@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useStore } from '@/contexts/StoreContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -301,6 +302,32 @@ const CheckoutForm = () => {
             </button>
           ))}
         </div>
+
+        {paymentMethod === 'pix' && (
+          <div className="flex flex-col items-center gap-4 bg-background rounded-xl border border-border p-5">
+            <div className="bg-white p-3 rounded-xl shadow-sm">
+              <QRCodeSVG value="00020126580014br.gov.bcb.pix013641984296633520400005303986540505.005802BR5918Eryk de Paula6014Curitiba62070503***6304" size={180} />
+            </div>
+            <div className="text-center space-y-1">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Chave PIX</p>
+              <div className="flex items-center gap-2 bg-muted rounded-lg px-4 py-2.5">
+                <span className="text-sm font-mono font-semibold text-foreground select-all">41 98429-6633</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText('41984296633');
+                    toast.success('Chave PIX copiada!');
+                  }}
+                  className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                  title="Copiar chave"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">Eryk de Paula</p>
+            </div>
+          </div>
+        )}
 
         {paymentMethod === 'card' && (
           <div className="grid grid-cols-2 gap-3">

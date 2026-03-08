@@ -61,6 +61,19 @@ const Admin = () => {
     },
   });
 
+  // Customer orders for delivery fee calculation
+  const { data: customerOrders = [] } = useQuery({
+    queryKey: ['customer-orders-dashboard'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customer_orders')
+        .select('id, delivery_fee, total, created_at, status')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   // Delivery zones
   const { data: deliveryZones = [] } = useQuery({
     queryKey: ['delivery-zones-admin'],
@@ -245,6 +258,7 @@ const Admin = () => {
             orders={orders}
             products={products}
             deliveryZones={deliveryZones}
+            customerOrders={customerOrders}
           />
         ) : activeTab === 'delivery' ? (
           <DeliveryTab zones={deliveryZones} queryClient={queryClient} />

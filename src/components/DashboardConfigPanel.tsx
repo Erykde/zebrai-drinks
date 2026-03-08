@@ -20,13 +20,14 @@ export interface DashboardConfig {
 
 const DEFAULT_SECTIONS: DashboardSection[] = [
   { id: 'kpis', label: 'KPIs Principais', visible: true, order: 0 },
-  { id: 'profit', label: 'Lucro Detalhado', visible: true, order: 1 },
-  { id: 'growth', label: 'Crescimento', visible: true, order: 2 },
-  { id: 'tracked-stock', label: 'Estoque Monitorado', visible: true, order: 3 },
-  { id: 'low-stock', label: 'Alerta de Estoque Baixo', visible: true, order: 4 },
-  { id: 'top-products', label: 'Top Produtos', visible: true, order: 5 },
-  { id: 'delivery', label: 'Regiões de Entrega', visible: true, order: 6 },
-  { id: 'recent-sales', label: 'Últimas Vendas', visible: true, order: 7 },
+  { id: 'motoboy', label: 'Taxa do Motoboy', visible: true, order: 1 },
+  { id: 'profit', label: 'Lucro Detalhado', visible: true, order: 2 },
+  { id: 'growth', label: 'Crescimento', visible: true, order: 3 },
+  { id: 'tracked-stock', label: 'Estoque Monitorado', visible: true, order: 4 },
+  { id: 'low-stock', label: 'Alerta de Estoque Baixo', visible: true, order: 5 },
+  { id: 'top-products', label: 'Top Produtos', visible: true, order: 6 },
+  { id: 'delivery', label: 'Regiões de Entrega', visible: true, order: 7 },
+  { id: 'recent-sales', label: 'Últimas Vendas', visible: true, order: 8 },
 ];
 
 const DEFAULT_LABELS: Record<string, string> = {
@@ -34,6 +35,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'kpi-sales-month': 'Vendas no Mês',
   'kpi-profit': 'Lucro Real (Mês)',
   'kpi-ticket': 'Ticket Médio',
+  'motoboy-title': 'Taxa do Motoboy',
   'profit-today': 'Lucro Hoje',
   'profit-month': 'Lucro no Mês',
   'profit-margin': 'Margem de Lucro',

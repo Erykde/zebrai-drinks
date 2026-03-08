@@ -484,10 +484,28 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
           </Card>
         );
 
-      default:
-        return null;
-    }
-  };
+      case 'custom':
+        return null; // custom sections rendered separately
+
+      default: {
+        // Render custom sections
+        const customSections: { id: string; title: string; content: string }[] = (() => {
+          try {
+            const saved = localStorage.getItem('zebrai-custom-sections');
+            return saved ? JSON.parse(saved) : [];
+          } catch { return []; }
+        })();
+        const custom = customSections.find(s => s.id === id);
+        if (!custom) return null;
+        return (
+          <Card key={id}>
+            <CardHeader><CardTitle className="text-lg">{custom.title}</CardTitle></CardHeader>
+            <CardContent>
+              <p className="text-sm text-card-foreground whitespace-pre-wrap">{custom.content}</p>
+            </CardContent>
+          </Card>
+        );
+      }
 
   return (
     <div className="space-y-6">

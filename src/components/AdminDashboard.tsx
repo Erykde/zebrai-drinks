@@ -531,7 +531,7 @@ const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, edit
           </div>
         ) : (
           <>
-            <p className={`font-display text-2xl ${color || 'text-card-foreground'}`}>{fmt(displayValue)}</p>
+            <p className={`font-display text-2xl ${color || 'text-card-foreground'}`}>{formatFn ? formatFn(displayValue) : fmt(displayValue)}</p>
             {hasOverride && <span className="text-[10px] text-muted-foreground">(editado manualmente)</span>}
           </>
         )}

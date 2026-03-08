@@ -35,6 +35,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'kpi-sales-month': 'Vendas no Mês',
   'kpi-profit': 'Lucro Real (Mês)',
   'kpi-ticket': 'Ticket Médio',
+  'motoboy-title': 'Taxa do Motoboy',
   'profit-today': 'Lucro Hoje',
   'profit-month': 'Lucro no Mês',
   'profit-margin': 'Margem de Lucro',

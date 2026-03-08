@@ -115,9 +115,9 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
       const cost = arr.reduce((s, o) => s + o.cost_price * o.quantity, 0);
       const profit = revenue - cost;
       const qty = arr.reduce((s, o) => s + o.quantity, 0);
-      const uniqueOrders = new Set(arr.map(o => o.created_at.slice(0, 16))).size || 1;
-      const ticket = revenue / (uniqueOrders || 1);
-      return { revenue, cost, profit, qty, ticket, count: arr.length, uniqueOrders };
+      const orderCount = arr.length;
+      const ticket = orderCount > 0 ? revenue / orderCount : 0;
+      return { revenue, cost, profit, qty, ticket, count: orderCount, uniqueOrders: orderCount };
     };
 
     return {

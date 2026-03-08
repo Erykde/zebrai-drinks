@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   DollarSign, TrendingUp, TrendingDown, BarChart3, Package,
   AlertTriangle, ShoppingCart, Users, ArrowUpRight, ArrowDownRight,
-  Truck, Clock, Settings, Pencil, Check, X, Bike,
+  Truck, Clock, Settings, Pencil, Check, X, Bike, Trash2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

@@ -71,6 +71,29 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
   const [showConfig, setShowConfig] = useState(false);
   const [editingOrder, setEditingOrder] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, any>>({});
+  const [editingKpi, setEditingKpi] = useState<string | null>(null);
+  const [kpiOverrides, setKpiOverrides] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem('zebrai-kpi-overrides');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  const saveKpiOverride = (key: string, value: number) => {
+    const updated = { ...kpiOverrides, [key]: value };
+    setKpiOverrides(updated);
+    localStorage.setItem('zebrai-kpi-overrides', JSON.stringify(updated));
+    setEditingKpi(null);
+    toast.success('KPI atualizado!');
+  };
+
+  const clearKpiOverride = (key: string) => {
+    const updated = { ...kpiOverrides };
+    delete updated[key];
+    setKpiOverrides(updated);
+    localStorage.setItem('zebrai-kpi-overrides', JSON.stringify(updated));
+    toast.success('Valor original restaurado!');
+  };
 
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);

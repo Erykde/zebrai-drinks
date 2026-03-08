@@ -450,16 +450,24 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
                                 <td className="p-3 text-right text-muted-foreground text-xs">
                                   {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                 </td>
-                                <td className="p-3 text-center">
+                                <td className="p-3">
                                   {editingOrder === o.id ? (
-                                    <div className="flex items-center justify-center gap-1">
-                                      <button onClick={() => saveEditOrder(o.id)} className="p-1 text-green-500 hover:bg-green-500/10 rounded"><Check className="h-4 w-4" /></button>
-                                      <button onClick={() => setEditingOrder(null)} className="p-1 text-muted-foreground hover:bg-muted rounded"><X className="h-4 w-4" /></button>
+                                    <div className="flex items-center justify-center gap-2">
+                                      <Button size="sm" variant="default" className="h-7 px-2 text-xs" onClick={() => saveEditOrder(o.id)}>
+                                        <Check className="h-3.5 w-3.5 mr-1" /> Salvar
+                                      </Button>
+                                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setEditingOrder(null)}>
+                                        Cancelar
+                                      </Button>
                                     </div>
                                   ) : (
-                                    <div className="flex items-center justify-center gap-1">
-                                      <button onClick={() => startEditOrder(o)} className="p-1 text-primary hover:bg-primary/10 rounded"><Pencil className="h-3.5 w-3.5" /></button>
-                                      <button onClick={() => deleteOrder(o.id)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3.5 w-3.5" /></button>
+                                    <div className="flex items-center justify-center gap-2">
+                                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => startEditOrder(o)}>
+                                        <Pencil className="h-3 w-3 mr-1" /> Editar
+                                      </Button>
+                                      <Button size="sm" variant="destructive" className="h-7 px-2 text-xs" onClick={() => deleteOrder(o.id)}>
+                                        <Trash2 className="h-3 w-3 mr-1" /> Excluir
+                                      </Button>
                                     </div>
                                   )}
                                 </td>

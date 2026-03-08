@@ -506,6 +506,8 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
           </Card>
         );
       }
+    }
+  };
 
   return (
     <div className="space-y-6">

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   DollarSign, TrendingUp, TrendingDown, BarChart3, Package,
   AlertTriangle, ShoppingCart, Users, ArrowUpRight, ArrowDownRight,
-  Truck, Clock, Settings, Pencil, Check, X,
+  Truck, Clock, Settings, Pencil, Check, X, Bike,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,10 +26,19 @@ interface OrderRow {
   created_at: string;
 }
 
+interface CustomerOrderRow {
+  id: string;
+  delivery_fee: number;
+  total: number;
+  created_at: string;
+  status: string;
+}
+
 interface AdminDashboardProps {
   orders: OrderRow[];
   products: DbProduct[];
   deliveryZones: any[];
+  customerOrders: CustomerOrderRow[];
 }
 
 const LOW_STOCK_THRESHOLD = 10;
@@ -47,7 +56,16 @@ const TRACKED_ITEMS = [
 
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-const AdminDashboard = ({ orders, products, deliveryZones }: AdminDashboardProps) => {
+const formatDateLabel = (dateStr: string): string => {
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (dateStr === today) return '📅 Hoje';
+  if (dateStr === yesterday) return '📅 Ontem';
+  const [y, m, d] = dateStr.split('-');
+  return `📅 ${d}/${m}/${y}`;
+};
+
+const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: AdminDashboardProps) => {
   const queryClient = useQueryClient();
   const [config, setConfig] = useState<DashboardConfig>(loadDashboardConfig);
   const [showConfig, setShowConfig] = useState(false);
@@ -87,6 +105,33 @@ const AdminDashboard = ({ orders, products, deliveryZones }: AdminDashboardProps
       all: calcStats(orders),
     };
   }, [orders, todayStr, monthStr]);
+
+  // Motoboy fee stats
+  const motoboyStats = useMemo(() => {
+    const todayFees = customerOrders
+      .filter(o => o.created_at.slice(0, 10) === todayStr && o.status !== 'cancelled')
+      .reduce((s, o) => s + Number(o.delivery_fee), 0);
+    const monthFees = customerOrders
+      .filter(o => o.created_at.slice(0, 7) === monthStr && o.status !== 'cancelled')
+      .reduce((s, o) => s + Number(o.delivery_fee), 0);
+    const totalDeliveries = customerOrders
+      .filter(o => o.status !== 'cancelled' && Number(o.delivery_fee) > 0).length;
+    const totalFees = customerOrders
+      .filter(o => o.status !== 'cancelled')
+      .reduce((s, o) => s + Number(o.delivery_fee), 0);
+    return { todayFees, monthFees, totalDeliveries, totalFees };
+  }, [customerOrders, todayStr, monthStr]);
+
+  // Group orders by date
+  const ordersByDate = useMemo(() => {
+    const map = new Map<string, OrderRow[]>();
+    orders.forEach(o => {
+      const dateKey = o.created_at.slice(0, 10);
+      if (!map.has(dateKey)) map.set(dateKey, []);
+      map.get(dateKey)!.push(o);
+    });
+    return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  }, [orders]);
 
   const trackedStock = useMemo(() => {
     return TRACKED_ITEMS.map(item => {
@@ -128,7 +173,6 @@ const AdminDashboard = ({ orders, products, deliveryZones }: AdminDashboardProps
     .sort((a, b) => a.order - b.order)
     .map(s => s.id);
 
-  // Edit order inline
   const startEditOrder = (o: OrderRow) => {
     setEditingOrder(o.id);
     setEditValues({ quantity: o.quantity, total: o.total, cost_price: o.cost_price });
@@ -154,7 +198,6 @@ const AdminDashboard = ({ orders, products, deliveryZones }: AdminDashboardProps
     queryClient.invalidateQueries({ queryKey: ['orders'] });
   };
 
-  // Render sections in order
   const renderSection = (id: string) => {
     if (!isVisible(id)) return null;
 
@@ -167,6 +210,33 @@ const AdminDashboard = ({ orders, products, deliveryZones }: AdminDashboardProps
             <KpiCard icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'kpi-profit')} value={fmt(stats.thisMonth.profit)} sub={`Custo: ${fmt(stats.thisMonth.cost)}`} color="text-green-500" />
             <KpiCard icon={<ShoppingCart className="h-5 w-5" />} label={getLabel(config, 'kpi-ticket')} value={fmt(stats.thisMonth.ticket)} sub={`${stats.thisMonth.uniqueOrders} pedidos`} />
           </div>
+        );
+
+      case 'motoboy':
+        return (
+          <Card key={id}>
+            <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Bike className="h-5 w-5 text-primary" /> {getLabel(config, 'motoboy-title')}</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Taxa Hoje</p>
+                  <p className="text-2xl font-display text-primary">{fmt(motoboyStats.todayFees)}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Taxa no Mês</p>
+                  <p className="text-2xl font-display text-primary">{fmt(motoboyStats.monthFees)}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Total Entregas</p>
+                  <p className="text-2xl font-display text-card-foreground">{motoboyStats.totalDeliveries}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Total Arrecadado</p>
+                  <p className="text-2xl font-display text-green-500">{fmt(motoboyStats.totalFees)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         );
 
       case 'profit':
@@ -310,54 +380,73 @@ const AdminDashboard = ({ orders, products, deliveryZones }: AdminDashboardProps
                 <p className="text-muted-foreground text-center py-8 px-6">Nenhuma venda registrada ainda.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-secondary text-secondary-foreground">
-                      <tr>
-                        <th className="text-left p-3">Produto</th>
-                        <th className="text-center p-3">Qtd</th>
-                        <th className="text-right p-3">Total</th>
-                        <th className="text-right p-3">Lucro</th>
-                        <th className="text-right p-3">Data</th>
-                        <th className="text-center p-3">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.slice(0, 50).map(o => (
-                        <tr key={o.id} className="border-t border-border">
-                          <td className="p-3 text-card-foreground">{o.product_name}{o.mixer ? ` + ${o.mixer}` : ''}</td>
-                          <td className="p-3 text-center">
-                            {editingOrder === o.id ? (
-                              <Input type="number" value={editValues.quantity} onChange={e => setEditValues(v => ({ ...v, quantity: +e.target.value }))} className="h-7 w-16 text-center text-xs" />
-                            ) : <span className="text-muted-foreground">{o.quantity}</span>}
-                          </td>
-                          <td className="p-3 text-right">
-                            {editingOrder === o.id ? (
-                              <Input type="number" step="0.01" value={editValues.total} onChange={e => setEditValues(v => ({ ...v, total: +e.target.value }))} className="h-7 w-20 text-xs ml-auto" />
-                            ) : <span className="text-primary font-medium">{fmt(o.total)}</span>}
-                          </td>
-                          <td className="p-3 text-right text-green-500 font-medium">
-                            {editingOrder === o.id
-                              ? fmt(editValues.total - editValues.cost_price * editValues.quantity)
-                              : fmt(o.total - o.cost_price * o.quantity)}
-                          </td>
-                          <td className="p-3 text-right text-muted-foreground text-xs">{new Date(o.created_at).toLocaleDateString('pt-BR')}</td>
-                          <td className="p-3 text-center">
-                            {editingOrder === o.id ? (
-                              <div className="flex items-center justify-center gap-1">
-                                <button onClick={() => saveEditOrder(o.id)} className="p-1 text-green-500 hover:bg-green-500/10 rounded"><Check className="h-4 w-4" /></button>
-                                <button onClick={() => setEditingOrder(null)} className="p-1 text-muted-foreground hover:bg-muted rounded"><X className="h-4 w-4" /></button>
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-center gap-1">
-                                <button onClick={() => startEditOrder(o)} className="p-1 text-primary hover:bg-primary/10 rounded"><Pencil className="h-3.5 w-3.5" /></button>
-                                <button onClick={() => deleteOrder(o.id)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3.5 w-3.5" /></button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {ordersByDate.map(([dateKey, dateOrders]) => {
+                    const dayRevenue = dateOrders.reduce((s, o) => s + o.total, 0);
+                    const dayCost = dateOrders.reduce((s, o) => s + o.cost_price * o.quantity, 0);
+                    const dayProfit = dayRevenue - dayCost;
+                    return (
+                      <div key={dateKey}>
+                        <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border-b border-border">
+                          <span className="text-sm font-semibold text-card-foreground">{formatDateLabel(dateKey)}</span>
+                          <div className="flex items-center gap-4 text-xs">
+                            <span className="text-muted-foreground">{dateOrders.length} vendas</span>
+                            <span className="text-primary font-medium">{fmt(dayRevenue)}</span>
+                            <span className="text-green-500 font-medium">Lucro: {fmt(dayProfit)}</span>
+                          </div>
+                        </div>
+                        <table className="w-full text-sm">
+                          <thead className="bg-secondary text-secondary-foreground">
+                            <tr>
+                              <th className="text-left p-3">Produto</th>
+                              <th className="text-center p-3">Qtd</th>
+                              <th className="text-right p-3">Total</th>
+                              <th className="text-right p-3">Lucro</th>
+                              <th className="text-right p-3">Hora</th>
+                              <th className="text-center p-3">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {dateOrders.map(o => (
+                              <tr key={o.id} className="border-t border-border">
+                                <td className="p-3 text-card-foreground">{o.product_name}{o.mixer ? ` + ${o.mixer}` : ''}</td>
+                                <td className="p-3 text-center">
+                                  {editingOrder === o.id ? (
+                                    <Input type="number" value={editValues.quantity} onChange={e => setEditValues(v => ({ ...v, quantity: +e.target.value }))} className="h-7 w-16 text-center text-xs" />
+                                  ) : <span className="text-muted-foreground">{o.quantity}</span>}
+                                </td>
+                                <td className="p-3 text-right">
+                                  {editingOrder === o.id ? (
+                                    <Input type="number" step="0.01" value={editValues.total} onChange={e => setEditValues(v => ({ ...v, total: +e.target.value }))} className="h-7 w-20 text-xs ml-auto" />
+                                  ) : <span className="text-primary font-medium">{fmt(o.total)}</span>}
+                                </td>
+                                <td className="p-3 text-right text-green-500 font-medium">
+                                  {editingOrder === o.id
+                                    ? fmt(editValues.total - editValues.cost_price * editValues.quantity)
+                                    : fmt(o.total - o.cost_price * o.quantity)}
+                                </td>
+                                <td className="p-3 text-right text-muted-foreground text-xs">
+                                  {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </td>
+                                <td className="p-3 text-center">
+                                  {editingOrder === o.id ? (
+                                    <div className="flex items-center justify-center gap-1">
+                                      <button onClick={() => saveEditOrder(o.id)} className="p-1 text-green-500 hover:bg-green-500/10 rounded"><Check className="h-4 w-4" /></button>
+                                      <button onClick={() => setEditingOrder(null)} className="p-1 text-muted-foreground hover:bg-muted rounded"><X className="h-4 w-4" /></button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-center gap-1">
+                                      <button onClick={() => startEditOrder(o)} className="p-1 text-primary hover:bg-primary/10 rounded"><Pencil className="h-3.5 w-3.5" /></button>
+                                      <button onClick={() => deleteOrder(o.id)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3.5 w-3.5" /></button>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -371,7 +460,6 @@ const AdminDashboard = ({ orders, products, deliveryZones }: AdminDashboardProps
 
   return (
     <div className="space-y-6">
-      {/* Config toggle */}
       <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={() => setShowConfig(!showConfig)}>
           <Settings className="h-4 w-4 mr-1" /> Personalizar

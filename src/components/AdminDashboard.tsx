@@ -228,10 +228,10 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
       case 'kpis':
         return (
           <div key={id} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-today')} value={fmt(stats.today.revenue)} sub={`Ontem: ${fmt(stats.yesterday.revenue)}`} change={pctChange(stats.today.revenue, stats.yesterday.revenue)} />
-            <KpiCard icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-month')} value={fmt(stats.thisMonth.revenue)} sub={`Mês passado: ${fmt(stats.lastMonth.revenue)}`} change={pctChange(stats.thisMonth.revenue, stats.lastMonth.revenue)} />
-            <KpiCard icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'kpi-profit')} value={fmt(stats.thisMonth.profit)} sub={`Custo: ${fmt(stats.thisMonth.cost)}`} color="text-green-500" />
-            <KpiCard icon={<ShoppingCart className="h-5 w-5" />} label={getLabel(config, 'kpi-ticket')} value={fmt(stats.thisMonth.ticket)} sub={`${stats.thisMonth.uniqueOrders} pedidos`} />
+            <EditableKpiCard kpiKey="kpi-sales-today" icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-today')} calculatedValue={stats.today.revenue} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Ontem: ${fmt(stats.yesterday.revenue)}`} change={pctChange(stats.today.revenue, stats.yesterday.revenue)} />
+            <EditableKpiCard kpiKey="kpi-sales-month" icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-month')} calculatedValue={stats.thisMonth.revenue} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Mês passado: ${fmt(stats.lastMonth.revenue)}`} change={pctChange(stats.thisMonth.revenue, stats.lastMonth.revenue)} />
+            <EditableKpiCard kpiKey="kpi-profit" icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'kpi-profit')} calculatedValue={stats.thisMonth.profit} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Custo: ${fmt(stats.thisMonth.cost)}`} color="text-green-500" />
+            <EditableKpiCard kpiKey="kpi-ticket" icon={<ShoppingCart className="h-5 w-5" />} label={getLabel(config, 'kpi-ticket')} calculatedValue={stats.thisMonth.ticket} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`${stats.thisMonth.uniqueOrders} pedidos`} />
           </div>
         );
 

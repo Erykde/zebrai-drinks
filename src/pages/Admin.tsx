@@ -258,6 +258,7 @@ const Admin = () => {
             orders={orders}
             products={products}
             deliveryZones={deliveryZones}
+            customerOrders={customerOrders}
           />
         ) : activeTab === 'delivery' ? (
           <DeliveryTab zones={deliveryZones} queryClient={queryClient} />

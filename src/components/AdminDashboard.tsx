@@ -265,29 +265,9 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
       case 'profit':
         return (
           <div key={id} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{getLabel(config, 'profit-today')}</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display text-green-500">{fmt(stats.today.profit)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Faturamento: {fmt(stats.today.revenue)} · Custo: {fmt(stats.today.cost)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{getLabel(config, 'profit-month')}</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display text-green-500">{fmt(stats.thisMonth.profit)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Faturamento: {fmt(stats.thisMonth.revenue)} · Custo: {fmt(stats.thisMonth.cost)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{getLabel(config, 'profit-margin')}</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display text-primary">
-                  {stats.thisMonth.revenue > 0 ? `${((stats.thisMonth.profit / stats.thisMonth.revenue) * 100).toFixed(1)}%` : '—'}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">Lucro total: {fmt(stats.all.profit)}</p>
-              </CardContent>
-            </Card>
+            <EditableKpiCard kpiKey="profit-today-val" icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'profit-today')} calculatedValue={stats.today.profit} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Fat: ${fmt(stats.today.revenue)} · Custo: ${fmt(stats.today.cost)}`} color="text-green-500" />
+            <EditableKpiCard kpiKey="profit-month-val" icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'profit-month')} calculatedValue={stats.thisMonth.profit} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Fat: ${fmt(stats.thisMonth.revenue)} · Custo: ${fmt(stats.thisMonth.cost)}`} color="text-green-500" />
+            <EditableKpiCard kpiKey="profit-margin-val" icon={<BarChart3 className="h-5 w-5" />} label={getLabel(config, 'profit-margin')} calculatedValue={stats.thisMonth.revenue > 0 ? Number(((stats.thisMonth.profit / stats.thisMonth.revenue) * 100).toFixed(1)) : 0} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Lucro total: ${fmt(stats.all.profit)}`} formatFn={(v) => `${v.toFixed(1)}%`} />
           </div>
         );
 

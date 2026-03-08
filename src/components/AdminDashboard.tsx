@@ -526,6 +526,59 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
 
 // === Sub-components ===
 
+const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, editingKpi, onStartEdit, onSave, onClear, sub, change, color }: {
+  kpiKey: string; icon: React.ReactNode; label: string; calculatedValue: number;
+  overrides: Record<string, number>; editingKpi: string | null;
+  onStartEdit: (key: string | null) => void; onSave: (key: string, value: number) => void; onClear: (key: string) => void;
+  sub?: string; change?: number; color?: string;
+}) => {
+  const [tempVal, setTempVal] = useState('');
+  const hasOverride = kpiKey in overrides;
+  const displayValue = hasOverride ? overrides[kpiKey] : calculatedValue;
+  const isEditing = editingKpi === kpiKey;
+
+  return (
+    <Card className="relative group">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 text-muted-foreground mb-1">{icon}<span className="text-xs font-medium">{label}</span></div>
+        {isEditing ? (
+          <div className="flex items-center gap-1 mt-1">
+            <Input type="number" step="0.01" autoFocus value={tempVal} onChange={e => setTempVal(e.target.value)} className="h-8 w-28 text-sm" placeholder="Novo valor" />
+            <button onClick={() => { onSave(kpiKey, Number(tempVal)); }} className="p-1 text-green-500 hover:bg-green-500/10 rounded"><Check className="h-4 w-4" /></button>
+            <button onClick={() => onStartEdit(null)} className="p-1 text-muted-foreground hover:bg-muted rounded"><X className="h-4 w-4" /></button>
+          </div>
+        ) : (
+          <>
+            <p className={`font-display text-2xl ${color || 'text-card-foreground'}`}>{fmt(displayValue)}</p>
+            {hasOverride && <span className="text-[10px] text-muted-foreground">(editado manualmente)</span>}
+          </>
+        )}
+        <div className="flex items-center gap-2 mt-1">
+          {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+          {change !== undefined && change !== 0 && (
+            <span className={`text-xs font-medium flex items-center gap-0.5 ${change > 0 ? 'text-green-500' : 'text-destructive'}`}>
+              {change > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+              {Math.abs(change).toFixed(0)}%
+            </span>
+          )}
+        </div>
+        {!isEditing && (
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+            <button onClick={() => { setTempVal(String(displayValue)); onStartEdit(kpiKey); }} className="p-1 text-primary hover:bg-primary/10 rounded" title="Editar valor">
+              <Pencil className="h-3 w-3" />
+            </button>
+            {hasOverride && (
+              <button onClick={() => onClear(kpiKey)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Restaurar valor original">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 const KpiCard = ({ icon, label, value, sub, change, color }: {
   icon: React.ReactNode; label: string; value: string; sub?: string; change?: number; color?: string;
 }) => (

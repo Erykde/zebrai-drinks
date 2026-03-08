@@ -241,22 +241,10 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
             <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Bike className="h-5 w-5 text-primary" /> {getLabel(config, 'motoboy-title')}</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Taxa Hoje</p>
-                  <p className="text-2xl font-display text-primary">{fmt(motoboyStats.todayFees)}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Taxa no Mês</p>
-                  <p className="text-2xl font-display text-primary">{fmt(motoboyStats.monthFees)}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Total Entregas</p>
-                  <p className="text-2xl font-display text-card-foreground">{motoboyStats.totalDeliveries}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Total Arrecadado</p>
-                  <p className="text-2xl font-display text-green-500">{fmt(motoboyStats.totalFees)}</p>
-                </div>
+                <EditableKpiCard kpiKey="motoboy-today" icon={<Bike className="h-5 w-5" />} label="Taxa Hoje" calculatedValue={motoboyStats.todayFees} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} color="text-primary" />
+                <EditableKpiCard kpiKey="motoboy-month" icon={<Bike className="h-5 w-5" />} label="Taxa no Mês" calculatedValue={motoboyStats.monthFees} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} color="text-primary" />
+                <EditableKpiCard kpiKey="motoboy-deliveries" icon={<Truck className="h-5 w-5" />} label="Total Entregas" calculatedValue={motoboyStats.totalDeliveries} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} formatFn={(v) => String(Math.round(v))} />
+                <EditableKpiCard kpiKey="motoboy-total" icon={<DollarSign className="h-5 w-5" />} label="Total Arrecadado" calculatedValue={motoboyStats.totalFees} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} color="text-green-500" />
               </div>
             </CardContent>
           </Card>

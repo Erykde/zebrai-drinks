@@ -508,11 +508,11 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
 
 // === Sub-components ===
 
-const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, editingKpi, onStartEdit, onSave, onClear, sub, change, color }: {
+const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, editingKpi, onStartEdit, onSave, onClear, sub, change, color, formatFn }: {
   kpiKey: string; icon: React.ReactNode; label: string; calculatedValue: number;
   overrides: Record<string, number>; editingKpi: string | null;
   onStartEdit: (key: string | null) => void; onSave: (key: string, value: number) => void; onClear: (key: string) => void;
-  sub?: string; change?: number; color?: string;
+  sub?: string; change?: number; color?: string; formatFn?: (v: number) => string;
 }) => {
   const [tempVal, setTempVal] = useState('');
   const hasOverride = kpiKey in overrides;

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   DollarSign, TrendingUp, TrendingDown, BarChart3, Package,
   AlertTriangle, ShoppingCart, Users, ArrowUpRight, ArrowDownRight,
-  Truck, Clock, Settings, Pencil, Check, X, Bike,
+  Truck, Clock, Settings, Pencil, Check, X, Bike, Trash2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,29 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
   const [showConfig, setShowConfig] = useState(false);
   const [editingOrder, setEditingOrder] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, any>>({});
+  const [editingKpi, setEditingKpi] = useState<string | null>(null);
+  const [kpiOverrides, setKpiOverrides] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem('zebrai-kpi-overrides');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  const saveKpiOverride = (key: string, value: number) => {
+    const updated = { ...kpiOverrides, [key]: value };
+    setKpiOverrides(updated);
+    localStorage.setItem('zebrai-kpi-overrides', JSON.stringify(updated));
+    setEditingKpi(null);
+    toast.success('KPI atualizado!');
+  };
+
+  const clearKpiOverride = (key: string) => {
+    const updated = { ...kpiOverrides };
+    delete updated[key];
+    setKpiOverrides(updated);
+    localStorage.setItem('zebrai-kpi-overrides', JSON.stringify(updated));
+    toast.success('Valor original restaurado!');
+  };
 
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
@@ -205,10 +228,10 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
       case 'kpis':
         return (
           <div key={id} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-today')} value={fmt(stats.today.revenue)} sub={`Ontem: ${fmt(stats.yesterday.revenue)}`} change={pctChange(stats.today.revenue, stats.yesterday.revenue)} />
-            <KpiCard icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-month')} value={fmt(stats.thisMonth.revenue)} sub={`Mês passado: ${fmt(stats.lastMonth.revenue)}`} change={pctChange(stats.thisMonth.revenue, stats.lastMonth.revenue)} />
-            <KpiCard icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'kpi-profit')} value={fmt(stats.thisMonth.profit)} sub={`Custo: ${fmt(stats.thisMonth.cost)}`} color="text-green-500" />
-            <KpiCard icon={<ShoppingCart className="h-5 w-5" />} label={getLabel(config, 'kpi-ticket')} value={fmt(stats.thisMonth.ticket)} sub={`${stats.thisMonth.uniqueOrders} pedidos`} />
+            <EditableKpiCard kpiKey="kpi-sales-today" icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-today')} calculatedValue={stats.today.revenue} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Ontem: ${fmt(stats.yesterday.revenue)}`} change={pctChange(stats.today.revenue, stats.yesterday.revenue)} />
+            <EditableKpiCard kpiKey="kpi-sales-month" icon={<DollarSign className="h-5 w-5" />} label={getLabel(config, 'kpi-sales-month')} calculatedValue={stats.thisMonth.revenue} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Mês passado: ${fmt(stats.lastMonth.revenue)}`} change={pctChange(stats.thisMonth.revenue, stats.lastMonth.revenue)} />
+            <EditableKpiCard kpiKey="kpi-profit" icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'kpi-profit')} calculatedValue={stats.thisMonth.profit} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Custo: ${fmt(stats.thisMonth.cost)}`} color="text-green-500" />
+            <EditableKpiCard kpiKey="kpi-ticket" icon={<ShoppingCart className="h-5 w-5" />} label={getLabel(config, 'kpi-ticket')} calculatedValue={stats.thisMonth.ticket} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`${stats.thisMonth.uniqueOrders} pedidos`} />
           </div>
         );
 
@@ -427,16 +450,24 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
                                 <td className="p-3 text-right text-muted-foreground text-xs">
                                   {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                 </td>
-                                <td className="p-3 text-center">
+                                <td className="p-3">
                                   {editingOrder === o.id ? (
-                                    <div className="flex items-center justify-center gap-1">
-                                      <button onClick={() => saveEditOrder(o.id)} className="p-1 text-green-500 hover:bg-green-500/10 rounded"><Check className="h-4 w-4" /></button>
-                                      <button onClick={() => setEditingOrder(null)} className="p-1 text-muted-foreground hover:bg-muted rounded"><X className="h-4 w-4" /></button>
+                                    <div className="flex items-center justify-center gap-2">
+                                      <Button size="sm" variant="default" className="h-7 px-2 text-xs" onClick={() => saveEditOrder(o.id)}>
+                                        <Check className="h-3.5 w-3.5 mr-1" /> Salvar
+                                      </Button>
+                                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setEditingOrder(null)}>
+                                        Cancelar
+                                      </Button>
                                     </div>
                                   ) : (
-                                    <div className="flex items-center justify-center gap-1">
-                                      <button onClick={() => startEditOrder(o)} className="p-1 text-primary hover:bg-primary/10 rounded"><Pencil className="h-3.5 w-3.5" /></button>
-                                      <button onClick={() => deleteOrder(o.id)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3.5 w-3.5" /></button>
+                                    <div className="flex items-center justify-center gap-2">
+                                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => startEditOrder(o)}>
+                                        <Pencil className="h-3 w-3 mr-1" /> Editar
+                                      </Button>
+                                      <Button size="sm" variant="destructive" className="h-7 px-2 text-xs" onClick={() => deleteOrder(o.id)}>
+                                        <Trash2 className="h-3 w-3 mr-1" /> Excluir
+                                      </Button>
                                     </div>
                                   )}
                                 </td>
@@ -453,8 +484,28 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
           </Card>
         );
 
-      default:
-        return null;
+      case 'custom':
+        return null; // custom sections rendered separately
+
+      default: {
+        // Render custom sections
+        const customSections: { id: string; title: string; content: string }[] = (() => {
+          try {
+            const saved = localStorage.getItem('zebrai-custom-sections');
+            return saved ? JSON.parse(saved) : [];
+          } catch { return []; }
+        })();
+        const custom = customSections.find(s => s.id === id);
+        if (!custom) return null;
+        return (
+          <Card key={id}>
+            <CardHeader><CardTitle className="text-lg">{custom.title}</CardTitle></CardHeader>
+            <CardContent>
+              <p className="text-sm text-card-foreground whitespace-pre-wrap">{custom.content}</p>
+            </CardContent>
+          </Card>
+        );
+      }
     }
   };
 
@@ -476,6 +527,59 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
 };
 
 // === Sub-components ===
+
+const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, editingKpi, onStartEdit, onSave, onClear, sub, change, color }: {
+  kpiKey: string; icon: React.ReactNode; label: string; calculatedValue: number;
+  overrides: Record<string, number>; editingKpi: string | null;
+  onStartEdit: (key: string | null) => void; onSave: (key: string, value: number) => void; onClear: (key: string) => void;
+  sub?: string; change?: number; color?: string;
+}) => {
+  const [tempVal, setTempVal] = useState('');
+  const hasOverride = kpiKey in overrides;
+  const displayValue = hasOverride ? overrides[kpiKey] : calculatedValue;
+  const isEditing = editingKpi === kpiKey;
+
+  return (
+    <Card className="relative group">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 text-muted-foreground mb-1">{icon}<span className="text-xs font-medium">{label}</span></div>
+        {isEditing ? (
+          <div className="flex items-center gap-1 mt-1">
+            <Input type="number" step="0.01" autoFocus value={tempVal} onChange={e => setTempVal(e.target.value)} className="h-8 w-28 text-sm" placeholder="Novo valor" />
+            <button onClick={() => { onSave(kpiKey, Number(tempVal)); }} className="p-1 text-green-500 hover:bg-green-500/10 rounded"><Check className="h-4 w-4" /></button>
+            <button onClick={() => onStartEdit(null)} className="p-1 text-muted-foreground hover:bg-muted rounded"><X className="h-4 w-4" /></button>
+          </div>
+        ) : (
+          <>
+            <p className={`font-display text-2xl ${color || 'text-card-foreground'}`}>{fmt(displayValue)}</p>
+            {hasOverride && <span className="text-[10px] text-muted-foreground">(editado manualmente)</span>}
+          </>
+        )}
+        <div className="flex items-center gap-2 mt-1">
+          {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+          {change !== undefined && change !== 0 && (
+            <span className={`text-xs font-medium flex items-center gap-0.5 ${change > 0 ? 'text-green-500' : 'text-destructive'}`}>
+              {change > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+              {Math.abs(change).toFixed(0)}%
+            </span>
+          )}
+        </div>
+        {!isEditing && (
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+            <button onClick={() => { setTempVal(String(displayValue)); onStartEdit(kpiKey); }} className="p-1 text-primary hover:bg-primary/10 rounded" title="Editar valor">
+              <Pencil className="h-3 w-3" />
+            </button>
+            {hasOverride && (
+              <button onClick={() => onClear(kpiKey)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Restaurar valor original">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const KpiCard = ({ icon, label, value, sub, change, color }: {
   icon: React.ReactNode; label: string; value: string; sub?: string; change?: number; color?: string;

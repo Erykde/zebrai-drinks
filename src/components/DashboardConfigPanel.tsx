@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Settings, Eye, EyeOff, GripVertical, Save, X, RotateCcw } from 'lucide-react';
+import { Settings, Eye, EyeOff, GripVertical, Save, X, RotateCcw, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
 export interface DashboardSection {
@@ -48,13 +47,30 @@ const DEFAULT_LABELS: Record<string, string> = {
 };
 
 const STORAGE_KEY = 'zebrai-dashboard-config';
+const CUSTOM_SECTIONS_KEY = 'zebrai-custom-sections';
+
+export interface CustomSection {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export const loadCustomSections = (): CustomSection[] => {
+  try {
+    const saved = localStorage.getItem(CUSTOM_SECTIONS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch { return []; }
+};
+
+export const saveCustomSections = (sections: CustomSection[]) => {
+  localStorage.setItem(CUSTOM_SECTIONS_KEY, JSON.stringify(sections));
+};
 
 export const loadDashboardConfig = (): DashboardConfig => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved) as DashboardConfig;
-      // Merge with defaults to handle new sections
       const existingIds = new Set(parsed.sections.map(s => s.id));
       const merged = [...parsed.sections];
       DEFAULT_SECTIONS.forEach(ds => {
@@ -83,6 +99,9 @@ interface Props {
 const DashboardConfigPanel = ({ config, onChange, onClose }: Props) => {
   const [draft, setDraft] = useState<DashboardConfig>(JSON.parse(JSON.stringify(config)));
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [customSections, setCustomSections] = useState<CustomSection[]>(loadCustomSections);
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
 
   const sortedSections = [...draft.sections].sort((a, b) => a.order - b.order);
 
@@ -110,6 +129,49 @@ const DashboardConfigPanel = ({ config, onChange, onClose }: Props) => {
     setDragIndex(targetIndex);
   };
 
+  const addCustomSection = () => {
+    if (!newTitle.trim()) { toast.error('Informe um título para a seção'); return; }
+    const id = `custom-${Date.now()}`;
+    const newCustom: CustomSection = { id, title: newTitle.trim(), content: newContent.trim() };
+    const updatedCustom = [...customSections, newCustom];
+    setCustomSections(updatedCustom);
+    saveCustomSections(updatedCustom);
+
+    const newSection: DashboardSection = {
+      id,
+      label: newTitle.trim(),
+      visible: true,
+      order: draft.sections.length,
+    };
+    setDraft(prev => ({ ...prev, sections: [...prev.sections, newSection] }));
+    setNewTitle('');
+    setNewContent('');
+    toast.success('Seção criada!');
+  };
+
+  const removeCustomSection = (id: string) => {
+    const updatedCustom = customSections.filter(s => s.id !== id);
+    setCustomSections(updatedCustom);
+    saveCustomSections(updatedCustom);
+    setDraft(prev => ({
+      ...prev,
+      sections: prev.sections.filter(s => s.id !== id),
+    }));
+    toast.success('Seção removida!');
+  };
+
+  const updateCustomContent = (id: string, field: 'title' | 'content', value: string) => {
+    const updated = customSections.map(s => s.id === id ? { ...s, [field]: value } : s);
+    setCustomSections(updated);
+    saveCustomSections(updated);
+    if (field === 'title') {
+      setDraft(prev => ({
+        ...prev,
+        sections: prev.sections.map(s => s.id === id ? { ...s, label: value } : s),
+      }));
+    }
+  };
+
   const handleSave = () => {
     saveDashboardConfig(draft);
     onChange(draft);
@@ -121,6 +183,8 @@ const DashboardConfigPanel = ({ config, onChange, onClose }: Props) => {
     const defaults = { sections: [...DEFAULT_SECTIONS], labels: { ...DEFAULT_LABELS } };
     setDraft(defaults);
     saveDashboardConfig(defaults);
+    saveCustomSections([]);
+    setCustomSections([]);
     onChange(defaults);
     toast.success('Dashboard restaurado ao padrão!');
   };
@@ -157,6 +221,11 @@ const DashboardConfigPanel = ({ config, onChange, onClose }: Props) => {
               >
                 <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span className="flex-1 text-sm text-card-foreground">{section.label}</span>
+                {section.id.startsWith('custom-') && (
+                  <button onClick={() => removeCustomSection(section.id)} className="p-1 text-destructive hover:bg-destructive/10 rounded" title="Remover seção">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
                 <button
                   onClick={() => toggleVisibility(section.id)}
                   className="p-1 rounded hover:bg-muted transition-colors"
@@ -170,6 +239,53 @@ const DashboardConfigPanel = ({ config, onChange, onClose }: Props) => {
             ))}
           </div>
         </div>
+
+        {/* Add new custom section */}
+        <div>
+          <p className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Adicionar Nova Seção
+          </p>
+          <div className="space-y-2 rounded-lg border border-dashed border-primary/30 p-3">
+            <Input
+              value={newTitle}
+              onChange={e => setNewTitle(e.target.value)}
+              placeholder="Título da seção"
+              className="h-8 text-sm"
+            />
+            <textarea
+              value={newContent}
+              onChange={e => setNewContent(e.target.value)}
+              placeholder="Conteúdo / anotações (opcional)"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[60px] resize-y"
+            />
+            <Button size="sm" onClick={addCustomSection} className="w-full">
+              <Plus className="h-4 w-4 mr-1" /> Criar Seção
+            </Button>
+          </div>
+        </div>
+
+        {/* Edit custom sections content */}
+        {customSections.length > 0 && (
+          <div>
+            <p className="text-sm font-medium text-foreground mb-3">Editar Seções Personalizadas</p>
+            <div className="space-y-3">
+              {customSections.map(cs => (
+                <div key={cs.id} className="rounded-lg border border-border p-3 space-y-2">
+                  <Input
+                    value={cs.title}
+                    onChange={e => updateCustomContent(cs.id, 'title', e.target.value)}
+                    className="h-8 text-sm font-medium"
+                  />
+                  <textarea
+                    value={cs.content}
+                    onChange={e => updateCustomContent(cs.id, 'content', e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[50px] resize-y"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Label editing */}
         <div>

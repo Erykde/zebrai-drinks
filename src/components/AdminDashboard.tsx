@@ -115,9 +115,9 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
       const cost = arr.reduce((s, o) => s + o.cost_price * o.quantity, 0);
       const profit = revenue - cost;
       const qty = arr.reduce((s, o) => s + o.quantity, 0);
-      const uniqueOrders = new Set(arr.map(o => o.created_at.slice(0, 16))).size || 1;
-      const ticket = revenue / (uniqueOrders || 1);
-      return { revenue, cost, profit, qty, ticket, count: arr.length, uniqueOrders };
+      const orderCount = arr.length;
+      const ticket = orderCount > 0 ? revenue / orderCount : 0;
+      return { revenue, cost, profit, qty, ticket, count: orderCount, uniqueOrders: orderCount };
     };
 
     return {
@@ -241,22 +241,10 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
             <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Bike className="h-5 w-5 text-primary" /> {getLabel(config, 'motoboy-title')}</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Taxa Hoje</p>
-                  <p className="text-2xl font-display text-primary">{fmt(motoboyStats.todayFees)}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Taxa no Mês</p>
-                  <p className="text-2xl font-display text-primary">{fmt(motoboyStats.monthFees)}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Total Entregas</p>
-                  <p className="text-2xl font-display text-card-foreground">{motoboyStats.totalDeliveries}</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Total Arrecadado</p>
-                  <p className="text-2xl font-display text-green-500">{fmt(motoboyStats.totalFees)}</p>
-                </div>
+                <EditableKpiCard kpiKey="motoboy-today" icon={<Bike className="h-5 w-5" />} label="Taxa Hoje" calculatedValue={motoboyStats.todayFees} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} color="text-primary" />
+                <EditableKpiCard kpiKey="motoboy-month" icon={<Bike className="h-5 w-5" />} label="Taxa no Mês" calculatedValue={motoboyStats.monthFees} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} color="text-primary" />
+                <EditableKpiCard kpiKey="motoboy-deliveries" icon={<Truck className="h-5 w-5" />} label="Total Entregas" calculatedValue={motoboyStats.totalDeliveries} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} formatFn={(v) => String(Math.round(v))} />
+                <EditableKpiCard kpiKey="motoboy-total" icon={<DollarSign className="h-5 w-5" />} label="Total Arrecadado" calculatedValue={motoboyStats.totalFees} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} color="text-green-500" />
               </div>
             </CardContent>
           </Card>
@@ -265,29 +253,9 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
       case 'profit':
         return (
           <div key={id} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{getLabel(config, 'profit-today')}</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display text-green-500">{fmt(stats.today.profit)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Faturamento: {fmt(stats.today.revenue)} · Custo: {fmt(stats.today.cost)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{getLabel(config, 'profit-month')}</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display text-green-500">{fmt(stats.thisMonth.profit)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Faturamento: {fmt(stats.thisMonth.revenue)} · Custo: {fmt(stats.thisMonth.cost)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{getLabel(config, 'profit-margin')}</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display text-primary">
-                  {stats.thisMonth.revenue > 0 ? `${((stats.thisMonth.profit / stats.thisMonth.revenue) * 100).toFixed(1)}%` : '—'}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">Lucro total: {fmt(stats.all.profit)}</p>
-              </CardContent>
-            </Card>
+            <EditableKpiCard kpiKey="profit-today-val" icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'profit-today')} calculatedValue={stats.today.profit} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Fat: ${fmt(stats.today.revenue)} · Custo: ${fmt(stats.today.cost)}`} color="text-green-500" />
+            <EditableKpiCard kpiKey="profit-month-val" icon={<TrendingUp className="h-5 w-5" />} label={getLabel(config, 'profit-month')} calculatedValue={stats.thisMonth.profit} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Fat: ${fmt(stats.thisMonth.revenue)} · Custo: ${fmt(stats.thisMonth.cost)}`} color="text-green-500" />
+            <EditableKpiCard kpiKey="profit-margin-val" icon={<BarChart3 className="h-5 w-5" />} label={getLabel(config, 'profit-margin')} calculatedValue={stats.thisMonth.revenue > 0 ? Number(((stats.thisMonth.profit / stats.thisMonth.revenue) * 100).toFixed(1)) : 0} overrides={kpiOverrides} editingKpi={editingKpi} onStartEdit={setEditingKpi} onSave={saveKpiOverride} onClear={clearKpiOverride} sub={`Lucro total: ${fmt(stats.all.profit)}`} formatFn={(v) => `${v.toFixed(1)}%`} />
           </div>
         );
 
@@ -528,11 +496,11 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
 
 // === Sub-components ===
 
-const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, editingKpi, onStartEdit, onSave, onClear, sub, change, color }: {
+const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, editingKpi, onStartEdit, onSave, onClear, sub, change, color, formatFn }: {
   kpiKey: string; icon: React.ReactNode; label: string; calculatedValue: number;
   overrides: Record<string, number>; editingKpi: string | null;
   onStartEdit: (key: string | null) => void; onSave: (key: string, value: number) => void; onClear: (key: string) => void;
-  sub?: string; change?: number; color?: string;
+  sub?: string; change?: number; color?: string; formatFn?: (v: number) => string;
 }) => {
   const [tempVal, setTempVal] = useState('');
   const hasOverride = kpiKey in overrides;
@@ -551,7 +519,7 @@ const EditableKpiCard = ({ kpiKey, icon, label, calculatedValue, overrides, edit
           </div>
         ) : (
           <>
-            <p className={`font-display text-2xl ${color || 'text-card-foreground'}`}>{fmt(displayValue)}</p>
+            <p className={`font-display text-2xl ${color || 'text-card-foreground'}`}>{formatFn ? formatFn(displayValue) : fmt(displayValue)}</p>
             {hasOverride && <span className="text-[10px] text-muted-foreground">(editado manualmente)</span>}
           </>
         )}

@@ -59,24 +59,14 @@ const Index = () => {
         <img 
           src={bannerDrinks} 
           alt="Bebidas geladas Zebrai Drinks" 
-          className="w-full h-48 sm:h-56 object-cover"
+          className="w-full h-56 sm:h-64 object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 via-secondary/50 to-transparent flex flex-col justify-end p-5">
-          <h1 className="font-display text-3xl sm:text-4xl text-primary leading-tight drop-shadow-lg">
-            🧊 BEBIDAS GELADAS
+        <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/70 to-transparent flex flex-col justify-end p-5 pb-6">
+          <h1 className="font-display text-4xl sm:text-5xl text-primary leading-none tracking-wider">
+            BEBIDAS GELADAS
           </h1>
-          <p className="text-secondary-foreground font-semibold text-sm sm:text-base mt-1 drop-shadow">
-            🚀 Delivery rápido na sua porta!
-          </p>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {['Kit Copão', 'Energéticos', 'Refrigerante', 'Batidinhas'].map(tag => (
-              <span key={tag} className="bg-primary/90 text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full">
-                {tag}
-              </span>
-            ))}
-          </div>
-          <p className="text-primary font-display text-lg mt-2 tracking-wide">
-            E MUITO MAIS — VENHA APROVEITAR! 🦓
+          <p className="text-secondary-foreground/80 text-sm sm:text-base mt-2 leading-relaxed">
+            Delivery rápido na sua porta. Kit Copão, energéticos, refrigerantes e batidinhas!
           </p>
         </div>
       </div>

@@ -6,6 +6,7 @@ import ProductDetail from '@/components/ProductDetail';
 import { Home, ShoppingCart, Search } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
+import bannerDrinks from '@/assets/banner-drinks.jpg';
 
 const Index = () => {
   const { data: products = [], isLoading } = useProducts();

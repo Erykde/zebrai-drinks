@@ -276,6 +276,8 @@ const Admin = () => {
             <LoyaltyManager />
             <CampaignsManager />
           </div>
+        ) : activeTab === 'settings' ? (
+          <SiteSettingsManager />
         ) : (
           <ProductsTab
             products={products}

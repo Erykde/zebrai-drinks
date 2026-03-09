@@ -71,22 +71,26 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Category Tabs - sticky */}
-      <div ref={tabsRef} className="sticky top-[60px] z-40 bg-card border-b border-border">
-        <div className="flex overflow-x-auto scrollbar-hide max-w-lg mx-auto">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-all ${
-                category === cat
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      {/* Category Tabs - pill style */}
+      <div ref={tabsRef} className="sticky top-[60px] z-40 bg-background">
+        <div className="flex overflow-x-auto scrollbar-hide max-w-lg mx-auto px-4 py-3 gap-2">
+          {categories.map(cat => {
+            const emoji = categoryEmojis[cat] || '📦';
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`whitespace-nowrap flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all shrink-0 ${
+                  category === cat
+                    ? 'bg-primary text-primary-foreground shadow-gold'
+                    : 'bg-card text-muted-foreground border border-border hover:border-primary/50'
+                }`}
+              >
+                <span>{emoji}</span>
+                {cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 

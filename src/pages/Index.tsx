@@ -74,16 +74,16 @@ const Index = () => {
       {/* Banner Promocional */}
       <div className="relative max-w-lg mx-auto overflow-hidden">
         <img 
-          src={bannerDrinks} 
+          src={bannerImage} 
           alt="Bebidas geladas Zebrai Drinks" 
           className="w-full h-56 sm:h-64 object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/70 to-transparent flex flex-col justify-end p-5 pb-6">
           <h1 className="font-display text-4xl sm:text-5xl text-primary leading-none tracking-wider">
-            BEBIDAS GELADAS
+            {siteTitle}
           </h1>
           <p className="text-secondary-foreground/80 text-sm sm:text-base mt-2 leading-relaxed">
-            Delivery rápido na sua porta. Kit Copão, energéticos, refrigerantes e batidinhas!
+            {siteSubtitle}
           </p>
         </div>
       </div>

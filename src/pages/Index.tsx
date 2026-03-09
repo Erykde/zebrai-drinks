@@ -144,7 +144,7 @@ const Index = () => {
               <div className="border-l-4 border-primary pl-3 mb-3">
                 <h2 className="font-display text-xl text-primary">{cat}</h2>
               </div>
-              <div className="bg-card rounded-xl border border-border overflow-hidden divide-y divide-border">
+              <div className="grid grid-cols-2 gap-3">
                 {items.map(product => (
                   <ProductCard
                     key={product.id}

@@ -343,6 +343,7 @@ export type Database = {
       site_settings: {
         Row: {
           banner_height: string | null
+          banner_url: string | null
           id: string
           primary_color: string | null
           site_name: string | null
@@ -351,6 +352,7 @@ export type Database = {
         }
         Insert: {
           banner_height?: string | null
+          banner_url?: string | null
           id?: string
           primary_color?: string | null
           site_name?: string | null
@@ -359,6 +361,7 @@ export type Database = {
         }
         Update: {
           banner_height?: string | null
+          banner_url?: string | null
           id?: string
           primary_color?: string | null
           site_name?: string | null

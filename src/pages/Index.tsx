@@ -54,6 +54,33 @@ const Index = () => {
         </div>
       </header>
 
+      {/* Banner Promocional */}
+      <div className="relative max-w-lg mx-auto overflow-hidden">
+        <img 
+          src={bannerDrinks} 
+          alt="Bebidas geladas Zebrai Drinks" 
+          className="w-full h-48 sm:h-56 object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 via-secondary/50 to-transparent flex flex-col justify-end p-5">
+          <h1 className="font-display text-3xl sm:text-4xl text-primary leading-tight drop-shadow-lg">
+            🧊 BEBIDAS GELADAS
+          </h1>
+          <p className="text-secondary-foreground font-semibold text-sm sm:text-base mt-1 drop-shadow">
+            🚀 Delivery rápido na sua porta!
+          </p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {['Kit Copão', 'Energéticos', 'Refrigerante', 'Batidinhas'].map(tag => (
+              <span key={tag} className="bg-primary/90 text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+          <p className="text-primary font-display text-lg mt-2 tracking-wide">
+            E MUITO MAIS — VENHA APROVEITAR! 🦓
+          </p>
+        </div>
+      </div>
+
       {/* Category Tabs - sticky */}
       <div ref={tabsRef} className="sticky top-[60px] z-40 bg-card border-b border-border">
         <div className="flex overflow-x-auto scrollbar-hide max-w-lg mx-auto">

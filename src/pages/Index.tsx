@@ -8,6 +8,17 @@ import { useStore } from '@/contexts/StoreContext';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 import bannerDrinks from '@/assets/banner-drinks.jpg';
 
+const categoryEmojis: Record<string, string> = {
+  'Todos': '🍻',
+  'Kit Copão': '🥤',
+  'Energéticos': '⚡',
+  'Refrigerante': '🥫',
+  'Batidinhas': '🍹',
+  'Cervejas': '🍺',
+  'Doses': '🥃',
+  'Combos': '🎉',
+};
+
 const Index = () => {
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = ['Todos'] } = useCategories();

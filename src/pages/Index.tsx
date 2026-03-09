@@ -23,11 +23,16 @@ const categoryEmojis: Record<string, string> = {
 const Index = () => {
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = ['Todos'] } = useCategories();
+  const { data: siteSettings } = useSiteSettings();
   const { cartCount } = useStore();
   const [category, setCategory] = useState('Todos');
   const [selectedProduct, setSelectedProduct] = useState<DbProduct | null>(null);
   const [search, setSearch] = useState('');
   const tabsRef = useRef<HTMLDivElement>(null);
+
+  const bannerImage = siteSettings?.banner_url || bannerDrinks;
+  const siteTitle = siteSettings?.site_name || 'BEBIDAS GELADAS';
+  const siteSubtitle = siteSettings?.site_subtitle || 'Delivery rápido na sua porta. Kit Copão, energéticos, refrigerantes e batidinhas!';
 
   const filtered = products.filter(p => {
     const matchCategory = category === 'Todos' || p.category === category;

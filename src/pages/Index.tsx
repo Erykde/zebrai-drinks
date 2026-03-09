@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts, useCategories, DbProduct } from '@/hooks/useProducts';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import ProductCard from '@/components/ProductCard';
 import ProductDetail from '@/components/ProductDetail';
 import { Home, ShoppingCart, Search } from 'lucide-react';

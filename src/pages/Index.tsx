@@ -8,6 +8,17 @@ import { useStore } from '@/contexts/StoreContext';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 import bannerDrinks from '@/assets/banner-drinks.jpg';
 
+const categoryEmojis: Record<string, string> = {
+  'Todos': '🍻',
+  'Kit Copão': '🥤',
+  'Energéticos': '⚡',
+  'Refrigerante': '🥫',
+  'Batidinhas': '🍹',
+  'Cervejas': '🍺',
+  'Doses': '🥃',
+  'Combos': '🎉',
+};
+
 const Index = () => {
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = ['Todos'] } = useCategories();
@@ -59,44 +70,38 @@ const Index = () => {
         <img 
           src={bannerDrinks} 
           alt="Bebidas geladas Zebrai Drinks" 
-          className="w-full h-48 sm:h-56 object-cover"
+          className="w-full h-56 sm:h-64 object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 via-secondary/50 to-transparent flex flex-col justify-end p-5">
-          <h1 className="font-display text-3xl sm:text-4xl text-primary leading-tight drop-shadow-lg">
-            🧊 BEBIDAS GELADAS
+        <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/70 to-transparent flex flex-col justify-end p-5 pb-6">
+          <h1 className="font-display text-4xl sm:text-5xl text-primary leading-none tracking-wider">
+            BEBIDAS GELADAS
           </h1>
-          <p className="text-secondary-foreground font-semibold text-sm sm:text-base mt-1 drop-shadow">
-            🚀 Delivery rápido na sua porta!
-          </p>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {['Kit Copão', 'Energéticos', 'Refrigerante', 'Batidinhas'].map(tag => (
-              <span key={tag} className="bg-primary/90 text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full">
-                {tag}
-              </span>
-            ))}
-          </div>
-          <p className="text-primary font-display text-lg mt-2 tracking-wide">
-            E MUITO MAIS — VENHA APROVEITAR! 🦓
+          <p className="text-secondary-foreground/80 text-sm sm:text-base mt-2 leading-relaxed">
+            Delivery rápido na sua porta. Kit Copão, energéticos, refrigerantes e batidinhas!
           </p>
         </div>
       </div>
 
-      {/* Category Tabs - sticky */}
-      <div ref={tabsRef} className="sticky top-[60px] z-40 bg-card border-b border-border">
-        <div className="flex overflow-x-auto scrollbar-hide max-w-lg mx-auto">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-all ${
-                category === cat
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      {/* Category Tabs - pill style */}
+      <div ref={tabsRef} className="sticky top-[60px] z-40 bg-background">
+        <div className="flex overflow-x-auto scrollbar-hide max-w-lg mx-auto px-4 py-3 gap-2">
+          {categories.map(cat => {
+            const emoji = categoryEmojis[cat] || '📦';
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`whitespace-nowrap flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all shrink-0 ${
+                  category === cat
+                    ? 'bg-primary text-primary-foreground shadow-gold'
+                    : 'bg-card text-muted-foreground border border-border hover:border-primary/50'
+                }`}
+              >
+                <span>{emoji}</span>
+                {cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -139,7 +144,7 @@ const Index = () => {
               <div className="border-l-4 border-primary pl-3 mb-3">
                 <h2 className="font-display text-xl text-primary">{cat}</h2>
               </div>
-              <div className="bg-card rounded-xl border border-border overflow-hidden divide-y divide-border">
+              <div className="grid grid-cols-2 gap-3">
                 {items.map(product => (
                   <ProductCard
                     key={product.id}

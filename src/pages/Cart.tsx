@@ -24,8 +24,8 @@ const Cart = () => {
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-muted mb-6">
             <ShoppingCart className="h-12 w-12 text-muted-foreground" />
           </div>
-          <h2 className="font-display text-4xl mb-3 text-foreground">CARRINHO VAZIO</h2>
-          <p className="text-muted-foreground mb-8">Adicione bebidas do nosso cardápio!</p>
+          <h2 className="font-display text-4xl mb-3 text-foreground">{cartEmptyTitle}</h2>
+          <p className="text-muted-foreground mb-8">{cartEmptySubtitle}</p>
           <Link
             to="/"
             className="inline-flex items-center gap-2 bg-gradient-gold text-primary-foreground px-8 py-3.5 rounded-2xl font-bold text-sm hover:opacity-90 transition-all shadow-gold active:scale-95"

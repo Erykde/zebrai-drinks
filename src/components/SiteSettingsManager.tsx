@@ -23,6 +23,8 @@ const SiteSettingsManager = () => {
     cart_empty_subtitle: '',
     cart_button_text: '',
     home_search_placeholder: '',
+    nav_home_label: '',
+    nav_cart_label: '',
   });
 
   useEffect(() => {
@@ -37,6 +39,8 @@ const SiteSettingsManager = () => {
         cart_empty_subtitle: settings.cart_empty_subtitle || '',
         cart_button_text: settings.cart_button_text || '',
         home_search_placeholder: settings.home_search_placeholder || '',
+        nav_home_label: settings.nav_home_label || '',
+        nav_cart_label: settings.nav_cart_label || '',
       });
     }
   }, [settings]);
@@ -78,6 +82,8 @@ const SiteSettingsManager = () => {
         cart_empty_subtitle: form.cart_empty_subtitle || null,
         cart_button_text: form.cart_button_text || null,
         home_search_placeholder: form.home_search_placeholder || null,
+        nav_home_label: form.nav_home_label || null,
+        nav_cart_label: form.nav_cart_label || null,
       });
       toast.success('Configurações salvas!');
     } catch {
@@ -203,6 +209,35 @@ const SiteSettingsManager = () => {
               value={form.home_search_placeholder}
               onChange={e => setForm(f => ({ ...f, home_search_placeholder: e.target.value }))}
               placeholder="Pesquise um produto"
+              className="mt-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Navegação inferior */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Type className="h-4 w-4 text-primary" /> Menu Inferior (Navegação)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Texto do botão "Início"</label>
+            <Input
+              value={form.nav_home_label}
+              onChange={e => setForm(f => ({ ...f, nav_home_label: e.target.value }))}
+              placeholder="Início"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Texto do botão "Carrinho"</label>
+            <Input
+              value={form.nav_cart_label}
+              onChange={e => setForm(f => ({ ...f, nav_cart_label: e.target.value }))}
+              placeholder="Carrinho"
               className="mt-1"
             />
           </div>

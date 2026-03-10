@@ -34,6 +34,8 @@ const Index = () => {
   const siteTitle = siteSettings?.site_name || 'BEBIDAS GELADAS';
   const siteSubtitle = siteSettings?.site_subtitle || 'Delivery rápido na sua porta. Kit Copão, energéticos, refrigerantes e batidinhas!';
   const searchPlaceholder = siteSettings?.home_search_placeholder || 'Pesquise um produto';
+  const navHomeLabel = siteSettings?.nav_home_label || 'Início';
+  const navCartLabel = siteSettings?.nav_cart_label || 'Carrinho';
 
   const filtered = products.filter(p => {
     const matchCategory = category === 'Todos' || p.category === category;
@@ -182,11 +184,11 @@ const Index = () => {
         <div className="flex items-center justify-around max-w-lg mx-auto py-2">
           <Link to="/" className="flex flex-col items-center gap-0.5 text-primary">
             <Home className="h-5 w-5" />
-            <span className="text-[11px] font-medium">Início</span>
+            <span className="text-[11px] font-medium">{navHomeLabel}</span>
           </Link>
           <Link to="/cart" className="flex flex-col items-center gap-0.5 text-muted-foreground relative">
             <ShoppingCart className="h-5 w-5" />
-            <span className="text-[11px] font-medium">Carrinho</span>
+            <span className="text-[11px] font-medium">{navCartLabel}</span>
             {cartCount > 0 && (
               <span className="absolute -top-1 right-0 bg-accent text-accent-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
                 {cartCount}

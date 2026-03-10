@@ -62,7 +62,7 @@ const Cart = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-gold mb-3">
             <ShoppingCart className="h-7 w-7 text-primary-foreground" />
           </div>
-          <h2 className="font-display text-4xl text-foreground tracking-wider">SEU CARRINHO</h2>
+          <h2 className="font-display text-4xl text-foreground tracking-wider">{cartTitle}</h2>
           <p className="text-sm text-muted-foreground mt-1">{cart.length} item(ns)</p>
         </div>
 

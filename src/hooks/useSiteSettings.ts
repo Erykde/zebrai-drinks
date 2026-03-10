@@ -8,6 +8,11 @@ export interface SiteSettings {
   primary_color: string | null;
   banner_height: string | null;
   banner_url: string | null;
+  cart_title: string | null;
+  cart_empty_title: string | null;
+  cart_empty_subtitle: string | null;
+  cart_button_text: string | null;
+  home_search_placeholder: string | null;
   updated_at: string | null;
 }
 

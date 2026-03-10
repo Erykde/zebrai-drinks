@@ -2,12 +2,19 @@ import { useState } from 'react';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Header from '@/components/Header';
 import CheckoutForm from '@/components/CheckoutForm';
 
 const Cart = () => {
   const { cart, updateCartQuantity, removeFromCart, cartTotal } = useStore();
+  const { data: siteSettings } = useSiteSettings();
   const [showCheckout, setShowCheckout] = useState(false);
+
+  const cartTitle = siteSettings?.cart_title || 'SEU CARRINHO';
+  const cartEmptyTitle = siteSettings?.cart_empty_title || 'CARRINHO VAZIO';
+  const cartEmptySubtitle = siteSettings?.cart_empty_subtitle || 'Adicione bebidas do nosso cardápio!';
+  const cartButtonText = siteSettings?.cart_button_text || 'Finalizar Pedido →';
 
   if (cart.length === 0 && !showCheckout) {
     return (
@@ -17,8 +24,8 @@ const Cart = () => {
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-muted mb-6">
             <ShoppingCart className="h-12 w-12 text-muted-foreground" />
           </div>
-          <h2 className="font-display text-4xl mb-3 text-foreground">CARRINHO VAZIO</h2>
-          <p className="text-muted-foreground mb-8">Adicione bebidas do nosso cardápio!</p>
+          <h2 className="font-display text-4xl mb-3 text-foreground">{cartEmptyTitle}</h2>
+          <p className="text-muted-foreground mb-8">{cartEmptySubtitle}</p>
           <Link
             to="/"
             className="inline-flex items-center gap-2 bg-gradient-gold text-primary-foreground px-8 py-3.5 rounded-2xl font-bold text-sm hover:opacity-90 transition-all shadow-gold active:scale-95"
@@ -55,7 +62,7 @@ const Cart = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-gold mb-3">
             <ShoppingCart className="h-7 w-7 text-primary-foreground" />
           </div>
-          <h2 className="font-display text-4xl text-foreground tracking-wider">SEU CARRINHO</h2>
+          <h2 className="font-display text-4xl text-foreground tracking-wider">{cartTitle}</h2>
           <p className="text-sm text-muted-foreground mt-1">{cart.length} item(ns)</p>
         </div>
 
@@ -114,7 +121,7 @@ const Cart = () => {
             onClick={() => setShowCheckout(true)}
             className="mt-5 w-full bg-gradient-gold text-primary-foreground py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-gold active:scale-[0.98]"
           >
-            Finalizar Pedido →
+            {cartButtonText}
           </button>
         </div>
       </div>

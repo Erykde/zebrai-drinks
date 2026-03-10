@@ -18,6 +18,11 @@ const SiteSettingsManager = () => {
     site_subtitle: '',
     primary_color: '#c9941a',
     banner_url: '',
+    cart_title: '',
+    cart_empty_title: '',
+    cart_empty_subtitle: '',
+    cart_button_text: '',
+    home_search_placeholder: '',
   });
 
   useEffect(() => {
@@ -27,6 +32,11 @@ const SiteSettingsManager = () => {
         site_subtitle: settings.site_subtitle || '',
         primary_color: settings.primary_color || '#c9941a',
         banner_url: settings.banner_url || '',
+        cart_title: settings.cart_title || '',
+        cart_empty_title: settings.cart_empty_title || '',
+        cart_empty_subtitle: settings.cart_empty_subtitle || '',
+        cart_button_text: settings.cart_button_text || '',
+        home_search_placeholder: settings.home_search_placeholder || '',
       });
     }
   }, [settings]);
@@ -63,6 +73,11 @@ const SiteSettingsManager = () => {
         site_subtitle: form.site_subtitle || null,
         primary_color: form.primary_color || null,
         banner_url: form.banner_url || null,
+        cart_title: form.cart_title || null,
+        cart_empty_title: form.cart_empty_title || null,
+        cart_empty_subtitle: form.cart_empty_subtitle || null,
+        cart_button_text: form.cart_button_text || null,
+        home_search_placeholder: form.home_search_placeholder || null,
       });
       toast.success('Configurações salvas!');
     } catch {
@@ -133,6 +148,62 @@ const SiteSettingsManager = () => {
               onChange={e => setForm(f => ({ ...f, site_subtitle: e.target.value }))}
               placeholder="Delivery rápido na sua porta..."
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[60px] resize-y"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Textos do Carrinho */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Type className="h-4 w-4 text-primary" /> Textos do Carrinho
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Título do carrinho</label>
+            <Input
+              value={form.cart_title}
+              onChange={e => setForm(f => ({ ...f, cart_title: e.target.value }))}
+              placeholder="SEU CARRINHO"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Título carrinho vazio</label>
+            <Input
+              value={form.cart_empty_title}
+              onChange={e => setForm(f => ({ ...f, cart_empty_title: e.target.value }))}
+              placeholder="CARRINHO VAZIO"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Subtítulo carrinho vazio</label>
+            <Input
+              value={form.cart_empty_subtitle}
+              onChange={e => setForm(f => ({ ...f, cart_empty_subtitle: e.target.value }))}
+              placeholder="Adicione bebidas do nosso cardápio!"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Texto do botão finalizar</label>
+            <Input
+              value={form.cart_button_text}
+              onChange={e => setForm(f => ({ ...f, cart_button_text: e.target.value }))}
+              placeholder="Finalizar Pedido →"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Placeholder da busca (início)</label>
+            <Input
+              value={form.home_search_placeholder}
+              onChange={e => setForm(f => ({ ...f, home_search_placeholder: e.target.value }))}
+              placeholder="Pesquise um produto"
+              className="mt-1"
             />
           </div>
         </CardContent>

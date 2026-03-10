@@ -344,6 +344,11 @@ export type Database = {
         Row: {
           banner_height: string | null
           banner_url: string | null
+          cart_button_text: string | null
+          cart_empty_subtitle: string | null
+          cart_empty_title: string | null
+          cart_title: string | null
+          home_search_placeholder: string | null
           id: string
           primary_color: string | null
           site_name: string | null
@@ -353,6 +358,11 @@ export type Database = {
         Insert: {
           banner_height?: string | null
           banner_url?: string | null
+          cart_button_text?: string | null
+          cart_empty_subtitle?: string | null
+          cart_empty_title?: string | null
+          cart_title?: string | null
+          home_search_placeholder?: string | null
           id?: string
           primary_color?: string | null
           site_name?: string | null
@@ -362,6 +372,11 @@ export type Database = {
         Update: {
           banner_height?: string | null
           banner_url?: string | null
+          cart_button_text?: string | null
+          cart_empty_subtitle?: string | null
+          cart_empty_title?: string | null
+          cart_title?: string | null
+          home_search_placeholder?: string | null
           id?: string
           primary_color?: string | null
           site_name?: string | null

@@ -39,6 +39,8 @@ const SiteSettingsManager = () => {
         cart_empty_subtitle: settings.cart_empty_subtitle || '',
         cart_button_text: settings.cart_button_text || '',
         home_search_placeholder: settings.home_search_placeholder || '',
+        nav_home_label: settings.nav_home_label || '',
+        nav_cart_label: settings.nav_cart_label || '',
       });
     }
   }, [settings]);

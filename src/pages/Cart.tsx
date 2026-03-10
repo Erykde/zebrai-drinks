@@ -121,7 +121,7 @@ const Cart = () => {
             onClick={() => setShowCheckout(true)}
             className="mt-5 w-full bg-gradient-gold text-primary-foreground py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-gold active:scale-[0.98]"
           >
-            Finalizar Pedido →
+            {cartButtonText}
           </button>
         </div>
       </div>

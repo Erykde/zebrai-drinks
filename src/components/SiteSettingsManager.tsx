@@ -153,6 +153,62 @@ const SiteSettingsManager = () => {
         </CardContent>
       </Card>
 
+      {/* Textos do Carrinho */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Type className="h-4 w-4 text-primary" /> Textos do Carrinho
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Título do carrinho</label>
+            <Input
+              value={form.cart_title}
+              onChange={e => setForm(f => ({ ...f, cart_title: e.target.value }))}
+              placeholder="SEU CARRINHO"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Título carrinho vazio</label>
+            <Input
+              value={form.cart_empty_title}
+              onChange={e => setForm(f => ({ ...f, cart_empty_title: e.target.value }))}
+              placeholder="CARRINHO VAZIO"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Subtítulo carrinho vazio</label>
+            <Input
+              value={form.cart_empty_subtitle}
+              onChange={e => setForm(f => ({ ...f, cart_empty_subtitle: e.target.value }))}
+              placeholder="Adicione bebidas do nosso cardápio!"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Texto do botão finalizar</label>
+            <Input
+              value={form.cart_button_text}
+              onChange={e => setForm(f => ({ ...f, cart_button_text: e.target.value }))}
+              placeholder="Finalizar Pedido →"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Placeholder da busca (início)</label>
+            <Input
+              value={form.home_search_placeholder}
+              onChange={e => setForm(f => ({ ...f, home_search_placeholder: e.target.value }))}
+              placeholder="Pesquise um produto"
+              className="mt-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Cor */}
       <Card>
         <CardHeader className="pb-3">

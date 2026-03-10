@@ -8,7 +8,13 @@ import CheckoutForm from '@/components/CheckoutForm';
 
 const Cart = () => {
   const { cart, updateCartQuantity, removeFromCart, cartTotal } = useStore();
+  const { data: siteSettings } = useSiteSettings();
   const [showCheckout, setShowCheckout] = useState(false);
+
+  const cartTitle = siteSettings?.cart_title || 'SEU CARRINHO';
+  const cartEmptyTitle = siteSettings?.cart_empty_title || 'CARRINHO VAZIO';
+  const cartEmptySubtitle = siteSettings?.cart_empty_subtitle || 'Adicione bebidas do nosso cardápio!';
+  const cartButtonText = siteSettings?.cart_button_text || 'Finalizar Pedido →';
 
   if (cart.length === 0 && !showCheckout) {
     return (

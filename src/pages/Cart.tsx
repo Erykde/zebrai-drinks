@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Header from '@/components/Header';
 import CheckoutForm from '@/components/CheckoutForm';
 

@@ -215,6 +215,35 @@ const SiteSettingsManager = () => {
         </CardContent>
       </Card>
 
+      {/* Navegação inferior */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Type className="h-4 w-4 text-primary" /> Menu Inferior (Navegação)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Texto do botão "Início"</label>
+            <Input
+              value={form.nav_home_label}
+              onChange={e => setForm(f => ({ ...f, nav_home_label: e.target.value }))}
+              placeholder="Início"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Texto do botão "Carrinho"</label>
+            <Input
+              value={form.nav_cart_label}
+              onChange={e => setForm(f => ({ ...f, nav_cart_label: e.target.value }))}
+              placeholder="Carrinho"
+              className="mt-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Cor */}
       <Card>
         <CardHeader className="pb-3">

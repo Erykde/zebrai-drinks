@@ -34,6 +34,8 @@ const Index = () => {
   const siteTitle = siteSettings?.site_name || 'BEBIDAS GELADAS';
   const siteSubtitle = siteSettings?.site_subtitle || 'Delivery rápido na sua porta. Kit Copão, energéticos, refrigerantes e batidinhas!';
   const searchPlaceholder = siteSettings?.home_search_placeholder || 'Pesquise um produto';
+  const navHomeLabel = siteSettings?.nav_home_label || 'Início';
+  const navCartLabel = siteSettings?.nav_cart_label || 'Carrinho';
 
   const filtered = products.filter(p => {
     const matchCategory = category === 'Todos' || p.category === category;

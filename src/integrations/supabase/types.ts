@@ -350,6 +350,8 @@ export type Database = {
           cart_title: string | null
           home_search_placeholder: string | null
           id: string
+          nav_cart_label: string | null
+          nav_home_label: string | null
           primary_color: string | null
           site_name: string | null
           site_subtitle: string | null
@@ -364,6 +366,8 @@ export type Database = {
           cart_title?: string | null
           home_search_placeholder?: string | null
           id?: string
+          nav_cart_label?: string | null
+          nav_home_label?: string | null
           primary_color?: string | null
           site_name?: string | null
           site_subtitle?: string | null
@@ -378,6 +382,8 @@ export type Database = {
           cart_title?: string | null
           home_search_placeholder?: string | null
           id?: string
+          nav_cart_label?: string | null
+          nav_home_label?: string | null
           primary_color?: string | null
           site_name?: string | null
           site_subtitle?: string | null

@@ -82,6 +82,8 @@ const SiteSettingsManager = () => {
         cart_empty_subtitle: form.cart_empty_subtitle || null,
         cart_button_text: form.cart_button_text || null,
         home_search_placeholder: form.home_search_placeholder || null,
+        nav_home_label: form.nav_home_label || null,
+        nav_cart_label: form.nav_cart_label || null,
       });
       toast.success('Configurações salvas!');
     } catch {

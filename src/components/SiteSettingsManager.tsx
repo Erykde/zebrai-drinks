@@ -32,6 +32,11 @@ const SiteSettingsManager = () => {
         site_subtitle: settings.site_subtitle || '',
         primary_color: settings.primary_color || '#c9941a',
         banner_url: settings.banner_url || '',
+        cart_title: settings.cart_title || '',
+        cart_empty_title: settings.cart_empty_title || '',
+        cart_empty_subtitle: settings.cart_empty_subtitle || '',
+        cart_button_text: settings.cart_button_text || '',
+        home_search_placeholder: settings.home_search_placeholder || '',
       });
     }
   }, [settings]);

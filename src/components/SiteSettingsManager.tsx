@@ -73,6 +73,11 @@ const SiteSettingsManager = () => {
         site_subtitle: form.site_subtitle || null,
         primary_color: form.primary_color || null,
         banner_url: form.banner_url || null,
+        cart_title: form.cart_title || null,
+        cart_empty_title: form.cart_empty_title || null,
+        cart_empty_subtitle: form.cart_empty_subtitle || null,
+        cart_button_text: form.cart_button_text || null,
+        home_search_placeholder: form.home_search_placeholder || null,
       });
       toast.success('Configurações salvas!');
     } catch {

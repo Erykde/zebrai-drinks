@@ -13,6 +13,8 @@ export interface SiteSettings {
   cart_empty_subtitle: string | null;
   cart_button_text: string | null;
   home_search_placeholder: string | null;
+  nav_home_label: string | null;
+  nav_cart_label: string | null;
   updated_at: string | null;
 }
 

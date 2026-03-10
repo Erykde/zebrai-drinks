@@ -23,6 +23,8 @@ const SiteSettingsManager = () => {
     cart_empty_subtitle: '',
     cart_button_text: '',
     home_search_placeholder: '',
+    nav_home_label: '',
+    nav_cart_label: '',
   });
 
   useEffect(() => {

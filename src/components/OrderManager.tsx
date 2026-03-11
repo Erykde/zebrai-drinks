@@ -30,11 +30,58 @@ const OrderManager = () => {
 
   const activeCount = (status: CustomerOrder['status']) => orders.filter(o => o.status === status).length;
 
+  const sendWhatsAppNotification = async (order: CustomerOrder, newStatus: CustomerOrder['status']) => {
+    if (!order.customer_phone) return;
+
+    const templateMap: Record<string, string> = {
+      preparing: 'order_confirmed',
+      out_for_delivery: 'order_delivering',
+      delivered: 'order_delivered',
+    };
+
+    const template = templateMap[newStatus];
+    if (!template) return;
+
+    const itemsText = (order.items || [])
+      .map(i => `*${i.quantity}x* ${i.product_name}${i.mixer ? ` + ${i.mixer}` : ''} - R$ ${i.total.toFixed(2)}`)
+      .join('\n');
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      await fetch(`${supabaseUrl}/functions/v1/whatsapp-send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+        },
+        body: JSON.stringify({
+          phone: order.customer_phone,
+          template,
+          template_data: {
+            customer_name: order.customer_name,
+            order_id: order.id.substring(0, 8),
+            total: order.total.toFixed(2),
+            delivery_fee: order.delivery_fee.toFixed(2),
+            order_items: itemsText,
+            payment_method: 'Informado no pedido',
+          },
+        }),
+      });
+    } catch (e) {
+      console.error('WhatsApp notification error:', e);
+    }
+  };
+
   const handleStatusChange = (orderId: string, newStatus: CustomerOrder['status']) => {
+    const order = orders.find(o => o.id === orderId);
     updateStatus.mutate(
       { orderId, status: newStatus },
       {
-        onSuccess: () => toast.success(`Status atualizado para: ${STATUS_CONFIG[newStatus].label}`),
+        onSuccess: () => {
+          toast.success(`Status atualizado para: ${STATUS_CONFIG[newStatus].label}`);
+          if (order) sendWhatsAppNotification(order, newStatus);
+        },
         onError: () => toast.error('Erro ao atualizar status'),
       }
     );

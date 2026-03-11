@@ -409,6 +409,63 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_config: {
+        Row: {
+          api_key: string
+          api_url: string
+          created_at: string
+          id: string
+          instance_name: string
+          is_active: boolean
+          menu_message: string
+          menu_option_1_reply: string
+          menu_option_2_reply: string
+          menu_option_3_reply: string
+          menu_option_4_reply: string
+          order_confirmed_message: string
+          order_delivered_message: string
+          order_delivering_message: string
+          updated_at: string
+          welcome_message: string
+        }
+        Insert: {
+          api_key?: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          instance_name?: string
+          is_active?: boolean
+          menu_message?: string
+          menu_option_1_reply?: string
+          menu_option_2_reply?: string
+          menu_option_3_reply?: string
+          menu_option_4_reply?: string
+          order_confirmed_message?: string
+          order_delivered_message?: string
+          order_delivering_message?: string
+          updated_at?: string
+          welcome_message?: string
+        }
+        Update: {
+          api_key?: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          instance_name?: string
+          is_active?: boolean
+          menu_message?: string
+          menu_option_1_reply?: string
+          menu_option_2_reply?: string
+          menu_option_3_reply?: string
+          menu_option_4_reply?: string
+          order_confirmed_message?: string
+          order_delivered_message?: string
+          order_delivering_message?: string
+          updated_at?: string
+          welcome_message?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

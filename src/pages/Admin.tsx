@@ -252,6 +252,12 @@ const Admin = () => {
             <Megaphone className="h-4 w-4 inline mr-1" /> Marketing
           </button>
           <button
+            onClick={() => setActiveTab('whatsapp')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'whatsapp' ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}`}
+          >
+            <MessageCircle className="h-4 w-4 inline mr-1" /> WhatsApp
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
           >

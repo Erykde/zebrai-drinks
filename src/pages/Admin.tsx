@@ -41,7 +41,7 @@ const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
-  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'settings'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings'>('orders');
 
   // Form state
   const [form, setForm] = useState({

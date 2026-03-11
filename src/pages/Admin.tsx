@@ -11,6 +11,7 @@ import CouponsManager from '@/components/CouponsManager';
 import LoyaltyManager from '@/components/LoyaltyManager';
 import CampaignsManager from '@/components/CampaignsManager';
 import SiteSettingsManager from '@/components/SiteSettingsManager';
+import WhatsAppManager from '@/components/WhatsAppManager';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';

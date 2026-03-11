@@ -283,6 +283,8 @@ const Admin = () => {
             <LoyaltyManager />
             <CampaignsManager />
           </div>
+        ) : activeTab === 'whatsapp' ? (
+          <WhatsAppManager />
         ) : activeTab === 'settings' ? (
           <SiteSettingsManager />
         ) : (

@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
-import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle } from 'lucide-react';
 import OrderManager from '@/components/OrderManager';
 import AdminDashboard from '@/components/AdminDashboard';
 import QRCodeCard from '@/components/QRCodeCard';

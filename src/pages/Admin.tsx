@@ -276,7 +276,10 @@ const Admin = () => {
             customerOrders={customerOrders}
           />
         ) : activeTab === 'delivery' ? (
-          <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
+          <div className="space-y-6">
+            <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
+            <MotoboyManager />
+          </div>
         ) : activeTab === 'marketing' ? (
           <div className="space-y-6">
             <QRCodeCard />

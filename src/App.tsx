@@ -37,6 +37,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/pedido" element={<OrderTracking />} />
+              <Route path="/entrega" element={<Entrega />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

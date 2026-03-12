@@ -144,7 +144,9 @@ export type Database = {
           customer_name: string
           customer_phone: string | null
           delivery_fee: number
+          delivery_token: string | null
           id: string
+          motoboy_id: string | null
           notes: string | null
           status: Database["public"]["Enums"]["order_status"]
           total: number
@@ -156,7 +158,9 @@ export type Database = {
           customer_name: string
           customer_phone?: string | null
           delivery_fee?: number
+          delivery_token?: string | null
           id?: string
+          motoboy_id?: string | null
           notes?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
@@ -168,13 +172,23 @@ export type Database = {
           customer_name?: string
           customer_phone?: string | null
           delivery_fee?: number
+          delivery_token?: string | null
           id?: string
+          motoboy_id?: string | null
           notes?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customer_orders_motoboy_id_fkey"
+            columns: ["motoboy_id"]
+            isOneToOne: false
+            referencedRelation: "motoboys"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       delivery_zones: {
         Row: {
@@ -239,6 +253,30 @@ export type Database = {
           points?: number
           total_spent?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      motoboys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string
         }
         Relationships: []
       }

@@ -386,8 +386,41 @@ const OrderManager = () => {
                     )}
 
                     {/* Status actions + edit/delete */}
-                    <div className="flex flex-wrap gap-2">
-                      {nextStatus && (
+                    <div className="flex flex-wrap gap-2 items-start">
+                      {/* If next status is out_for_delivery, show motoboy picker instead */}
+                      {nextStatus === 'out_for_delivery' ? (
+                        assigningMotoboy === order.id ? (
+                          <div className="flex flex-wrap gap-2 items-center">
+                            <Bike className="h-4 w-4 text-purple-500" />
+                            <span className="text-sm font-medium text-foreground">Escolha o motoboy:</span>
+                            {motoboys.map(m => (
+                              <button
+                                key={m.id}
+                                onClick={() => assignMotoboyAndSend(order.id, m.id)}
+                                className="bg-purple-500/10 border border-purple-500/30 text-purple-500 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-500/20 transition-colors"
+                              >
+                                🏍️ {m.name}
+                              </button>
+                            ))}
+                            <button
+                              onClick={() => setAssigningMotoboy(null)}
+                              className="border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm hover:bg-muted"
+                            >
+                              Cancelar
+                            </button>
+                            {motoboys.length === 0 && (
+                              <span className="text-xs text-muted-foreground">Cadastre motoboys na aba Entregas</span>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setAssigningMotoboy(order.id)}
+                            className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
+                          >
+                            🏍️ Enviar p/ Motoboy
+                          </button>
+                        )
+                      ) : nextStatus ? (
                         <button
                           onClick={() => handleStatusChange(order.id, nextStatus)}
                           disabled={updateStatus.isPending}
@@ -395,7 +428,8 @@ const OrderManager = () => {
                         >
                           Avançar → {STATUS_CONFIG[nextStatus].label}
                         </button>
-                      )}
+                      ) : null}
+
                       {order.status !== 'cancelled' && order.status !== 'delivered' && (
                         <button
                           onClick={() => handleStatusChange(order.id, 'cancelled')}

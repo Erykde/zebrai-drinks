@@ -11,6 +11,7 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import OrderTracking from "./pages/OrderTracking";
+import Entrega from "./pages/Entrega";
 
 const queryClient = new QueryClient({
   defaultOptions: {

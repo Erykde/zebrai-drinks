@@ -114,6 +114,69 @@ const OrderManager = () => {
     return STATUS_FLOW[idx + 1];
   };
 
+  const generateToken = () => {
+    return crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+  };
+
+  const assignMotoboyAndSend = async (orderId: string, motoboyId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    const motoboy = motoboys.find(m => m.id === motoboyId);
+    if (!order || !motoboy) return;
+
+    // Generate delivery token
+    const token = generateToken();
+    const siteUrl = window.location.origin;
+    const deliveryLink = `${siteUrl}/entrega?token=${token}`;
+
+    // Update order with motoboy and token, set status to out_for_delivery
+    const { error } = await supabase
+      .from('customer_orders')
+      .update({ motoboy_id: motoboyId, delivery_token: token, status: 'out_for_delivery' } as any)
+      .eq('id', orderId);
+
+    if (error) {
+      toast.error('Erro ao atribuir motoboy');
+      return;
+    }
+
+    // Build items text
+    const itemsText = (order.items || [])
+      .map(i => `*${i.quantity}x* ${i.product_name}${i.mixer ? ` + ${i.mixer}` : ''} - R$ ${i.total.toFixed(2)}`)
+      .join('\n');
+
+    // Send WhatsApp to motoboy
+    const message = `🏍️ *NOVA ENTREGA!*\n\n` +
+      `📋 *Pedido #${orderId.substring(0, 8)}*\n` +
+      `👤 Cliente: *${order.customer_name}*\n` +
+      (order.customer_phone ? `📱 Tel: ${order.customer_phone}\n` : '') +
+      (order.customer_address ? `📍 Endereço: *${order.customer_address}*\n` : '') +
+      `\n${itemsText}\n\n` +
+      `💲 *Total: R$ ${order.total.toFixed(2)}*\n` +
+      (order.delivery_fee > 0 ? `🛵 Entrega: R$ ${order.delivery_fee.toFixed(2)}\n` : '') +
+      (order.notes ? `\n📝 Obs: ${order.notes}\n` : '') +
+      `\n✅ *Confirmar entrega:*\n${deliveryLink}`;
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      await fetch(`${supabaseUrl}/functions/v1/whatsapp-send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: anonKey },
+        body: JSON.stringify({ phone: motoboy.phone, message }),
+      });
+      toast.success(`Pedido enviado para ${motoboy.name}! 🏍️`);
+    } catch (e) {
+      console.error('WhatsApp send error:', e);
+      toast.success('Motoboy atribuído (erro ao enviar WhatsApp)');
+    }
+
+    // Also notify customer
+    sendWhatsAppNotification(order, 'out_for_delivery');
+
+    setAssigningMotoboy(null);
+    queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
+  };
+
   const startEditing = (order: CustomerOrder) => {
     setEditingOrder(order.id);
     setEditForm({

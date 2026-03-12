@@ -32,6 +32,20 @@ const OrderManager = () => {
   const [editingOrder, setEditingOrder] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ customer_name: '', customer_phone: '', customer_address: '', notes: '' });
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [assigningMotoboy, setAssigningMotoboy] = useState<string | null>(null);
+
+  const { data: motoboys = [] } = useQuery({
+    queryKey: ['motoboys-active'],
+    queryFn: async (): Promise<Motoboy[]> => {
+      const { data, error } = await supabase
+        .from('motoboys')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 

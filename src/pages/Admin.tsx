@@ -12,6 +12,7 @@ import LoyaltyManager from '@/components/LoyaltyManager';
 import CampaignsManager from '@/components/CampaignsManager';
 import SiteSettingsManager from '@/components/SiteSettingsManager';
 import WhatsAppManager from '@/components/WhatsAppManager';
+import MotoboyManager from '@/components/MotoboyManager';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -275,7 +276,10 @@ const Admin = () => {
             customerOrders={customerOrders}
           />
         ) : activeTab === 'delivery' ? (
-          <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
+          <div className="space-y-6">
+            <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
+            <MotoboyManager />
+          </div>
         ) : activeTab === 'marketing' ? (
           <div className="space-y-6">
             <QRCodeCard />

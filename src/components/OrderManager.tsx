@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { useCustomerOrders, CustomerOrder } from '@/hooks/useCustomerOrders';
-import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X } from 'lucide-react';
+import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+
+interface Motoboy {
+  id: string;
+  name: string;
+  phone: string;
+  is_active: boolean;
+}
 
 const STATUS_CONFIG = {
   pending: { label: 'Pendente', icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/10 border-yellow-500/30' },
@@ -25,6 +32,20 @@ const OrderManager = () => {
   const [editingOrder, setEditingOrder] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ customer_name: '', customer_phone: '', customer_address: '', notes: '' });
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [assigningMotoboy, setAssigningMotoboy] = useState<string | null>(null);
+
+  const { data: motoboys = [] } = useQuery({
+    queryKey: ['motoboys-active'],
+    queryFn: async (): Promise<Motoboy[]> => {
+      const { data, error } = await supabase
+        .from('motoboys')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
@@ -91,6 +112,69 @@ const OrderManager = () => {
     const idx = STATUS_FLOW.indexOf(current);
     if (idx === -1 || idx === STATUS_FLOW.length - 1) return null;
     return STATUS_FLOW[idx + 1];
+  };
+
+  const generateToken = () => {
+    return crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+  };
+
+  const assignMotoboyAndSend = async (orderId: string, motoboyId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    const motoboy = motoboys.find(m => m.id === motoboyId);
+    if (!order || !motoboy) return;
+
+    // Generate delivery token
+    const token = generateToken();
+    const siteUrl = window.location.origin;
+    const deliveryLink = `${siteUrl}/entrega?token=${token}`;
+
+    // Update order with motoboy and token, set status to out_for_delivery
+    const { error } = await supabase
+      .from('customer_orders')
+      .update({ motoboy_id: motoboyId, delivery_token: token, status: 'out_for_delivery' } as any)
+      .eq('id', orderId);
+
+    if (error) {
+      toast.error('Erro ao atribuir motoboy');
+      return;
+    }
+
+    // Build items text
+    const itemsText = (order.items || [])
+      .map(i => `*${i.quantity}x* ${i.product_name}${i.mixer ? ` + ${i.mixer}` : ''} - R$ ${i.total.toFixed(2)}`)
+      .join('\n');
+
+    // Send WhatsApp to motoboy
+    const message = `🏍️ *NOVA ENTREGA!*\n\n` +
+      `📋 *Pedido #${orderId.substring(0, 8)}*\n` +
+      `👤 Cliente: *${order.customer_name}*\n` +
+      (order.customer_phone ? `📱 Tel: ${order.customer_phone}\n` : '') +
+      (order.customer_address ? `📍 Endereço: *${order.customer_address}*\n` : '') +
+      `\n${itemsText}\n\n` +
+      `💲 *Total: R$ ${order.total.toFixed(2)}*\n` +
+      (order.delivery_fee > 0 ? `🛵 Entrega: R$ ${order.delivery_fee.toFixed(2)}\n` : '') +
+      (order.notes ? `\n📝 Obs: ${order.notes}\n` : '') +
+      `\n✅ *Confirmar entrega:*\n${deliveryLink}`;
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      await fetch(`${supabaseUrl}/functions/v1/whatsapp-send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: anonKey },
+        body: JSON.stringify({ phone: motoboy.phone, message }),
+      });
+      toast.success(`Pedido enviado para ${motoboy.name}! 🏍️`);
+    } catch (e) {
+      console.error('WhatsApp send error:', e);
+      toast.success('Motoboy atribuído (erro ao enviar WhatsApp)');
+    }
+
+    // Also notify customer
+    sendWhatsAppNotification(order, 'out_for_delivery');
+
+    setAssigningMotoboy(null);
+    queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
   };
 
   const startEditing = (order: CustomerOrder) => {
@@ -302,8 +386,41 @@ const OrderManager = () => {
                     )}
 
                     {/* Status actions + edit/delete */}
-                    <div className="flex flex-wrap gap-2">
-                      {nextStatus && (
+                    <div className="flex flex-wrap gap-2 items-start">
+                      {/* If next status is out_for_delivery, show motoboy picker instead */}
+                      {nextStatus === 'out_for_delivery' ? (
+                        assigningMotoboy === order.id ? (
+                          <div className="flex flex-wrap gap-2 items-center">
+                            <Bike className="h-4 w-4 text-purple-500" />
+                            <span className="text-sm font-medium text-foreground">Escolha o motoboy:</span>
+                            {motoboys.map(m => (
+                              <button
+                                key={m.id}
+                                onClick={() => assignMotoboyAndSend(order.id, m.id)}
+                                className="bg-purple-500/10 border border-purple-500/30 text-purple-500 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-500/20 transition-colors"
+                              >
+                                🏍️ {m.name}
+                              </button>
+                            ))}
+                            <button
+                              onClick={() => setAssigningMotoboy(null)}
+                              className="border border-border text-muted-foreground px-3 py-1.5 rounded-lg text-sm hover:bg-muted"
+                            >
+                              Cancelar
+                            </button>
+                            {motoboys.length === 0 && (
+                              <span className="text-xs text-muted-foreground">Cadastre motoboys na aba Entregas</span>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setAssigningMotoboy(order.id)}
+                            className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
+                          >
+                            🏍️ Enviar p/ Motoboy
+                          </button>
+                        )
+                      ) : nextStatus ? (
                         <button
                           onClick={() => handleStatusChange(order.id, nextStatus)}
                           disabled={updateStatus.isPending}
@@ -311,7 +428,8 @@ const OrderManager = () => {
                         >
                           Avançar → {STATUS_CONFIG[nextStatus].label}
                         </button>
-                      )}
+                      ) : null}
+
                       {order.status !== 'cancelled' && order.status !== 'delivered' && (
                         <button
                           onClick={() => handleStatusChange(order.id, 'cancelled')}

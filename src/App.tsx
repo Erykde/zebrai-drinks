@@ -11,6 +11,7 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import OrderTracking from "./pages/OrderTracking";
+import Entrega from "./pages/Entrega";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/pedido" element={<OrderTracking />} />
+              <Route path="/entrega" element={<Entrega />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

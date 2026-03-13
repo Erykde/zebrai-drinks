@@ -4,7 +4,7 @@ import { useProducts, useCategories, DbProduct } from '@/hooks/useProducts';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import ProductCard from '@/components/ProductCard';
 import ProductDetail from '@/components/ProductDetail';
-import { Home, ShoppingCart, Search } from 'lucide-react';
+import { Home, ShoppingCart, Search, ClipboardList } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 import bannerDrinks from '@/assets/banner-drinks.jpg';

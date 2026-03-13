@@ -177,6 +177,9 @@ const CheckoutForm = () => {
       createdAt: new Date().toISOString(),
     };
 
+    // Save customer data for next time
+    saveCustomerData(name.trim(), phone.trim(), deliveryType === 'delivery' ? address.trim() : savedCustomer.address);
+
     addOrder(order);
     setSubmitting(false);
     toast.success('Pedido enviado com sucesso! 🎉');

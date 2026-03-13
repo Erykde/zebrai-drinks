@@ -186,6 +186,10 @@ const Index = () => {
             <Home className="h-5 w-5" />
             <span className="text-[11px] font-medium">{navHomeLabel}</span>
           </Link>
+          <Link to="/pedido" className="flex flex-col items-center gap-0.5 text-muted-foreground">
+            <ClipboardList className="h-5 w-5" />
+            <span className="text-[11px] font-medium">Pedidos</span>
+          </Link>
           <Link to="/cart" className="flex flex-col items-center gap-0.5 text-muted-foreground relative">
             <ShoppingCart className="h-5 w-5" />
             <span className="text-[11px] font-medium">{navCartLabel}</span>

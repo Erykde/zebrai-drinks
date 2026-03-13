@@ -1,0 +1,1 @@
+ALTER TABLE public.customer_orders ADD COLUMN priority text NOT NULL DEFAULT 'normal';

@@ -23,12 +23,29 @@ interface AppliedCoupon {
   discountAmount: number;
 }
 
+const CUSTOMER_STORAGE_KEY = 'zebrai-customer-data';
+
+const loadSavedCustomer = () => {
+  try {
+    const saved = localStorage.getItem(CUSTOMER_STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { name: '', phone: '', address: '' };
+};
+
+const saveCustomerData = (name: string, phone: string, address: string) => {
+  try {
+    localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify({ name, phone, address }));
+  } catch {}
+};
+
 const CheckoutForm = () => {
   const { cart, cartTotal, addOrder } = useStore();
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const savedCustomer = loadSavedCustomer();
+  const [name, setName] = useState(savedCustomer.name);
+  const [phone, setPhone] = useState(savedCustomer.phone);
+  const [address, setAddress] = useState(savedCustomer.address);
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'cash'>('pix');
   const [cardType, setCardType] = useState<'credit' | 'debit'>('credit');
@@ -159,6 +176,9 @@ const CheckoutForm = () => {
       status: 'pending',
       createdAt: new Date().toISOString(),
     };
+
+    // Save customer data for next time
+    saveCustomerData(name.trim(), phone.trim(), deliveryType === 'delivery' ? address.trim() : savedCustomer.address);
 
     addOrder(order);
     setSubmitting(false);

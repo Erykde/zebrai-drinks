@@ -5,6 +5,7 @@ import { useProducts, DbProduct } from '@/hooks/useProducts';
 import Header from '@/components/Header';
 import { Pencil, Trash2, Plus, Package, LogOut, DollarSign, TrendingUp, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle } from 'lucide-react';
 import OrderManager from '@/components/OrderManager';
+import DeliveryManager from '@/components/DeliveryManager';
 import AdminDashboard from '@/components/AdminDashboard';
 import QRCodeCard from '@/components/QRCodeCard';
 import CouponsManager from '@/components/CouponsManager';
@@ -277,6 +278,7 @@ const Admin = () => {
           />
         ) : activeTab === 'delivery' ? (
           <div className="space-y-6">
+            <DeliveryManager />
             <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
             <MotoboyManager />
           </div>

@@ -4,7 +4,7 @@ import { useProducts, useCategories, DbProduct } from '@/hooks/useProducts';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import ProductCard from '@/components/ProductCard';
 import ProductDetail from '@/components/ProductDetail';
-import { Home, ShoppingCart, Search } from 'lucide-react';
+import { Home, ShoppingCart, Search, ClipboardList } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 import bannerDrinks from '@/assets/banner-drinks.jpg';
@@ -185,6 +185,10 @@ const Index = () => {
           <Link to="/" className="flex flex-col items-center gap-0.5 text-primary">
             <Home className="h-5 w-5" />
             <span className="text-[11px] font-medium">{navHomeLabel}</span>
+          </Link>
+          <Link to="/pedido" className="flex flex-col items-center gap-0.5 text-muted-foreground">
+            <ClipboardList className="h-5 w-5" />
+            <span className="text-[11px] font-medium">Pedidos</span>
           </Link>
           <Link to="/cart" className="flex flex-col items-center gap-0.5 text-muted-foreground relative">
             <ShoppingCart className="h-5 w-5" />

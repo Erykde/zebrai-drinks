@@ -278,6 +278,7 @@ const Admin = () => {
           />
         ) : activeTab === 'delivery' ? (
           <div className="space-y-6">
+            <DeliveryManager />
             <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
             <MotoboyManager />
           </div>

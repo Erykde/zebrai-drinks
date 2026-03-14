@@ -39,6 +39,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/pedido" element={<OrderTracking />} />
               <Route path="/entrega" element={<Entrega />} />
+              <Route path="/perfil" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

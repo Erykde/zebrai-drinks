@@ -213,6 +213,7 @@ const Admin = () => {
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
     { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
     { key: 'settings', icon: Settings, label: 'Configurações' },
+    { key: 'store', icon: Store, label: 'Loja' },
   ];
 
   return (

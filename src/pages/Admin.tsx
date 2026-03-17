@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store } from 'lucide-react';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';
 import AdminDashboard from '@/components/AdminDashboard';
@@ -11,6 +11,7 @@ import CouponsManager from '@/components/CouponsManager';
 import LoyaltyManager from '@/components/LoyaltyManager';
 import CampaignsManager from '@/components/CampaignsManager';
 import SiteSettingsManager from '@/components/SiteSettingsManager';
+import StoreConfigManager from '@/components/StoreConfigManager';
 import WhatsAppManager from '@/components/WhatsAppManager';
 import MotoboyManager from '@/components/MotoboyManager';
 import { toast } from 'sonner';
@@ -36,7 +37,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -212,6 +213,7 @@ const Admin = () => {
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
     { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
     { key: 'settings', icon: Settings, label: 'Configurações' },
+    { key: 'store', icon: Store, label: 'Loja' },
   ];
 
   return (
@@ -304,6 +306,8 @@ const Admin = () => {
             <WhatsAppManager />
           ) : activeTab === 'settings' ? (
             <SiteSettingsManager />
+          ) : activeTab === 'store' ? (
+            <StoreConfigManager />
           ) : (
             <ProductsTab
               products={products}

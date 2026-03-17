@@ -16,6 +16,16 @@ export interface SiteSettings {
   nav_home_label: string | null;
   nav_cart_label: string | null;
   updated_at: string | null;
+  // Store config
+  store_open: boolean | null;
+  min_order_value: number | null;
+  delivery_enabled: boolean | null;
+  pickup_enabled: boolean | null;
+  payment_methods: string[] | null;
+  opening_hours: { weekdays: string; weekend: string } | null;
+  prep_time: string | null;
+  store_address: string | null;
+  store_phone: string | null;
 }
 
 export const useSiteSettings = () => {
@@ -28,7 +38,7 @@ export const useSiteSettings = () => {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      return data as SiteSettings | null;
+      return data as unknown as SiteSettings | null;
     },
     staleTime: 1000 * 60 * 5,
   });

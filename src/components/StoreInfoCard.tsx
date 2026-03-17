@@ -2,6 +2,7 @@ import { Info, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import StoreDetailsSheet from '@/components/StoreDetailsSheet';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface StoreInfoCardProps {
   logoSrc: string;
@@ -10,21 +11,22 @@ interface StoreInfoCardProps {
 
 const StoreInfoCard = ({ logoSrc, storeName }: StoreInfoCardProps) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const { data: settings } = useSiteSettings();
+
+  const isOpen = settings?.store_open ?? true;
+  const minOrder = settings?.min_order_value ?? 10;
+  const hours = settings?.opening_hours || { weekdays: '18:00 às 23:00', weekend: '18:00 às 22:00' };
+  const openTime = hours.weekdays?.split(' ')[0] || '18:00';
 
   const handleShare = async () => {
     try {
       if (navigator.share) {
-        await navigator.share({
-          title: storeName,
-          url: window.location.href,
-        });
+        await navigator.share({ title: storeName, url: window.location.href });
       } else {
         await navigator.clipboard.writeText(window.location.href);
         toast.success('Link copiado!');
       }
-    } catch {
-      // user cancelled share
-    }
+    } catch { /* cancelled */ }
   };
 
   return (
@@ -42,8 +44,10 @@ const StoreInfoCard = ({ logoSrc, storeName }: StoreInfoCardProps) => {
                 className="w-20 h-20 rounded-full object-cover border-4 border-card shadow-md"
               />
               <h1 className="font-display text-2xl text-foreground mt-2 tracking-wide">{storeName}</h1>
-              <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-3 py-0.5 rounded-full mt-1">
-                Loja aberta
+              <span className={`text-xs font-semibold px-3 py-0.5 rounded-full mt-1 ${
+                isOpen ? 'text-green-500 bg-green-500/10' : 'text-destructive bg-destructive/10'
+              }`}>
+                {isOpen ? 'Loja aberta' : 'Loja fechada'}
               </span>
             </div>
             <button onClick={handleShare} className="p-2 text-primary mt-10">
@@ -54,11 +58,11 @@ const StoreInfoCard = ({ logoSrc, storeName }: StoreInfoCardProps) => {
           <div className="flex gap-2 mt-4">
             <div className="flex-1 bg-muted rounded-xl py-2 px-3 text-center">
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide block">Mínimo</span>
-              <span className="text-sm font-bold text-foreground">R$ 10,00</span>
+              <span className="text-sm font-bold text-foreground">R$ {Number(minOrder).toFixed(2).replace('.', ',')}</span>
             </div>
             <div className="flex-1 bg-muted rounded-xl py-2 px-3 text-center">
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide block">Abre às</span>
-              <span className="text-sm font-bold text-foreground">18:00</span>
+              <span className="text-sm font-bold text-foreground">{openTime}</span>
             </div>
             <div className="flex-1 bg-muted rounded-xl py-2 px-3 text-center">
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide block">Entrega</span>

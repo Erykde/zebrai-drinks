@@ -83,6 +83,65 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_addresses: {
+        Row: {
+          address: string
+          complement: string | null
+          created_at: string
+          id: string
+          is_default: boolean | null
+          label: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          complement?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          complement?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customer_coupons: {
+        Row: {
+          coupon_id: string
+          id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_coupons_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_order_items: {
         Row: {
           cost_price: number
@@ -389,13 +448,22 @@ export type Database = {
           cart_empty_subtitle: string | null
           cart_empty_title: string | null
           cart_title: string | null
+          delivery_enabled: boolean | null
           home_search_placeholder: string | null
           id: string
+          min_order_value: number | null
           nav_cart_label: string | null
           nav_home_label: string | null
+          opening_hours: Json | null
+          payment_methods: Json | null
+          pickup_enabled: boolean | null
+          prep_time: string | null
           primary_color: string | null
           site_name: string | null
           site_subtitle: string | null
+          store_address: string | null
+          store_open: boolean | null
+          store_phone: string | null
           updated_at: string | null
         }
         Insert: {
@@ -405,13 +473,22 @@ export type Database = {
           cart_empty_subtitle?: string | null
           cart_empty_title?: string | null
           cart_title?: string | null
+          delivery_enabled?: boolean | null
           home_search_placeholder?: string | null
           id?: string
+          min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null
+          opening_hours?: Json | null
+          payment_methods?: Json | null
+          pickup_enabled?: boolean | null
+          prep_time?: string | null
           primary_color?: string | null
           site_name?: string | null
           site_subtitle?: string | null
+          store_address?: string | null
+          store_open?: boolean | null
+          store_phone?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -421,13 +498,22 @@ export type Database = {
           cart_empty_subtitle?: string | null
           cart_empty_title?: string | null
           cart_title?: string | null
+          delivery_enabled?: boolean | null
           home_search_placeholder?: string | null
           id?: string
+          min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null
+          opening_hours?: Json | null
+          payment_methods?: Json | null
+          pickup_enabled?: boolean | null
+          prep_time?: string | null
           primary_color?: string | null
           site_name?: string | null
           site_subtitle?: string | null
+          store_address?: string | null
+          store_open?: boolean | null
+          store_phone?: string | null
           updated_at?: string | null
         }
         Relationships: []

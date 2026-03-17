@@ -37,7 +37,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();

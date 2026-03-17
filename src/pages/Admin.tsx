@@ -306,6 +306,8 @@ const Admin = () => {
             <WhatsAppManager />
           ) : activeTab === 'settings' ? (
             <SiteSettingsManager />
+          ) : activeTab === 'store' ? (
+            <StoreConfigManager />
           ) : (
             <ProductsTab
               products={products}

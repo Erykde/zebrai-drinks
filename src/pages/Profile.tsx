@@ -335,7 +335,90 @@ const Profile = () => {
         </SheetContent>
       </Sheet>
 
-      <BottomNav />
+      {/* Account Settings Sheet */}
+      <Sheet open={accountSheet} onOpenChange={setAccountSheet}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="font-display text-xl">Minha Conta</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-6 pb-6">
+            {/* Change Email */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                <p className="text-sm font-semibold text-foreground">Alterar Email</p>
+              </div>
+              <p className="text-xs text-muted-foreground">Email atual: {user?.email}</p>
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                placeholder="Novo email"
+                className="text-sm"
+              />
+              <Button
+                onClick={handleChangeEmail}
+                disabled={savingEmail || !newEmail.trim()}
+                className="w-full"
+                size="sm"
+              >
+                {savingEmail ? 'Salvando...' : 'Alterar email'}
+              </Button>
+            </div>
+
+            <div className="border-t border-border" />
+
+            {/* Change Password */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4 text-primary" />
+                <p className="text-sm font-semibold text-foreground">Alterar Senha</p>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showNewPwd ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Nova senha (mín. 6 caracteres)"
+                  className="text-sm pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPwd(!showNewPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showNewPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showConfirmPwd ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Confirmar nova senha"
+                  className="text-sm pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPwd(!showConfirmPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <Button
+                onClick={handleChangePassword}
+                disabled={savingPwd || newPassword.length < 6}
+                className="w-full"
+                size="sm"
+              >
+                {savingPwd ? 'Salvando...' : 'Alterar senha'}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
     </div>
   );
 };

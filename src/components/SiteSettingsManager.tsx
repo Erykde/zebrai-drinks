@@ -158,6 +158,41 @@ const SiteSettingsManager = () => {
         </CardContent>
       </Card>
 
+      {/* Logo */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Image className="h-4 w-4 text-primary" /> Logo (Foto Redonda)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {form.logo_url && (
+            <img src={form.logo_url} alt="Logo" className="w-20 h-20 rounded-full object-cover border-2 border-primary mx-auto" />
+          )}
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => logoFileRef.current?.click()} disabled={uploadingLogo}>
+              {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Upload className="h-4 w-4 mr-1" />}
+              {uploadingLogo ? 'Enviando...' : 'Enviar logo'}
+            </Button>
+            {form.logo_url && (
+              <Button variant="ghost" size="sm" onClick={() => setForm(f => ({ ...f, logo_url: '' }))}>
+                Remover
+              </Button>
+            )}
+          </div>
+          <input ref={logoFileRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+          <div>
+            <label className="text-xs text-muted-foreground">Ou cole a URL:</label>
+            <Input
+              value={form.logo_url}
+              onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))}
+              placeholder="https://..."
+              className="mt-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Textos */}
       <Card>
         <CardHeader className="pb-3">

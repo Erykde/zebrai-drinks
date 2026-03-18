@@ -549,7 +549,6 @@ const ProductsTab = ({
         </table>
       </div>
     </div>
-    <MenuQualityScore products={products} />
   </div>
   );
 };

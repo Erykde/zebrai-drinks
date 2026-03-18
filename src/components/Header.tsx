@@ -2,6 +2,7 @@ import { ShoppingCart, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 
 const Header = () => {

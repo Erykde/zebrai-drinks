@@ -195,7 +195,24 @@ const Profile = () => {
           </button>
         )}
 
-        {/* Admin link - only for admins */}
+        {/* Account Settings */}
+        {user && (
+          <button
+            onClick={() => setAccountSheet(true)}
+            className="w-full flex items-center gap-3 bg-card rounded-xl p-4 text-left hover:bg-card/80 transition-colors"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Lock className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <span className="font-semibold text-sm text-foreground">Minha Conta</span>
+              <p className="text-xs text-muted-foreground">Alterar email ou senha</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+        )}
+
+
         {user && isAdmin && (
           <button
             onClick={() => navigate('/admin')}

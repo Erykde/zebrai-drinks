@@ -17,7 +17,15 @@ const Profile = () => {
   const queryClient = useQueryClient();
   const [addressSheet, setAddressSheet] = useState(false);
   const [couponSheet, setCouponSheet] = useState(false);
+  const [accountSheet, setAccountSheet] = useState(false);
   const [newAddress, setNewAddress] = useState({ label: 'Casa', address: '', complement: '' });
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [savingPwd, setSavingPwd] = useState(false);
 
   // Fetch user addresses
   const { data: addresses = [] } = useQuery({

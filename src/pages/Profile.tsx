@@ -93,6 +93,38 @@ const Profile = () => {
     navigate('/');
   };
 
+  const handleChangeEmail = async () => {
+    if (!newEmail.trim()) { toast.error('Digite o novo email'); return; }
+    setSavingEmail(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+      if (error) throw error;
+      toast.success('Email de confirmação enviado para o novo endereço!');
+      setNewEmail('');
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao alterar email');
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) { toast.error('A senha deve ter pelo menos 6 caracteres'); return; }
+    if (newPassword !== confirmPassword) { toast.error('As senhas não coincidem'); return; }
+    setSavingPwd(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success('Senha alterada com sucesso!');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao alterar senha');
+    } finally {
+      setSavingPwd(false);
+    }
+  };
+
   const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Meu Perfil';
 
   return (

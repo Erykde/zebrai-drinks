@@ -100,32 +100,43 @@ serve(async (req) => {
         });
       }
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage using service role client
       const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
       const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-      // Convert base64 to binary
+      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+      // Convert base64 to binary using chunked approach
       const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
-      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      const chunkSize = 8192;
+      for (let i = 0; i < binaryString.length; i += chunkSize) {
+        const end = Math.min(i + chunkSize, binaryString.length);
+        for (let j = i; j < end; j++) {
+          bytes[j] = binaryString.charCodeAt(j);
+        }
+      }
 
       const fileName = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.png`;
-      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/product-images/${fileName}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          "Content-Type": "image/png",
-        },
-        body: binaryData,
-      });
 
-      if (!uploadRes.ok) {
-        const t = await uploadRes.text();
-        console.error("Upload error:", t);
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from("product-images")
+        .upload(fileName, bytes, {
+          contentType: "image/png",
+          cacheControl: "3600",
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", JSON.stringify(uploadError));
         throw new Error("Failed to upload image");
       }
 
-      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/product-images/${fileName}`;
-      return new Response(JSON.stringify({ imageUrl: publicUrl }), {
+      const { data: urlData } = supabaseAdmin.storage
+        .from("product-images")
+        .getPublicUrl(fileName);
+
+      return new Response(JSON.stringify({ imageUrl: urlData.publicUrl }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

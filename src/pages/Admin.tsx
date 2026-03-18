@@ -513,21 +513,14 @@ const ProductsTab = ({
             <tr>
               <th className="text-left p-3">Produto</th>
               <th className="text-left p-3">Categoria</th>
-              <th className="text-right p-3">Venda</th>
-              <th className="text-right p-3">Custo</th>
-              <th className="text-right p-3">Lucro</th>
-              <th className="text-right p-3">Margem</th>
+              <th className="text-right p-3">Preço</th>
               <th className="text-right p-3">Estoque</th>
               <th className="text-center p-3">Mixers</th>
               <th className="text-right p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {products.map(p => {
-              const costPrice = (p as any).cost_price ?? 0;
-              const profit = p.price - costPrice;
-              const margin = p.price > 0 ? (profit / p.price) * 100 : 0;
-              return (
+            {products.map(p => (
               <tr key={p.id} className="border-t border-border hover:bg-muted/50">
                 <td className="p-3 font-medium text-card-foreground">
                   {p.image_url ? (
@@ -541,13 +534,6 @@ const ProductsTab = ({
                 </td>
                 <td className="p-3 text-muted-foreground">{p.category}</td>
                 <td className="p-3 text-right text-primary font-medium">R$ {p.price.toFixed(2)}</td>
-                <td className="p-3 text-right text-muted-foreground">{costPrice > 0 ? `R$ ${costPrice.toFixed(2)}` : '—'}</td>
-                <td className={`p-3 text-right font-medium ${profit > 0 ? 'text-green-500' : profit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                  {costPrice > 0 ? `R$ ${profit.toFixed(2)}` : '—'}
-                </td>
-                <td className={`p-3 text-right text-xs font-semibold ${margin >= 50 ? 'text-green-500' : margin >= 30 ? 'text-yellow-500' : margin > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
-                  {costPrice > 0 ? `${margin.toFixed(0)}%` : '—'}
-                </td>
                 <td className={`p-3 text-right font-medium ${(p.stock ?? 0) <= 5 ? 'text-destructive' : 'text-card-foreground'}`}>{p.stock ?? 0}</td>
                 <td className="p-3 text-center text-muted-foreground">{p.mixer_options.length}</td>
                 <td className="p-3 text-right">
@@ -557,8 +543,7 @@ const ProductsTab = ({
                   </div>
                 </td>
               </tr>
-              );
-            })}
+            ))}
           </tbody>
         </table>
       </div>

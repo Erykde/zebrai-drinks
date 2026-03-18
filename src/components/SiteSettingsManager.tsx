@@ -20,6 +20,7 @@ const SiteSettingsManager = () => {
     site_subtitle: '',
     primary_color: '#c9941a',
     banner_url: '',
+    logo_url: '',
     cart_title: '',
     cart_empty_title: '',
     cart_empty_subtitle: '',

@@ -3,6 +3,7 @@ import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 
 const Auth = () => {

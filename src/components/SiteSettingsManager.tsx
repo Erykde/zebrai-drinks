@@ -72,6 +72,29 @@ const SiteSettingsManager = () => {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem!'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Máximo 5MB!'); return; }
+
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('banner-images').upload(fileName, file, { upsert: true, cacheControl: '3600' });
+      if (error) throw error;
+      const { data } = supabase.storage.from('banner-images').getPublicUrl(fileName);
+      setForm(f => ({ ...f, logo_url: data.publicUrl }));
+      toast.success('Logo enviada!');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao enviar');
+    } finally {
+      setUploadingLogo(false);
+      if (logoFileRef.current) logoFileRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     if (!settings) return;
     try {
@@ -81,6 +104,7 @@ const SiteSettingsManager = () => {
         site_subtitle: form.site_subtitle || null,
         primary_color: form.primary_color || null,
         banner_url: form.banner_url || null,
+        logo_url: form.logo_url || null,
         cart_title: form.cart_title || null,
         cart_empty_title: form.cart_empty_title || null,
         cart_empty_subtitle: form.cart_empty_subtitle || null,
@@ -88,7 +112,7 @@ const SiteSettingsManager = () => {
         home_search_placeholder: form.home_search_placeholder || null,
         nav_home_label: form.nav_home_label || null,
         nav_cart_label: form.nav_cart_label || null,
-      });
+      } as any);
       toast.success('Configurações salvas!');
     } catch {
       toast.error('Erro ao salvar');

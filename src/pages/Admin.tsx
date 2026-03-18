@@ -211,6 +211,7 @@ const Admin = () => {
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
+    { key: 'pricing', icon: DollarSign, label: 'Precificação' },
     { key: 'delivery', icon: Bike, label: 'Entregas' },
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
     { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },

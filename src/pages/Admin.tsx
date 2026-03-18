@@ -254,7 +254,7 @@ const Admin = () => {
 
         <div className="p-4 border-t border-border">
           <button
-            onClick={signOut}
+            onClick={() => navigate('/')}
             className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
           >
             <LogOut className="h-5 w-5" />

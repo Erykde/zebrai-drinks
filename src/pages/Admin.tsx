@@ -547,8 +547,10 @@ const ProductsTab = ({
         </table>
       </div>
     </div>
+    <MenuQualityScore products={products} />
   </div>
-);
+  );
+};
 
 // === Delivery Tab ===
 const DeliveryTab = ({ zones, queryClient }: { zones: any[]; queryClient: any }) => {

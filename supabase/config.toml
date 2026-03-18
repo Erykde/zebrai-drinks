@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.motoboy-deliver]
 verify_jwt = false
+
+[functions.ai-product]
+verify_jwt = false

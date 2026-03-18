@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2 } from 'lucide-react';
+import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';
 import AdminDashboard from '@/components/AdminDashboard';
@@ -361,7 +362,49 @@ const ProductsTab = ({
   onAddFlavor: (i: number) => void;
   onRemoveFlavor: (mi: number, fi: number) => void;
   onUpdateFlavor: (mi: number, fi: number, v: string) => void;
-}) => (
+}) => {
+  const [aiLoadingDesc, setAiLoadingDesc] = useState(false);
+  const [aiLoadingImg, setAiLoadingImg] = useState(false);
+
+  const generateDescription = async () => {
+    if (!form.name.trim()) { toast.error('Preencha o nome do produto primeiro'); return; }
+    setAiLoadingDesc(true);
+    try {
+      const res = await supabase.functions.invoke('ai-product', {
+        body: { action: 'description', productName: form.name, category: form.category || 'Drinks' },
+      });
+      if (res.error) throw res.error;
+      const { description, error } = res.data;
+      if (error) { toast.error(error); return; }
+      setForm({ ...form, description });
+      toast.success('Descrição gerada com IA! ✨');
+    } catch (e: any) {
+      toast.error(e?.message || 'Erro ao gerar descrição');
+    } finally {
+      setAiLoadingDesc(false);
+    }
+  };
+
+  const generateImage = async () => {
+    if (!form.name.trim()) { toast.error('Preencha o nome do produto primeiro'); return; }
+    setAiLoadingImg(true);
+    try {
+      const res = await supabase.functions.invoke('ai-product', {
+        body: { action: 'image', productName: form.name, category: form.category || 'Drinks' },
+      });
+      if (res.error) throw res.error;
+      const { imageUrl, error } = res.data;
+      if (error) { toast.error(error); return; }
+      setForm({ ...form, imageUrl });
+      toast.success('Foto gerada com IA! 📸');
+    } catch (e: any) {
+      toast.error(e?.message || 'Erro ao gerar foto');
+    } finally {
+      setAiLoadingImg(false);
+    }
+  };
+
+  return (
   <div>
     <button
       onClick={onShowForm}
@@ -380,8 +423,15 @@ const ProductsTab = ({
             className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
           <input value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="Categoria" required maxLength={50}
             className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
-          <input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Descrição" maxLength={200}
-            className="px-4 py-2 rounded-lg border border-input bg-background text-foreground md:col-span-2" />
+          <div className="md:col-span-2 flex gap-2">
+            <input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Descrição" maxLength={200}
+              className="flex-1 px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
+            <button type="button" onClick={generateDescription} disabled={aiLoadingDesc}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50 whitespace-nowrap">
+              {aiLoadingDesc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              IA
+            </button>
+          </div>
           <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="Preço de venda (R$)" required step="0.01" min="0"
             className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
           <input type="number" value={form.costPrice} onChange={e => setForm({...form, costPrice: e.target.value})} placeholder="Preço de custo (R$)" step="0.01" min="0"
@@ -396,6 +446,11 @@ const ProductsTab = ({
               onUpload={(url) => setForm({...form, imageUrl: url})}
               onRemove={() => setForm({...form, imageUrl: ''})}
             />
+            <button type="button" onClick={generateImage} disabled={aiLoadingImg}
+              className="mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50">
+              {aiLoadingImg ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+              {aiLoadingImg ? 'Gerando foto...' : 'Gerar foto com IA'}
+            </button>
           </div>
         </div>
 
@@ -492,8 +547,10 @@ const ProductsTab = ({
         </table>
       </div>
     </div>
+    <MenuQualityScore products={products} />
   </div>
-);
+  );
+};
 
 // === Delivery Tab ===
 const DeliveryTab = ({ zones, queryClient }: { zones: any[]; queryClient: any }) => {

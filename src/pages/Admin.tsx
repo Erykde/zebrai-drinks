@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
 import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store } from 'lucide-react';
@@ -42,6 +42,7 @@ type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' |
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user, isAdmin, loading, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
@@ -254,7 +255,7 @@ const Admin = () => {
 
         <div className="p-4 border-t border-border">
           <button
-            onClick={signOut}
+            onClick={() => navigate('/')}
             className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
           >
             <LogOut className="h-5 w-5" />

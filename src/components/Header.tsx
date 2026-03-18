@@ -9,6 +9,8 @@ const Header = () => {
   const { cartCount } = useStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const { data: settings } = useSiteSettings();
+  const logoSrc = settings?.logo_url || zebraiLogo;
 
   const links = [
     { to: '/', label: 'Cardápio' },

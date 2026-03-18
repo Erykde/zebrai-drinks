@@ -451,6 +451,7 @@ export type Database = {
           delivery_enabled: boolean | null
           home_search_placeholder: string | null
           id: string
+          logo_url: string | null
           min_order_value: number | null
           nav_cart_label: string | null
           nav_home_label: string | null
@@ -476,6 +477,7 @@ export type Database = {
           delivery_enabled?: boolean | null
           home_search_placeholder?: string | null
           id?: string
+          logo_url?: string | null
           min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null
@@ -501,6 +503,7 @@ export type Database = {
           delivery_enabled?: boolean | null
           home_search_placeholder?: string | null
           id?: string
+          logo_url?: string | null
           min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null

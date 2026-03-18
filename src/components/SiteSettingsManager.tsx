@@ -11,13 +11,16 @@ const SiteSettingsManager = () => {
   const { data: settings, isLoading } = useSiteSettings();
   const updateSettings = useUpdateSiteSettings();
   const fileRef = useRef<HTMLInputElement>(null);
+  const logoFileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [form, setForm] = useState({
     site_name: '',
     site_subtitle: '',
     primary_color: '#c9941a',
     banner_url: '',
+    logo_url: '',
     cart_title: '',
     cart_empty_title: '',
     cart_empty_subtitle: '',
@@ -34,6 +37,7 @@ const SiteSettingsManager = () => {
         site_subtitle: settings.site_subtitle || '',
         primary_color: settings.primary_color || '#c9941a',
         banner_url: settings.banner_url || '',
+        logo_url: (settings as any).logo_url || '',
         cart_title: settings.cart_title || '',
         cart_empty_title: settings.cart_empty_title || '',
         cart_empty_subtitle: settings.cart_empty_subtitle || '',
@@ -68,6 +72,29 @@ const SiteSettingsManager = () => {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem!'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Máximo 5MB!'); return; }
+
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('banner-images').upload(fileName, file, { upsert: true, cacheControl: '3600' });
+      if (error) throw error;
+      const { data } = supabase.storage.from('banner-images').getPublicUrl(fileName);
+      setForm(f => ({ ...f, logo_url: data.publicUrl }));
+      toast.success('Logo enviada!');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao enviar');
+    } finally {
+      setUploadingLogo(false);
+      if (logoFileRef.current) logoFileRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     if (!settings) return;
     try {
@@ -77,6 +104,7 @@ const SiteSettingsManager = () => {
         site_subtitle: form.site_subtitle || null,
         primary_color: form.primary_color || null,
         banner_url: form.banner_url || null,
+        logo_url: form.logo_url || null,
         cart_title: form.cart_title || null,
         cart_empty_title: form.cart_empty_title || null,
         cart_empty_subtitle: form.cart_empty_subtitle || null,
@@ -84,7 +112,7 @@ const SiteSettingsManager = () => {
         home_search_placeholder: form.home_search_placeholder || null,
         nav_home_label: form.nav_home_label || null,
         nav_cart_label: form.nav_cart_label || null,
-      });
+      } as any);
       toast.success('Configurações salvas!');
     } catch {
       toast.error('Erro ao salvar');
@@ -123,6 +151,41 @@ const SiteSettingsManager = () => {
             <Input
               value={form.banner_url}
               onChange={e => setForm(f => ({ ...f, banner_url: e.target.value }))}
+              placeholder="https://..."
+              className="mt-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Logo */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Image className="h-4 w-4 text-primary" /> Logo (Foto Redonda)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {form.logo_url && (
+            <img src={form.logo_url} alt="Logo" className="w-20 h-20 rounded-full object-cover border-2 border-primary mx-auto" />
+          )}
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => logoFileRef.current?.click()} disabled={uploadingLogo}>
+              {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Upload className="h-4 w-4 mr-1" />}
+              {uploadingLogo ? 'Enviando...' : 'Enviar logo'}
+            </Button>
+            {form.logo_url && (
+              <Button variant="ghost" size="sm" onClick={() => setForm(f => ({ ...f, logo_url: '' }))}>
+                Remover
+              </Button>
+            )}
+          </div>
+          <input ref={logoFileRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+          <div>
+            <label className="text-xs text-muted-foreground">Ou cole a URL:</label>
+            <Input
+              value={form.logo_url}
+              onChange={e => setForm(f => ({ ...f, logo_url: e.target.value }))}
               placeholder="https://..."
               className="mt-1"
             />

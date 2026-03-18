@@ -413,6 +413,8 @@ const ProductsTab = ({
       <Plus className="h-4 w-4" /> Novo Produto
     </button>
 
+    <MenuQualityScore products={products} />
+
     {showForm && (
       <form onSubmit={onSubmit} className="bg-card rounded-lg border border-border p-6 mb-6 animate-fade-in">
         <h3 className="font-display text-xl mb-4 text-card-foreground">

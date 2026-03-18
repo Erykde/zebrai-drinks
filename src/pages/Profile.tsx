@@ -419,6 +419,7 @@ const Profile = () => {
         </SheetContent>
       </Sheet>
 
+      <BottomNav />
     </div>
   );
 };

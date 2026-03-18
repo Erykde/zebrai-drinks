@@ -42,6 +42,7 @@ type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' |
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user, isAdmin, loading, signOut } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);

@@ -362,7 +362,49 @@ const ProductsTab = ({
   onAddFlavor: (i: number) => void;
   onRemoveFlavor: (mi: number, fi: number) => void;
   onUpdateFlavor: (mi: number, fi: number, v: string) => void;
-}) => (
+}) => {
+  const [aiLoadingDesc, setAiLoadingDesc] = useState(false);
+  const [aiLoadingImg, setAiLoadingImg] = useState(false);
+
+  const generateDescription = async () => {
+    if (!form.name.trim()) { toast.error('Preencha o nome do produto primeiro'); return; }
+    setAiLoadingDesc(true);
+    try {
+      const res = await supabase.functions.invoke('ai-product', {
+        body: { action: 'description', productName: form.name, category: form.category || 'Drinks' },
+      });
+      if (res.error) throw res.error;
+      const { description, error } = res.data;
+      if (error) { toast.error(error); return; }
+      setForm({ ...form, description });
+      toast.success('Descrição gerada com IA! ✨');
+    } catch (e: any) {
+      toast.error(e?.message || 'Erro ao gerar descrição');
+    } finally {
+      setAiLoadingDesc(false);
+    }
+  };
+
+  const generateImage = async () => {
+    if (!form.name.trim()) { toast.error('Preencha o nome do produto primeiro'); return; }
+    setAiLoadingImg(true);
+    try {
+      const res = await supabase.functions.invoke('ai-product', {
+        body: { action: 'image', productName: form.name, category: form.category || 'Drinks' },
+      });
+      if (res.error) throw res.error;
+      const { imageUrl, error } = res.data;
+      if (error) { toast.error(error); return; }
+      setForm({ ...form, imageUrl });
+      toast.success('Foto gerada com IA! 📸');
+    } catch (e: any) {
+      toast.error(e?.message || 'Erro ao gerar foto');
+    } finally {
+      setAiLoadingImg(false);
+    }
+  };
+
+  return (
   <div>
     <button
       onClick={onShowForm}

@@ -311,6 +311,8 @@ const Admin = () => {
             <SiteSettingsManager />
           ) : activeTab === 'store' ? (
             <StoreConfigManager />
+          ) : activeTab === 'pricing' ? (
+            <PricingTab products={products} queryClient={queryClient} />
           ) : (
             <ProductsTab
               products={products}

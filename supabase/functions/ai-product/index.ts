@@ -88,55 +88,101 @@ serve(async (req) => {
             status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
+        const errText = await response.text();
+        console.error("AI API error:", response.status, errText);
         throw new Error(`AI image error: ${response.status}`);
       }
 
       const data = await response.json();
-      const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url || "";
+      console.log("AI response keys:", JSON.stringify(Object.keys(data)));
+      
+      // Try multiple possible response formats
+      let imageBase64 = "";
+      const choice = data.choices?.[0]?.message;
+      
+      if (choice?.images?.[0]?.image_url?.url) {
+        imageBase64 = choice.images[0].image_url.url;
+      } else if (choice?.content) {
+        // Check if content contains inline image data
+        const parts = Array.isArray(choice.content) ? choice.content : [];
+        for (const part of parts) {
+          if (part?.type === "image_url" && part?.image_url?.url) {
+            imageBase64 = part.image_url.url;
+            break;
+          }
+          if (part?.inline_data?.data) {
+            imageBase64 = `data:${part.inline_data.mime_type || "image/png"};base64,${part.inline_data.data}`;
+            break;
+          }
+        }
+        // If content is a string with base64
+        if (!imageBase64 && typeof choice.content === "string" && choice.content.startsWith("data:image")) {
+          imageBase64 = choice.content;
+        }
+      }
 
-      if (!imageUrl) {
+      if (!imageBase64) {
+        console.error("No image found in response. Full response:", JSON.stringify(data).substring(0, 2000));
         return new Response(JSON.stringify({ error: "Não foi possível gerar a imagem." }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Upload to Supabase Storage using service role client
+      // Upload to Supabase Storage
       const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
       const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      // Clean base64 data
+      let cleanBase64 = imageBase64;
+      if (cleanBase64.includes(",")) {
+        cleanBase64 = cleanBase64.split(",")[1];
+      }
+      cleanBase64 = cleanBase64.replace(/\s/g, "");
 
-      // Convert base64 to binary using chunked approach
-      const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
-      const binaryString = atob(base64Data);
+      // Convert to binary
+      const binaryString = atob(cleanBase64);
       const bytes = new Uint8Array(binaryString.length);
-      const chunkSize = 8192;
-      for (let i = 0; i < binaryString.length; i += chunkSize) {
-        const end = Math.min(i + chunkSize, binaryString.length);
-        for (let j = i; j < end; j++) {
-          bytes[j] = binaryString.charCodeAt(j);
-        }
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
 
       const fileName = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.png`;
 
-      const { error: uploadError } = await supabaseAdmin.storage
-        .from("product-images")
-        .upload(fileName, bytes, {
-          contentType: "image/png",
-          cacheControl: "3600",
-        });
+      // Use raw fetch with both apikey and Authorization headers
+      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/product-images/${fileName}`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          "Content-Type": "image/png",
+          "x-upsert": "true",
+        },
+        body: bytes,
+      });
 
-      if (uploadError) {
-        console.error("Upload error:", JSON.stringify(uploadError));
-        throw new Error("Failed to upload image");
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        console.error("Upload error:", uploadRes.status, errText);
+        
+        // Fallback: try with Supabase client
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from("product-images")
+          .upload(fileName, bytes, { contentType: "image/png", cacheControl: "3600" });
+
+        if (uploadError) {
+          console.error("Fallback upload error:", JSON.stringify(uploadError));
+          throw new Error("Failed to upload image");
+        }
+      } else {
+        await uploadRes.text(); // consume body
       }
 
-      const { data: urlData } = supabaseAdmin.storage
-        .from("product-images")
-        .getPublicUrl(fileName);
-
-      return new Response(JSON.stringify({ imageUrl: urlData.publicUrl }), {
+      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/product-images/${fileName}`;
+      return new Response(JSON.stringify({ imageUrl: publicUrl }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

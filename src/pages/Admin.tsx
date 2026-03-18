@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign } from 'lucide-react';
 import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';
@@ -38,7 +38,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -211,6 +211,7 @@ const Admin = () => {
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
+    { key: 'pricing', icon: DollarSign, label: 'Precificação' },
     { key: 'delivery', icon: Bike, label: 'Entregas' },
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
     { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
@@ -310,6 +311,8 @@ const Admin = () => {
             <SiteSettingsManager />
           ) : activeTab === 'store' ? (
             <StoreConfigManager />
+          ) : activeTab === 'pricing' ? (
+            <PricingTab products={products} queryClient={queryClient} />
           ) : (
             <ProductsTab
               products={products}
@@ -512,21 +515,14 @@ const ProductsTab = ({
             <tr>
               <th className="text-left p-3">Produto</th>
               <th className="text-left p-3">Categoria</th>
-              <th className="text-right p-3">Venda</th>
-              <th className="text-right p-3">Custo</th>
-              <th className="text-right p-3">Lucro</th>
-              <th className="text-right p-3">Margem</th>
+              <th className="text-right p-3">Preço</th>
               <th className="text-right p-3">Estoque</th>
               <th className="text-center p-3">Mixers</th>
               <th className="text-right p-3">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {products.map(p => {
-              const costPrice = (p as any).cost_price ?? 0;
-              const profit = p.price - costPrice;
-              const margin = p.price > 0 ? (profit / p.price) * 100 : 0;
-              return (
+            {products.map(p => (
               <tr key={p.id} className="border-t border-border hover:bg-muted/50">
                 <td className="p-3 font-medium text-card-foreground">
                   {p.image_url ? (
@@ -540,13 +536,6 @@ const ProductsTab = ({
                 </td>
                 <td className="p-3 text-muted-foreground">{p.category}</td>
                 <td className="p-3 text-right text-primary font-medium">R$ {p.price.toFixed(2)}</td>
-                <td className="p-3 text-right text-muted-foreground">{costPrice > 0 ? `R$ ${costPrice.toFixed(2)}` : '—'}</td>
-                <td className={`p-3 text-right font-medium ${profit > 0 ? 'text-green-500' : profit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                  {costPrice > 0 ? `R$ ${profit.toFixed(2)}` : '—'}
-                </td>
-                <td className={`p-3 text-right text-xs font-semibold ${margin >= 50 ? 'text-green-500' : margin >= 30 ? 'text-yellow-500' : margin > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
-                  {costPrice > 0 ? `${margin.toFixed(0)}%` : '—'}
-                </td>
                 <td className={`p-3 text-right font-medium ${(p.stock ?? 0) <= 5 ? 'text-destructive' : 'text-card-foreground'}`}>{p.stock ?? 0}</td>
                 <td className="p-3 text-center text-muted-foreground">{p.mixer_options.length}</td>
                 <td className="p-3 text-right">
@@ -556,8 +545,7 @@ const ProductsTab = ({
                   </div>
                 </td>
               </tr>
-              );
-            })}
+            ))}
           </tbody>
         </table>
       </div>
@@ -566,7 +554,126 @@ const ProductsTab = ({
   );
 };
 
-// === Delivery Tab ===
+// === Pricing Tab ===
+const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryClient: any }) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [costValue, setCostValue] = useState('');
+
+  const handleSaveCost = async (productId: string) => {
+    const { error } = await supabase
+      .from('products')
+      .update({ cost_price: parseFloat(costValue) || 0 } as any)
+      .eq('id', productId);
+    if (error) { toast.error('Erro ao salvar custo'); return; }
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    toast.success('Custo atualizado!');
+    setEditingId(null);
+  };
+
+  const totalRevenue = products.reduce((sum, p) => sum + p.price, 0);
+  const totalCost = products.reduce((sum, p) => sum + ((p as any).cost_price ?? 0), 0);
+  const productsWithCost = products.filter(p => ((p as any).cost_price ?? 0) > 0);
+  const avgMargin = productsWithCost.length > 0
+    ? productsWithCost.reduce((sum, p) => {
+        const cost = (p as any).cost_price ?? 0;
+        return sum + ((p.price - cost) / p.price) * 100;
+      }, 0) / productsWithCost.length
+    : 0;
+
+  return (
+    <div>
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="bg-card rounded-lg border border-border p-4">
+          <p className="text-xs text-muted-foreground">Produtos</p>
+          <p className="text-2xl font-bold text-foreground">{products.length}</p>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-4">
+          <p className="text-xs text-muted-foreground">Com custo</p>
+          <p className="text-2xl font-bold text-primary">{productsWithCost.length}</p>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-4">
+          <p className="text-xs text-muted-foreground">Sem custo</p>
+          <p className="text-2xl font-bold text-destructive">{products.length - productsWithCost.length}</p>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-4">
+          <p className="text-xs text-muted-foreground">Margem média</p>
+          <p className={`text-2xl font-bold ${avgMargin >= 50 ? 'text-green-500' : avgMargin >= 30 ? 'text-yellow-500' : 'text-orange-500'}`}>
+            {avgMargin > 0 ? `${avgMargin.toFixed(0)}%` : '—'}
+          </p>
+        </div>
+      </div>
+
+      {/* Product pricing table */}
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary text-secondary-foreground">
+              <tr>
+                <th className="text-left p-3">Produto</th>
+                <th className="text-left p-3">Categoria</th>
+                <th className="text-right p-3">Venda</th>
+                <th className="text-right p-3">Custo</th>
+                <th className="text-right p-3">Lucro</th>
+                <th className="text-right p-3">Margem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map(p => {
+                const costPrice = (p as any).cost_price ?? 0;
+                const profit = p.price - costPrice;
+                const margin = p.price > 0 ? (profit / p.price) * 100 : 0;
+                const isEditing = editingId === p.id;
+                return (
+                  <tr key={p.id} className="border-t border-border hover:bg-muted/50">
+                    <td className="p-3 font-medium text-card-foreground">
+                      <span>{p.image_emoji} {p.name}</span>
+                    </td>
+                    <td className="p-3 text-muted-foreground text-xs">{p.category}</td>
+                    <td className="p-3 text-right text-primary font-medium">R$ {p.price.toFixed(2)}</td>
+                    <td className="p-3 text-right">
+                      {isEditing ? (
+                        <div className="flex items-center gap-1 justify-end">
+                          <input
+                            type="number"
+                            value={costValue}
+                            onChange={e => setCostValue(e.target.value)}
+                            step="0.01"
+                            min="0"
+                            className="w-20 px-2 py-1 rounded border border-input bg-background text-foreground text-sm text-right"
+                            autoFocus
+                            onKeyDown={e => { if (e.key === 'Enter') handleSaveCost(p.id); if (e.key === 'Escape') setEditingId(null); }}
+                          />
+                          <button onClick={() => handleSaveCost(p.id)} className="text-xs text-primary hover:underline">✓</button>
+                          <button onClick={() => setEditingId(null)} className="text-xs text-muted-foreground hover:underline">✕</button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setEditingId(p.id); setCostValue(costPrice.toString()); }}
+                          className={`hover:underline ${costPrice > 0 ? 'text-muted-foreground' : 'text-destructive/60 italic'}`}
+                        >
+                          {costPrice > 0 ? `R$ ${costPrice.toFixed(2)}` : 'definir'}
+                        </button>
+                      )}
+                    </td>
+                    <td className={`p-3 text-right font-medium ${profit > 0 ? 'text-green-500' : profit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {costPrice > 0 ? `R$ ${profit.toFixed(2)}` : '—'}
+                    </td>
+                    <td className={`p-3 text-right text-xs font-semibold ${margin >= 50 ? 'text-green-500' : margin >= 30 ? 'text-yellow-500' : margin > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
+                      {costPrice > 0 ? `${margin.toFixed(0)}%` : '—'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const DeliveryTab = ({ zones, queryClient }: { zones: any[]; queryClient: any }) => {
   const [editingZone, setEditingZone] = useState<any | null>(null);
   const [showZoneForm, setShowZoneForm] = useState(false);

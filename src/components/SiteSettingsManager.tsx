@@ -37,6 +37,7 @@ const SiteSettingsManager = () => {
         site_subtitle: settings.site_subtitle || '',
         primary_color: settings.primary_color || '#c9941a',
         banner_url: settings.banner_url || '',
+        logo_url: (settings as any).logo_url || '',
         cart_title: settings.cart_title || '',
         cart_empty_title: settings.cart_empty_title || '',
         cart_empty_subtitle: settings.cart_empty_subtitle || '',

@@ -555,27 +555,92 @@ const ProductsTab = ({
 };
 
 // === Pricing Tab ===
-const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryClient: any }) => {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [costValue, setCostValue] = useState('');
+interface Ingredient {
+  id?: string;
+  name: string;
+  cost: number;
+  quantity: number;
+  unit: string;
+}
 
-  const handleSaveCost = async (productId: string) => {
-    const { error } = await supabase
-      .from('products')
-      .update({ cost_price: parseFloat(costValue) || 0 } as any)
-      .eq('id', productId);
-    if (error) { toast.error('Erro ao salvar custo'); return; }
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    toast.success('Custo atualizado!');
-    setEditingId(null);
+const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryClient: any }) => {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [loadingIngredients, setLoadingIngredients] = useState(false);
+  const [savingIngredients, setSavingIngredients] = useState(false);
+
+  // Fetch ingredients grouped by product
+  const { data: allIngredients = [] } = useQuery({
+    queryKey: ['product-ingredients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_ingredients' as any)
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+
+  const getProductCost = (productId: string) => {
+    const prodIngredients = allIngredients.filter((i: any) => i.product_id === productId);
+    if (prodIngredients.length === 0) return (products.find(p => p.id === productId) as any)?.cost_price ?? 0;
+    return prodIngredients.reduce((sum: number, i: any) => sum + (i.cost * i.quantity), 0);
   };
 
-  const totalRevenue = products.reduce((sum, p) => sum + p.price, 0);
-  const totalCost = products.reduce((sum, p) => sum + ((p as any).cost_price ?? 0), 0);
-  const productsWithCost = products.filter(p => ((p as any).cost_price ?? 0) > 0);
+  const openIngredients = async (productId: string) => {
+    if (expandedId === productId) { setExpandedId(null); return; }
+    setLoadingIngredients(true);
+    const prodIngredients = allIngredients.filter((i: any) => i.product_id === productId);
+    setIngredients(prodIngredients.length > 0
+      ? prodIngredients.map((i: any) => ({ id: i.id, name: i.name, cost: Number(i.cost), quantity: Number(i.quantity), unit: i.unit }))
+      : [{ name: '', cost: 0, quantity: 1, unit: 'un' }]
+    );
+    setExpandedId(productId);
+    setLoadingIngredients(false);
+  };
+
+  const addIngredient = () => setIngredients(prev => [...prev, { name: '', cost: 0, quantity: 1, unit: 'un' }]);
+  const removeIngredient = (idx: number) => setIngredients(prev => prev.filter((_, i) => i !== idx));
+  const updateIngredient = (idx: number, field: keyof Ingredient, value: string | number) => {
+    setIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, [field]: value } : ing));
+  };
+
+  const saveIngredients = async () => {
+    if (!expandedId) return;
+    setSavingIngredients(true);
+    const validIngredients = ingredients.filter(i => i.name.trim() !== '');
+
+    // Delete existing
+    await supabase.from('product_ingredients' as any).delete().eq('product_id', expandedId);
+
+    // Insert new
+    if (validIngredients.length > 0) {
+      const rows = validIngredients.map(i => ({
+        product_id: expandedId,
+        name: i.name.trim(),
+        cost: i.cost,
+        quantity: i.quantity,
+        unit: i.unit,
+      }));
+      const { error } = await supabase.from('product_ingredients' as any).insert(rows);
+      if (error) { toast.error('Erro ao salvar ingredientes'); setSavingIngredients(false); return; }
+    }
+
+    // Update product cost_price with total
+    const totalCost = validIngredients.reduce((sum, i) => sum + (i.cost * i.quantity), 0);
+    await supabase.from('products').update({ cost_price: totalCost } as any).eq('id', expandedId);
+
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['product-ingredients'] });
+    toast.success('Ingredientes salvos!');
+    setSavingIngredients(false);
+  };
+
+  const productsWithCost = products.filter(p => getProductCost(p.id) > 0);
   const avgMargin = productsWithCost.length > 0
     ? productsWithCost.reduce((sum, p) => {
-        const cost = (p as any).cost_price ?? 0;
+        const cost = getProductCost(p.id);
         return sum + ((p.price - cost) / p.price) * 100;
       }, 0) / productsWithCost.length
     : 0;
@@ -604,70 +669,111 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
         </div>
       </div>
 
-      {/* Product pricing table */}
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary text-secondary-foreground">
-              <tr>
-                <th className="text-left p-3">Produto</th>
-                <th className="text-left p-3">Categoria</th>
-                <th className="text-right p-3">Venda</th>
-                <th className="text-right p-3">Custo</th>
-                <th className="text-right p-3">Lucro</th>
-                <th className="text-right p-3">Margem</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(p => {
-                const costPrice = (p as any).cost_price ?? 0;
-                const profit = p.price - costPrice;
-                const margin = p.price > 0 ? (profit / p.price) * 100 : 0;
-                const isEditing = editingId === p.id;
-                return (
-                  <tr key={p.id} className="border-t border-border hover:bg-muted/50">
-                    <td className="p-3 font-medium text-card-foreground">
-                      <span>{p.image_emoji} {p.name}</span>
-                    </td>
-                    <td className="p-3 text-muted-foreground text-xs">{p.category}</td>
-                    <td className="p-3 text-right text-primary font-medium">R$ {p.price.toFixed(2)}</td>
-                    <td className="p-3 text-right">
-                      {isEditing ? (
-                        <div className="flex items-center gap-1 justify-end">
+      {/* Product pricing list */}
+      <div className="space-y-2">
+        {products.map(p => {
+          const costPrice = getProductCost(p.id);
+          const profit = p.price - costPrice;
+          const margin = p.price > 0 ? (profit / p.price) * 100 : 0;
+          const isExpanded = expandedId === p.id;
+          const prodIngredientCount = allIngredients.filter((i: any) => i.product_id === p.id).length;
+
+          return (
+            <div key={p.id} className="bg-card rounded-lg border border-border overflow-hidden">
+              <button
+                onClick={() => openIngredients(p.id)}
+                className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors text-left"
+              >
+                <span className="text-lg">{p.image_emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-card-foreground text-sm truncate">{p.name}</p>
+                  <p className="text-xs text-muted-foreground">{p.category} · {prodIngredientCount > 0 ? `${prodIngredientCount} ingredientes` : 'sem ingredientes'}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-medium text-primary">R$ {p.price.toFixed(2)}</p>
+                  {costPrice > 0 ? (
+                    <p className={`text-xs font-semibold ${margin >= 50 ? 'text-green-500' : margin >= 30 ? 'text-yellow-500' : 'text-orange-500'}`}>
+                      Lucro R$ {profit.toFixed(2)} ({margin.toFixed(0)}%)
+                    </p>
+                  ) : (
+                    <p className="text-xs text-destructive/60 italic">sem custo</p>
+                  )}
+                </div>
+              </button>
+
+              {isExpanded && (
+                <div className="border-t border-border p-3 bg-muted/30 animate-fade-in">
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">INGREDIENTES</p>
+                  <div className="space-y-2">
+                    {ingredients.map((ing, idx) => (
+                      <div key={idx} className="flex gap-2 items-center">
+                        <input
+                          value={ing.name}
+                          onChange={e => updateIngredient(idx, 'name', e.target.value)}
+                          placeholder="Ingrediente"
+                          className="flex-1 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs"
+                        />
+                        <input
+                          type="number"
+                          value={ing.quantity}
+                          onChange={e => updateIngredient(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                          placeholder="Qtd"
+                          step="0.1"
+                          min="0"
+                          className="w-14 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-center"
+                        />
+                        <select
+                          value={ing.unit}
+                          onChange={e => updateIngredient(idx, 'unit', e.target.value)}
+                          className="w-16 px-1 py-1.5 rounded border border-input bg-background text-foreground text-xs"
+                        >
+                          <option value="un">un</option>
+                          <option value="ml">ml</option>
+                          <option value="L">L</option>
+                          <option value="g">g</option>
+                          <option value="kg">kg</option>
+                        </select>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground">R$</span>
                           <input
                             type="number"
-                            value={costValue}
-                            onChange={e => setCostValue(e.target.value)}
+                            value={ing.cost}
+                            onChange={e => updateIngredient(idx, 'cost', parseFloat(e.target.value) || 0)}
+                            placeholder="Custo"
                             step="0.01"
                             min="0"
-                            className="w-20 px-2 py-1 rounded border border-input bg-background text-foreground text-sm text-right"
-                            autoFocus
-                            onKeyDown={e => { if (e.key === 'Enter') handleSaveCost(p.id); if (e.key === 'Escape') setEditingId(null); }}
+                            className="w-16 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-right"
                           />
-                          <button onClick={() => handleSaveCost(p.id)} className="text-xs text-primary hover:underline">✓</button>
-                          <button onClick={() => setEditingId(null)} className="text-xs text-muted-foreground hover:underline">✕</button>
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => { setEditingId(p.id); setCostValue(costPrice.toString()); }}
-                          className={`hover:underline ${costPrice > 0 ? 'text-muted-foreground' : 'text-destructive/60 italic'}`}
-                        >
-                          {costPrice > 0 ? `R$ ${costPrice.toFixed(2)}` : 'definir'}
+                        <button onClick={() => removeIngredient(idx)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
+                          <X className="h-3 w-3" />
                         </button>
-                      )}
-                    </td>
-                    <td className={`p-3 text-right font-medium ${profit > 0 ? 'text-green-500' : profit < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      {costPrice > 0 ? `R$ ${profit.toFixed(2)}` : '—'}
-                    </td>
-                    <td className={`p-3 text-right text-xs font-semibold ${margin >= 50 ? 'text-green-500' : margin >= 30 ? 'text-yellow-500' : margin > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
-                      {costPrice > 0 ? `${margin.toFixed(0)}%` : '—'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
+                    <button onClick={addIngredient} className="text-xs text-primary hover:underline flex items-center gap-1">
+                      <Plus className="h-3 w-3" /> Ingrediente
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-foreground">
+                        Total: R$ {ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0).toFixed(2)}
+                      </span>
+                      <button
+                        onClick={saveIngredients}
+                        disabled={savingIngredients}
+                        className="bg-primary text-primary-foreground px-3 py-1.5 rounded text-xs font-medium hover:opacity-90 disabled:opacity-50"
+                      >
+                        {savingIngredients ? 'Salvando...' : 'Salvar'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -44,6 +44,77 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_register: {
+        Row: {
+          closed_at: string | null
+          closing_balance: number | null
+          created_by: string | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opening_balance: number
+          status: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closing_balance?: number | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opening_balance?: number
+          status?: string
+        }
+        Update: {
+          closed_at?: string | null
+          closing_balance?: number | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opening_balance?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      cash_transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          id: string
+          register_id: string
+          type: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          register_id: string
+          type?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          register_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_transactions_register_id_fkey"
+            columns: ["register_id"]
+            isOneToOne: false
+            referencedRelation: "cash_register"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupons: {
         Row: {
           code: string

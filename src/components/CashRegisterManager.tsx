@@ -169,9 +169,9 @@ const CashRegisterManager = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">Informe o saldo inicial para abrir o caixa.</p>
+            <p className="text-sm text-muted-foreground">Clique para abrir o caixa. O saldo inicial é opcional.</p>
             <div>
-              <label className="text-xs text-muted-foreground">Saldo inicial (R$)</label>
+              <label className="text-xs text-muted-foreground">Saldo inicial (R$) — opcional</label>
               <Input
                 type="number"
                 value={openingBalance}

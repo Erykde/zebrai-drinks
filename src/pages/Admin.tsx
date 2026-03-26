@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet } from 'lucide-react';
 import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';
@@ -15,6 +15,7 @@ import SiteSettingsManager from '@/components/SiteSettingsManager';
 import StoreConfigManager from '@/components/StoreConfigManager';
 import WhatsAppManager from '@/components/WhatsAppManager';
 import MotoboyManager from '@/components/MotoboyManager';
+import CashRegisterManager from '@/components/CashRegisterManager';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,7 +39,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -212,6 +213,7 @@ const Admin = () => {
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
     { key: 'pricing', icon: DollarSign, label: 'Precificação' },
+    { key: 'cashregister', icon: Wallet, label: 'Caixa' },
     { key: 'delivery', icon: Bike, label: 'Entregas' },
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
     { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
@@ -313,6 +315,8 @@ const Admin = () => {
             <StoreConfigManager />
           ) : activeTab === 'pricing' ? (
             <PricingTab products={products} queryClient={queryClient} />
+          ) : activeTab === 'cashregister' ? (
+            <CashRegisterManager />
           ) : (
             <ProductsTab
               products={products}

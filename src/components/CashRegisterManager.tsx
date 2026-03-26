@@ -144,6 +144,14 @@ const CashRegisterManager = () => {
     queryClient.invalidateQueries({ queryKey: ['cash-transactions'] });
   };
 
+  const handleDeleteRegister = async (id: string) => {
+    // Transactions are cascade-deleted
+    const { error } = await supabase.from('cash_register').delete().eq('id', id);
+    if (error) { toast.error('Erro ao excluir caixa'); return; }
+    toast.success('Caixa excluído!');
+    queryClient.invalidateQueries({ queryKey: ['cash-register-history'] });
+  };
+
   const fmt = (v: number) => `R$ ${Number(v).toFixed(2).replace('.', ',')}`;
   const fmtTime = (d: string) => new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });

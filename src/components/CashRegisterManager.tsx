@@ -197,15 +197,18 @@ const CashRegisterManager = () => {
             <CardContent>
               <div className="space-y-2">
                 {history.map(h => (
-                  <div key={h.id} className="flex items-center justify-between bg-muted rounded-lg p-3 text-sm">
-                    <div>
+                  <div key={h.id} className="flex items-center justify-between bg-muted rounded-lg p-3 text-sm gap-2">
+                    <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground">{fmtDate(h.opened_at)} — {fmtTime(h.opened_at)} a {h.closed_at ? fmtTime(h.closed_at) : '?'}</p>
-                      {h.notes && <p className="text-xs text-muted-foreground">{h.notes}</p>}
+                      {h.notes && <p className="text-xs text-muted-foreground truncate">{h.notes}</p>}
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <p className="text-xs text-muted-foreground">Abertura: {fmt(h.opening_balance)}</p>
                       <p className="font-bold text-foreground">{fmt(h.closing_balance ?? 0)}</p>
                     </div>
+                    <button onClick={() => handleDeleteRegister(h.id)} className="text-muted-foreground hover:text-destructive shrink-0 p-1">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 ))}
               </div>

@@ -50,7 +50,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Set up listener FIRST (Supabase requirement)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          // Token refresh failed — force clean sign out
+          console.warn('Token refresh failed, signing out');
+          setUser(null);
+          setIsAdmin(false);
+          setLoading(false);
+          supabase.auth.signOut().catch(() => {});
+          return;
+        }
         // Use queueMicrotask to avoid lock contention
         queueMicrotask(() => {
           checkAdmin(session?.user ?? null);

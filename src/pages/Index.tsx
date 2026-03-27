@@ -20,6 +20,8 @@ const Index = () => {
   const [category, setCategory] = useState('Todos');
   const [selectedProduct, setSelectedProduct] = useState<DbProduct | null>(null);
   const [search, setSearch] = useState('');
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
 
   const bannerImage = siteSettings?.banner_url || bannerDrinks;
   const siteTitle = siteSettings?.site_name || 'ZEBRAI DRINKS';

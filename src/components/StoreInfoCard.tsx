@@ -1,4 +1,5 @@
 import { Info, Share2 } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import StoreDetailsSheet from '@/components/StoreDetailsSheet';

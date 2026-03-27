@@ -39,6 +39,10 @@ const Index = () => {
     return acc;
   }, {});
 
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
   if (selectedProduct) {
     return (
       <ProductDetail

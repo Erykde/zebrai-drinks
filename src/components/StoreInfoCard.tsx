@@ -51,9 +51,12 @@ const StoreInfoCard = ({ logoSrc, storeName }: StoreInfoCardProps) => {
                 {isOpen ? 'Loja aberta' : 'Loja fechada'}
               </span>
             </div>
-            <button onClick={handleShare} className="p-2 text-primary mt-10">
-              <Share2 className="h-5 w-5" />
-            </button>
+            <div className="flex flex-col items-center gap-2 mt-10">
+              <ThemeToggle />
+              <button onClick={handleShare} className="p-2 text-primary">
+                <Share2 className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-2 mt-4">

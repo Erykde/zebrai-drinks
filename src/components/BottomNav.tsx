@@ -1,14 +1,16 @@
 import { Home, ShoppingCart, ClipboardList, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const BottomNav = () => {
   const { cartCount } = useStore();
   const location = useLocation();
+  const { data: settings } = useSiteSettings();
 
   const tabs = [
-    { to: '/', icon: Home, label: 'Início' },
-    { to: '/cart', icon: ShoppingCart, label: 'Carrinho' },
+    { to: '/', icon: Home, label: settings?.nav_home_label || 'Início' },
+    { to: '/cart', icon: ShoppingCart, label: settings?.nav_cart_label || 'Carrinho' },
     { to: '/pedido', icon: ClipboardList, label: 'Pedidos' },
     { to: '/perfil', icon: User, label: 'Perfil' },
   ];

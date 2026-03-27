@@ -20,8 +20,14 @@ const Index = () => {
   const [category, setCategory] = useState('Todos');
   const [selectedProduct, setSelectedProduct] = useState<DbProduct | null>(null);
   const [search, setSearch] = useState('');
-  const [showSplash, setShowSplash] = useState(true);
-  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
+  const [showSplash, setShowSplash] = useState(() => {
+    const shown = sessionStorage.getItem('splash-shown');
+    return !shown;
+  });
+  const handleSplashFinish = useCallback(() => {
+    setShowSplash(false);
+    sessionStorage.setItem('splash-shown', '1');
+  }, []);
 
   const bannerImage = siteSettings?.banner_url || bannerDrinks;
   const siteTitle = siteSettings?.site_name || 'ZEBRAI DRINKS';

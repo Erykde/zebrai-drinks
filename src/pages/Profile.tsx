@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Ticket, MapPin, LogOut, ChevronRight, Shield, Plus, Trash2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Ticket, MapPin, LogOut, ChevronRight, Shield, Plus, Trash2, Mail, Lock, Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import BottomNav from '@/components/BottomNav';
@@ -13,6 +14,7 @@ import { Button } from '@/components/ui/button';
 
 const Profile = () => {
   const { user, isAdmin, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [addressSheet, setAddressSheet] = useState(false);
@@ -161,6 +163,20 @@ const Profile = () => {
       </div>
 
       <div className="max-w-lg mx-auto px-4 mt-4 space-y-2">
+        {/* Theme toggle */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="w-full flex items-center gap-3 bg-card rounded-xl p-4 text-left hover:bg-card/80 transition-colors"
+        >
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            {theme === 'dark' ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
+          </div>
+          <div className="flex-1">
+            <span className="font-semibold text-sm text-foreground">Aparência</span>
+            <p className="text-xs text-muted-foreground">{theme === 'dark' ? 'Modo escuro' : 'Modo claro'}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
         {/* Coupons */}
         {user && (
           <button

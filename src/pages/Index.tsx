@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts, useCategories, DbProduct } from '@/hooks/useProducts';
+import SplashScreen from '@/components/SplashScreen';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import ProductDetail from '@/components/ProductDetail';
 import { Home, ShoppingCart, Search, ClipboardList, User, Info, Share2 } from 'lucide-react';
@@ -19,6 +20,8 @@ const Index = () => {
   const [category, setCategory] = useState('Todos');
   const [selectedProduct, setSelectedProduct] = useState<DbProduct | null>(null);
   const [search, setSearch] = useState('');
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
 
   const bannerImage = siteSettings?.banner_url || bannerDrinks;
   const siteTitle = siteSettings?.site_name || 'ZEBRAI DRINKS';
@@ -35,6 +38,10 @@ const Index = () => {
     acc[p.category].push(p);
     return acc;
   }, {});
+
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
 
   if (selectedProduct) {
     return (

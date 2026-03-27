@@ -23,20 +23,24 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
         fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      <img
-        src={zebraiLogo}
-        alt="Zebrai Drinks"
-        className="w-32 h-32 rounded-full border-4 border-primary shadow-gold animate-pulse"
-      />
-      <h1 className="mt-6 font-display text-4xl tracking-wider text-primary">
-        ZEBRAI DRINKS
-      </h1>
-      <div className="mt-8 flex gap-2">
-        <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+      {/* Logo grande e centralizada */}
+      <div className="w-48 h-48 rounded-full overflow-hidden shadow-2xl border-0">
+        <img
+          src={zebraiLogo}
+          alt="Zebrai Drinks"
+          className="w-full h-full object-cover"
+        />
       </div>
-      <p className="mt-4 text-muted-foreground text-sm">Carregando...</p>
+
+      {/* Bolinhas animadas */}
+      <div className="mt-10 flex gap-3">
+        <span className="w-4 h-4 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+        <span className="w-4 h-4 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+        <span className="w-4 h-4 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+      </div>
+
+      {/* Texto */}
+      <p className="mt-4 text-primary font-medium text-lg">Carregando...</p>
     </div>
   );
 };

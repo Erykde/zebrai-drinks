@@ -24,11 +24,11 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
       }`}
     >
       {/* Logo grande e centralizada */}
-      <div className="w-48 h-48 rounded-full overflow-hidden shadow-2xl border-0">
+      <div className="w-36 h-36 rounded-full overflow-hidden shadow-2xl border-0 bg-white flex items-center justify-center">
         <img
           src={zebraiLogo}
           alt="Zebrai Drinks"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
         />
       </div>
 

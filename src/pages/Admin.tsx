@@ -766,9 +766,9 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                     const totalCost = ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0);
                     if (totalCost <= 0) return null;
                     const suggestions = [
-                      { label: '30%', price: totalCost / 0.7, color: 'text-orange-500', desc: 'Mínimo' },
-                      { label: '50%', price: totalCost / 0.5, color: 'text-yellow-500', desc: 'Bom' },
-                      { label: '100%', price: totalCost * 2, color: 'text-green-500', desc: 'Ideal' },
+                      { label: '30%', price: totalCost * 1.30, color: 'text-orange-500', desc: 'Mínimo' },
+                      { label: '50%', price: totalCost * 1.50, color: 'text-yellow-500', desc: 'Bom' },
+                      { label: '100%', price: totalCost * 2.00, color: 'text-green-500', desc: 'Ideal' },
                     ];
                     return (
                       <div className="mt-3 pt-2 border-t border-border">
@@ -785,7 +785,7 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                         {p.price < totalCost && (
                           <div className="mt-2 bg-destructive/10 border border-destructive/30 rounded-lg p-2 text-center">
                             <p className="text-xs font-bold text-destructive">⚠️ Preço atual (R$ {p.price.toFixed(2)}) está ABAIXO do custo (R$ {totalCost.toFixed(2)})</p>
-                            <p className="text-[10px] text-destructive/80">Aumente o preço para pelo menos R$ {(totalCost / 0.7).toFixed(2)}</p>
+                            <p className="text-[10px] text-destructive/80">Aumente o preço para pelo menos R$ {(totalCost * 1.30).toFixed(2)}</p>
                           </div>
                         )}
                       </div>

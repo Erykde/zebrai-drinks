@@ -761,6 +761,37 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                     ))}
                   </div>
 
+                  {/* Suggested prices */}
+                  {(() => {
+                    const totalCost = ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0);
+                    if (totalCost <= 0) return null;
+                    const suggestions = [
+                      { label: '30%', price: totalCost / 0.7, color: 'text-orange-500', desc: 'Mínimo' },
+                      { label: '50%', price: totalCost / 0.5, color: 'text-yellow-500', desc: 'Bom' },
+                      { label: '100%', price: totalCost * 2, color: 'text-green-500', desc: 'Ideal' },
+                    ];
+                    return (
+                      <div className="mt-3 pt-2 border-t border-border">
+                        <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">💡 Preço sugerido de venda</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {suggestions.map(s => (
+                            <div key={s.label} className={`rounded-lg border border-border p-2 text-center ${p.price < s.price ? 'bg-destructive/5 border-destructive/30' : 'bg-muted/50'}`}>
+                              <p className="text-[10px] text-muted-foreground">{s.desc}</p>
+                              <p className={`text-sm font-bold ${s.color}`}>R$ {s.price.toFixed(2)}</p>
+                              <p className="text-[10px] text-muted-foreground">Margem {s.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {p.price < totalCost && (
+                          <div className="mt-2 bg-destructive/10 border border-destructive/30 rounded-lg p-2 text-center">
+                            <p className="text-xs font-bold text-destructive">⚠️ Preço atual (R$ {p.price.toFixed(2)}) está ABAIXO do custo (R$ {totalCost.toFixed(2)})</p>
+                            <p className="text-[10px] text-destructive/80">Aumente o preço para pelo menos R$ {(totalCost / 0.7).toFixed(2)}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
                     <button onClick={addIngredient} className="text-xs text-primary hover:underline flex items-center gap-1">
                       <Plus className="h-3 w-3" /> Ingrediente

@@ -696,9 +696,14 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                 <div className="text-right shrink-0">
                   <p className="text-sm font-medium text-primary">R$ {p.price.toFixed(2)}</p>
                   {costPrice > 0 ? (
-                    <p className={`text-xs font-semibold ${margin >= 50 ? 'text-green-500' : margin >= 30 ? 'text-yellow-500' : 'text-orange-500'}`}>
-                      Lucro R$ {profit.toFixed(2)} ({margin.toFixed(0)}%)
-                    </p>
+                    <>
+                      {profit < 0 && (
+                        <p className="text-[10px] font-bold text-destructive animate-pulse">⚠️ PREJUÍZO!</p>
+                      )}
+                      <p className={`text-xs font-semibold ${margin >= 50 ? 'text-green-500' : margin >= 30 ? 'text-yellow-500' : profit < 0 ? 'text-destructive' : 'text-orange-500'}`}>
+                        Lucro R$ {profit.toFixed(2)} ({margin.toFixed(0)}%)
+                      </p>
+                    </>
                   ) : (
                     <p className="text-xs text-destructive/60 italic">sem custo</p>
                   )}

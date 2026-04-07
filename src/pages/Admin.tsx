@@ -766,9 +766,9 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                     const totalCost = ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0);
                     if (totalCost <= 0) return null;
                     const suggestions = [
-                      { label: '30%', price: totalCost / 0.7, color: 'text-orange-500', desc: 'Mínimo' },
-                      { label: '50%', price: totalCost / 0.5, color: 'text-yellow-500', desc: 'Bom' },
-                      { label: '100%', price: totalCost * 2, color: 'text-green-500', desc: 'Ideal' },
+                      { label: '30%', price: totalCost * 1.30, color: 'text-orange-500', desc: 'Mínimo' },
+                      { label: '50%', price: totalCost * 1.50, color: 'text-yellow-500', desc: 'Bom' },
+                      { label: '100%', price: totalCost * 2.00, color: 'text-green-500', desc: 'Ideal' },
                     ];
                     return (
                       <div className="mt-3 pt-2 border-t border-border">

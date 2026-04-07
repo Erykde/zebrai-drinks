@@ -785,7 +785,7 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                         {p.price < totalCost && (
                           <div className="mt-2 bg-destructive/10 border border-destructive/30 rounded-lg p-2 text-center">
                             <p className="text-xs font-bold text-destructive">⚠️ Preço atual (R$ {p.price.toFixed(2)}) está ABAIXO do custo (R$ {totalCost.toFixed(2)})</p>
-                            <p className="text-[10px] text-destructive/80">Aumente o preço para pelo menos R$ {(totalCost / 0.7).toFixed(2)}</p>
+                            <p className="text-[10px] text-destructive/80">Aumente o preço para pelo menos R$ {(totalCost * 1.30).toFixed(2)}</p>
                           </div>
                         )}
                       </div>

@@ -557,6 +557,7 @@ export type Database = {
           cart_empty_subtitle: string | null
           cart_empty_title: string | null
           cart_title: string | null
+          closed_message: string | null
           delivery_enabled: boolean | null
           home_search_placeholder: string | null
           id: string
@@ -583,6 +584,7 @@ export type Database = {
           cart_empty_subtitle?: string | null
           cart_empty_title?: string | null
           cart_title?: string | null
+          closed_message?: string | null
           delivery_enabled?: boolean | null
           home_search_placeholder?: string | null
           id?: string
@@ -609,6 +611,7 @@ export type Database = {
           cart_empty_subtitle?: string | null
           cart_empty_title?: string | null
           cart_title?: string | null
+          closed_message?: string | null
           delivery_enabled?: boolean | null
           home_search_placeholder?: string | null
           id?: string

@@ -14,6 +14,7 @@ const StoreInfoCard = ({ logoSrc, storeName }: StoreInfoCardProps) => {
   const { data: settings } = useSiteSettings();
 
   const isOpen = settings?.store_open ?? true;
+  const closedMessage = (settings as any)?.closed_message || 'Estamos fechados no momento';
   const minOrder = settings?.min_order_value ?? 10;
   const hours = settings?.opening_hours || { weekdays: '18:00 às 23:00', weekend: '18:00 às 22:00' };
   const openTime = hours.weekdays?.split(' ')[0] || '18:00';
@@ -47,7 +48,7 @@ const StoreInfoCard = ({ logoSrc, storeName }: StoreInfoCardProps) => {
               <span className={`text-xs font-semibold px-3 py-0.5 rounded-full mt-1 ${
                 isOpen ? 'text-green-500 bg-green-500/10' : 'text-destructive bg-destructive/10'
               }`}>
-                {isOpen ? 'Loja aberta' : 'Loja fechada'}
+                {isOpen ? 'Loja aberta' : closedMessage}
               </span>
             </div>
             <div className="flex flex-col items-center gap-2 mt-10">

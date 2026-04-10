@@ -1,0 +1,1 @@
+ALTER TABLE public.site_settings ADD COLUMN closed_message text DEFAULT 'Estamos fechados no momento. Volte em breve! 🦓';

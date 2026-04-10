@@ -8,6 +8,7 @@ import { createCustomerOrder } from '@/hooks/useCustomerOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 import { Ticket, X, User, Phone, MapPin, CreditCard, Banknote, QrCode, ShoppingBag, Bike, Store } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const checkoutSchema = z.object({
   name: z.string().trim().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100, 'Nome muito longo'),
@@ -41,6 +42,7 @@ const saveCustomerData = (name: string, phone: string, address: string) => {
 
 const CheckoutForm = () => {
   const { cart, cartTotal, addOrder } = useStore();
+  const { data: siteSettings } = useSiteSettings();
   const navigate = useNavigate();
   const savedCustomer = loadSavedCustomer();
   const [name, setName] = useState(savedCustomer.name);
@@ -123,6 +125,12 @@ const CheckoutForm = () => {
 
     if (deliveryType === 'delivery' && (!address.trim() || address.trim().length < 5)) {
       toast.error('Preencha o endereço completo para delivery!');
+      return;
+    }
+
+    const minOrderValue = siteSettings?.min_order_value ?? 0;
+    if (minOrderValue > 0 && cartTotal < minOrderValue) {
+      toast.error(`Pedido mínimo é de R$ ${minOrderValue.toFixed(2).replace('.', ',')}. Seu carrinho tem R$ ${cartTotal.toFixed(2).replace('.', ',')}.`);
       return;
     }
 

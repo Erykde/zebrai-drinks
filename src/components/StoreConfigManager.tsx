@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSiteSettings, useUpdateSiteSettings } from '@/hooks/useSiteSettings';
-import { Save, Plus, X, Store, Clock, CreditCard, MapPin, Truck } from 'lucide-react';
+import { Save, Plus, X, Store, Clock, CreditCard, MapPin, Truck, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 
 const StoreConfigManager = () => {
   const { data: settings, isLoading } = useSiteSettings();
@@ -13,6 +14,7 @@ const StoreConfigManager = () => {
 
   const [form, setForm] = useState({
     store_open: true,
+    closed_message: 'Estamos fechados no momento. Volte em breve! 🦓',
     min_order_value: 0,
     delivery_enabled: true,
     pickup_enabled: false,
@@ -28,6 +30,7 @@ const StoreConfigManager = () => {
     if (settings) {
       setForm({
         store_open: settings.store_open ?? true,
+        closed_message: (settings as any).closed_message || 'Estamos fechados no momento. Volte em breve! 🦓',
         min_order_value: settings.min_order_value ?? 0,
         delivery_enabled: settings.delivery_enabled ?? true,
         pickup_enabled: settings.pickup_enabled ?? false,
@@ -71,19 +74,45 @@ const StoreConfigManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Store className="h-4 w-4 text-primary" /> Status da Loja
+            <Store className="h-4 w-4 text-primary" /> Abrir ou Fechar a Loja
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-foreground">Loja Aberta</p>
-              <p className="text-xs text-muted-foreground">Quando fechada, clientes vêem "Loja fechada"</p>
+              <p className="text-sm font-semibold text-foreground">
+                {form.store_open ? '✅ Loja está ABERTA' : '🔴 Loja está FECHADA'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Ligue/desligue para abrir ou fechar sua loja para os clientes
+              </p>
             </div>
             <Switch checked={form.store_open} onCheckedChange={v => setForm(f => ({ ...f, store_open: v }))} />
           </div>
+
+          {!form.store_open && (
+            <div className="border border-border rounded-lg p-3 bg-muted/50">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4 text-primary" />
+                <label className="text-xs font-semibold text-foreground">Mensagem que aparece quando a loja está fechada:</label>
+              </div>
+              <Textarea
+                value={form.closed_message}
+                onChange={e => setForm(f => ({ ...f, closed_message: e.target.value }))}
+                placeholder="Ex: Voltamos amanhã às 18h! 🦓"
+                rows={2}
+                className="text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Essa mensagem aparece para os clientes quando sua loja está fechada
+              </p>
+            </div>
+          )}
+
           <div>
-            <label className="text-xs text-muted-foreground">Pedido mínimo (R$)</label>
+            <label className="text-xs text-muted-foreground">
+              💰 Valor mínimo do pedido (R$) — pedidos abaixo desse valor serão bloqueados
+            </label>
             <Input
               type="number"
               value={form.min_order_value}
@@ -92,6 +121,9 @@ const StoreConfigManager = () => {
               min="0"
               className="mt-1"
             />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Coloque 0 para não ter pedido mínimo
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -100,16 +132,20 @@ const StoreConfigManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Truck className="h-4 w-4 text-primary" /> Modalidade de Entrega
+            <Truck className="h-4 w-4 text-primary" /> Como o cliente recebe o pedido
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">🛵 Entrega</span>
+            <div>
+              <span className="text-sm font-medium text-foreground">🛵 Entrega (motoboy leva até o cliente)</span>
+            </div>
             <Switch checked={form.delivery_enabled} onCheckedChange={v => setForm(f => ({ ...f, delivery_enabled: v }))} />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">🏪 Retirada no local</span>
+            <div>
+              <span className="text-sm font-medium text-foreground">🏪 Retirada (cliente busca na loja)</span>
+            </div>
             <Switch checked={form.pickup_enabled} onCheckedChange={v => setForm(f => ({ ...f, pickup_enabled: v }))} />
           </div>
         </CardContent>
@@ -119,12 +155,12 @@ const StoreConfigManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" /> Horário de Atendimento
+            <Clock className="h-4 w-4 text-primary" /> Horário de Funcionamento
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground">Seg a Sáb</label>
+            <label className="text-xs text-muted-foreground">📅 Segunda a Sábado</label>
             <Input
               value={form.opening_hours.weekdays}
               onChange={e => setForm(f => ({ ...f, opening_hours: { ...f.opening_hours, weekdays: e.target.value } }))}
@@ -133,7 +169,7 @@ const StoreConfigManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Domingo</label>
+            <label className="text-xs text-muted-foreground">📅 Domingo</label>
             <Input
               value={form.opening_hours.weekend}
               onChange={e => setForm(f => ({ ...f, opening_hours: { ...f.opening_hours, weekend: e.target.value } }))}
@@ -142,7 +178,7 @@ const StoreConfigManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Tempo de preparo</label>
+            <label className="text-xs text-muted-foreground">⏱️ Tempo de preparo (quanto demora pra preparar)</label>
             <Input
               value={form.prep_time}
               onChange={e => setForm(f => ({ ...f, prep_time: e.target.value }))}
@@ -157,10 +193,11 @@ const StoreConfigManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-primary" /> Formas de Pagamento
+            <CreditCard className="h-4 w-4 text-primary" /> Formas de Pagamento Aceitas
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">Adicione ou remova as formas de pagamento que você aceita</p>
           <div className="flex flex-wrap gap-2">
             {form.payment_methods.map((method, idx) => (
               <span key={idx} className="bg-muted text-foreground text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1">
@@ -175,7 +212,7 @@ const StoreConfigManager = () => {
             <Input
               value={newPayment}
               onChange={e => setNewPayment(e.target.value)}
-              placeholder="Nova forma de pagamento"
+              placeholder="Ex: PIX, Cartão, Dinheiro..."
               className="flex-1"
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addPayment())}
             />
@@ -190,12 +227,12 @@ const StoreConfigManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" /> Endereço da Loja
+            <MapPin className="h-4 w-4 text-primary" /> Endereço e Contato da Loja
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground">Endereço completo</label>
+            <label className="text-xs text-muted-foreground">📍 Endereço completo (aparece para os clientes)</label>
             <Input
               value={form.store_address}
               onChange={e => setForm(f => ({ ...f, store_address: e.target.value }))}
@@ -204,7 +241,7 @@ const StoreConfigManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">WhatsApp da loja</label>
+            <label className="text-xs text-muted-foreground">📱 WhatsApp da loja (com DDD, sem espaços)</label>
             <Input
               value={form.store_phone}
               onChange={e => setForm(f => ({ ...f, store_phone: e.target.value }))}

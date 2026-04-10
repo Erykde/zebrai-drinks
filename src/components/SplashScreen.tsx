@@ -23,14 +23,11 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
         fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* Logo grande e centralizada */}
-      <div className="w-36 h-36 rounded-full overflow-hidden shadow-2xl border-0 bg-white flex items-center justify-center">
-        <img
-          src={zebraiLogo}
-          alt="Zebrai Drinks"
-          className="w-full h-full object-contain"
-        />
-      </div>
+      <img
+        src={zebraiLogo}
+        alt="Zebrai Drinks"
+        className="w-32 h-32 rounded-full object-cover shadow-2xl border-4 border-primary/20"
+      />
 
       {/* Bolinhas animadas */}
       <div className="mt-10 flex gap-3">
@@ -39,7 +36,6 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
         <span className="w-4 h-4 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
       </div>
 
-      {/* Texto */}
       <p className="mt-4 text-primary font-medium text-lg">Carregando...</p>
     </div>
   );

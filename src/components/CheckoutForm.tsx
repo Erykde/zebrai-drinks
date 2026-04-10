@@ -8,6 +8,7 @@ import { createCustomerOrder } from '@/hooks/useCustomerOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 import { Ticket, X, User, Phone, MapPin, CreditCard, Banknote, QrCode, ShoppingBag, Bike, Store } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const checkoutSchema = z.object({
   name: z.string().trim().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100, 'Nome muito longo'),

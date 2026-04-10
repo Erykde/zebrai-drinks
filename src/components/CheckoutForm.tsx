@@ -42,6 +42,7 @@ const saveCustomerData = (name: string, phone: string, address: string) => {
 
 const CheckoutForm = () => {
   const { cart, cartTotal, addOrder } = useStore();
+  const { data: siteSettings } = useSiteSettings();
   const navigate = useNavigate();
   const savedCustomer = loadSavedCustomer();
   const [name, setName] = useState(savedCustomer.name);

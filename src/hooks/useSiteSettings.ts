@@ -27,6 +27,7 @@ export interface SiteSettings {
   prep_time: string | null;
   store_address: string | null;
   store_phone: string | null;
+  closed_message: string | null;
 }
 
 export const useSiteSettings = () => {

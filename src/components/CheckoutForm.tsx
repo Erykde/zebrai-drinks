@@ -128,6 +128,12 @@ const CheckoutForm = () => {
       return;
     }
 
+    const minOrderValue = siteSettings?.min_order_value ?? 0;
+    if (minOrderValue > 0 && cartTotal < minOrderValue) {
+      toast.error(`Pedido mínimo é de R$ ${minOrderValue.toFixed(2).replace('.', ',')}. Seu carrinho tem R$ ${cartTotal.toFixed(2).replace('.', ',')}.`);
+      return;
+    }
+
     setSubmitting(true);
     let savedOrderId: string | null = null;
     try {

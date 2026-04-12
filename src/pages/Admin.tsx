@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart } from 'lucide-react';
 import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';
@@ -16,6 +16,7 @@ import StoreConfigManager from '@/components/StoreConfigManager';
 import WhatsAppManager from '@/components/WhatsAppManager';
 import MotoboyManager from '@/components/MotoboyManager';
 import CashRegisterManager from '@/components/CashRegisterManager';
+import FinancialSummary from '@/components/FinancialSummary';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +40,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -211,14 +212,15 @@ const Admin = () => {
   const navItems: { key: AdminTab; icon: typeof ClipboardList; label: string; badge?: number }[] = [
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
     { key: 'products', icon: Package, label: 'Produtos' },
+    { key: 'financial', icon: PieChart, label: 'Financeiro' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
     { key: 'pricing', icon: DollarSign, label: 'Precificação' },
     { key: 'cashregister', icon: Wallet, label: 'Caixa' },
     { key: 'delivery', icon: Bike, label: 'Entregas' },
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
     { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
-    { key: 'settings', icon: Settings, label: 'Configurações' },
-    { key: 'store', icon: Store, label: 'Loja' },
+    { key: 'settings', icon: Settings, label: 'Visual do Site' },
+    { key: 'store', icon: Store, label: 'Config. da Loja' },
   ];
 
   return (

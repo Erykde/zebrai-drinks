@@ -1,0 +1,1 @@
+ALTER TABLE public.site_settings ADD COLUMN open_message text DEFAULT 'Estamos abertos! Faça seu pedido 🍹';

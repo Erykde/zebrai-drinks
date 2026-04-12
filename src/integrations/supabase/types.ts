@@ -565,6 +565,7 @@ export type Database = {
           min_order_value: number | null
           nav_cart_label: string | null
           nav_home_label: string | null
+          open_message: string | null
           opening_hours: Json | null
           payment_methods: Json | null
           pickup_enabled: boolean | null
@@ -592,6 +593,7 @@ export type Database = {
           min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null
+          open_message?: string | null
           opening_hours?: Json | null
           payment_methods?: Json | null
           pickup_enabled?: boolean | null
@@ -619,6 +621,7 @@ export type Database = {
           min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null
+          open_message?: string | null
           opening_hours?: Json | null
           payment_methods?: Json | null
           pickup_enabled?: boolean | null

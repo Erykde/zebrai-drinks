@@ -724,14 +724,15 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
 
               {isExpanded && (
                 <div className="border-t border-border p-3 bg-muted/30 animate-fade-in">
-                  <p className="text-xs font-semibold text-muted-foreground mb-2">INGREDIENTES</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">📦 O QUE VOCÊ GASTA NESTE PRODUTO</p>
+                  <p className="text-[10px] text-muted-foreground mb-2">Adicione tudo que vai no produto e quanto custa cada coisa</p>
                   <div className="space-y-2">
                     {ingredients.map((ing, idx) => (
                       <div key={idx} className="flex gap-2 items-center">
                         <input
                           value={ing.name}
                           onChange={e => updateIngredient(idx, 'name', e.target.value)}
-                          placeholder="Ingrediente"
+                          placeholder="Nome (ex: Leite, Vodka...)"
                           className="flex-1 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs"
                         />
                         <input

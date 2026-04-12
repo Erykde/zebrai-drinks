@@ -15,6 +15,7 @@ const StoreConfigManager = () => {
   const [form, setForm] = useState({
     store_open: true,
     closed_message: 'Estamos fechados no momento. Volte em breve! 🦓',
+    open_message: 'Estamos abertos! Faça seu pedido 🍹',
     min_order_value: 0,
     delivery_enabled: true,
     pickup_enabled: false,
@@ -31,6 +32,7 @@ const StoreConfigManager = () => {
       setForm({
         store_open: settings.store_open ?? true,
         closed_message: (settings as any).closed_message || 'Estamos fechados no momento. Volte em breve! 🦓',
+        open_message: (settings as any).open_message || 'Estamos abertos! Faça seu pedido 🍹',
         min_order_value: settings.min_order_value ?? 0,
         delivery_enabled: settings.delivery_enabled ?? true,
         pickup_enabled: settings.pickup_enabled ?? false,
@@ -90,11 +92,32 @@ const StoreConfigManager = () => {
             <Switch checked={form.store_open} onCheckedChange={v => setForm(f => ({ ...f, store_open: v }))} />
           </div>
 
-          {!form.store_open && (
-            <div className="border border-border rounded-lg p-3 bg-muted/50">
+          {/* Open message */}
+          {form.store_open && (
+            <div className="border border-border rounded-lg p-3 bg-green-500/5">
               <div className="flex items-center gap-2 mb-2">
-                <MessageSquare className="h-4 w-4 text-primary" />
-                <label className="text-xs font-semibold text-foreground">Mensagem que aparece quando a loja está fechada:</label>
+                <MessageSquare className="h-4 w-4 text-green-500" />
+                <label className="text-xs font-semibold text-foreground">Mensagem quando a loja está ABERTA:</label>
+              </div>
+              <Textarea
+                value={form.open_message}
+                onChange={e => setForm(f => ({ ...f, open_message: e.target.value }))}
+                placeholder="Ex: Estamos abertos! Peça agora 🍹"
+                rows={2}
+                className="text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Essa mensagem aparece no card da loja quando está aberta
+              </p>
+            </div>
+          )}
+
+          {/* Closed message */}
+          {!form.store_open && (
+            <div className="border border-border rounded-lg p-3 bg-destructive/5">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4 text-destructive" />
+                <label className="text-xs font-semibold text-foreground">Mensagem quando a loja está FECHADA:</label>
               </div>
               <Textarea
                 value={form.closed_message}

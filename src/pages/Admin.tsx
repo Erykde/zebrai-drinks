@@ -785,7 +785,7 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                     ];
                     return (
                       <div className="mt-3 pt-2 border-t border-border">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">💡 Preço sugerido de venda</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">💡 Por quanto você deveria vender</p>
                         <div className="grid grid-cols-3 gap-2">
                           {suggestions.map(s => (
                             <div key={s.label} className={`rounded-lg border border-border p-2 text-center ${p.price < s.price ? 'bg-destructive/5 border-destructive/30' : 'bg-muted/50'}`}>

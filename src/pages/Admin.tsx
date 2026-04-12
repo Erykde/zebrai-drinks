@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart } from 'lucide-react';
 import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';
@@ -16,6 +16,7 @@ import StoreConfigManager from '@/components/StoreConfigManager';
 import WhatsAppManager from '@/components/WhatsAppManager';
 import MotoboyManager from '@/components/MotoboyManager';
 import CashRegisterManager from '@/components/CashRegisterManager';
+import FinancialSummary from '@/components/FinancialSummary';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +40,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -211,14 +212,15 @@ const Admin = () => {
   const navItems: { key: AdminTab; icon: typeof ClipboardList; label: string; badge?: number }[] = [
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
     { key: 'products', icon: Package, label: 'Produtos' },
+    { key: 'financial', icon: PieChart, label: 'Financeiro' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
     { key: 'pricing', icon: DollarSign, label: 'Precificação' },
     { key: 'cashregister', icon: Wallet, label: 'Caixa' },
     { key: 'delivery', icon: Bike, label: 'Entregas' },
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
     { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
-    { key: 'settings', icon: Settings, label: 'Configurações' },
-    { key: 'store', icon: Store, label: 'Loja' },
+    { key: 'settings', icon: Settings, label: 'Visual do Site' },
+    { key: 'store', icon: Store, label: 'Config. da Loja' },
   ];
 
   return (
@@ -292,6 +294,8 @@ const Admin = () => {
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           {activeTab === 'orders' ? (
             <OrderManager />
+          ) : activeTab === 'financial' ? (
+            <FinancialSummary />
           ) : activeTab === 'dashboard' ? (
             <AdminDashboard orders={orders} products={products} deliveryZones={deliveryZones} customerOrders={customerOrders} />
           ) : activeTab === 'delivery' ? (
@@ -651,22 +655,30 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
 
   return (
     <div>
+      <div className="bg-card rounded-lg border border-border p-4 mb-4">
+        <p className="text-sm text-foreground font-medium">📋 Como usar:</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Clique em um produto → adicione os ingredientes com o preço que você paga → 
+          o sistema calcula quanto você deve cobrar para ter lucro.
+        </p>
+      </div>
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Produtos</p>
+          <p className="text-xs text-muted-foreground">Total de Produtos</p>
           <p className="text-2xl font-bold text-foreground">{products.length}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Com custo</p>
+          <p className="text-xs text-muted-foreground">✅ Com custo preenchido</p>
           <p className="text-2xl font-bold text-primary">{productsWithCost.length}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Sem custo</p>
+          <p className="text-xs text-muted-foreground">⚠️ Falta preencher</p>
           <p className="text-2xl font-bold text-destructive">{products.length - productsWithCost.length}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Margem média</p>
+          <p className="text-xs text-muted-foreground">📊 Margem média</p>
           <p className={`text-2xl font-bold ${avgMargin >= 50 ? 'text-green-500' : avgMargin >= 30 ? 'text-yellow-500' : 'text-orange-500'}`}>
             {avgMargin > 0 ? `${avgMargin.toFixed(0)}%` : '—'}
           </p>
@@ -712,14 +724,15 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
 
               {isExpanded && (
                 <div className="border-t border-border p-3 bg-muted/30 animate-fade-in">
-                  <p className="text-xs font-semibold text-muted-foreground mb-2">INGREDIENTES</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">📦 O QUE VOCÊ GASTA NESTE PRODUTO</p>
+                  <p className="text-[10px] text-muted-foreground mb-2">Adicione tudo que vai no produto e quanto custa cada coisa</p>
                   <div className="space-y-2">
                     {ingredients.map((ing, idx) => (
                       <div key={idx} className="flex gap-2 items-center">
                         <input
                           value={ing.name}
                           onChange={e => updateIngredient(idx, 'name', e.target.value)}
-                          placeholder="Ingrediente"
+                          placeholder="Nome (ex: Leite, Vodka...)"
                           className="flex-1 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs"
                         />
                         <input
@@ -772,7 +785,7 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                     ];
                     return (
                       <div className="mt-3 pt-2 border-t border-border">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">💡 Preço sugerido de venda</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">💡 Por quanto você deveria vender</p>
                         <div className="grid grid-cols-3 gap-2">
                           {suggestions.map(s => (
                             <div key={s.label} className={`rounded-lg border border-border p-2 text-center ${p.price < s.price ? 'bg-destructive/5 border-destructive/30' : 'bg-muted/50'}`}>
@@ -794,11 +807,11 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
 
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
                     <button onClick={addIngredient} className="text-xs text-primary hover:underline flex items-center gap-1">
-                      <Plus className="h-3 w-3" /> Ingrediente
+                      <Plus className="h-3 w-3" /> Adicionar item
                     </button>
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-semibold text-foreground">
-                        Total: R$ {ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0).toFixed(2)}
+                        Custo total: R$ {ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0).toFixed(2)}
                       </span>
                       <button
                         onClick={saveIngredients}

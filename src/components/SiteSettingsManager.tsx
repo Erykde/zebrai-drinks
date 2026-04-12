@@ -127,7 +127,7 @@ const SiteSettingsManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Image className="h-4 w-4 text-primary" /> Banner do Site
+            <Image className="h-4 w-4 text-primary" /> 🖼️ Banner (imagem grande no topo do site)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -162,7 +162,7 @@ const SiteSettingsManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Image className="h-4 w-4 text-primary" /> Logo (Foto Redonda)
+            <Image className="h-4 w-4 text-primary" /> 🦓 Logo (foto redonda que aparece no meio)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -197,12 +197,12 @@ const SiteSettingsManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Type className="h-4 w-4 text-primary" /> Textos do Site
+            <Type className="h-4 w-4 text-primary" /> ✏️ Textos da Página Principal
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground">Título principal</label>
+            <label className="text-xs text-muted-foreground">Nome da loja (aparece embaixo da logo)</label>
             <Input
               value={form.site_name}
               onChange={e => setForm(f => ({ ...f, site_name: e.target.value }))}
@@ -211,7 +211,7 @@ const SiteSettingsManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Subtítulo / descrição</label>
+            <label className="text-xs text-muted-foreground">Descrição / frase do site (aparece no Google)</label>
             <textarea
               value={form.site_subtitle}
               onChange={e => setForm(f => ({ ...f, site_subtitle: e.target.value }))}
@@ -226,12 +226,12 @@ const SiteSettingsManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Type className="h-4 w-4 text-primary" /> Textos do Carrinho
+            <Type className="h-4 w-4 text-primary" /> 🛒 Textos do Carrinho
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground">Título do carrinho</label>
+            <label className="text-xs text-muted-foreground">Título que aparece na página do carrinho</label>
             <Input
               value={form.cart_title}
               onChange={e => setForm(f => ({ ...f, cart_title: e.target.value }))}
@@ -240,7 +240,7 @@ const SiteSettingsManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Título carrinho vazio</label>
+            <label className="text-xs text-muted-foreground">Título quando o carrinho está vazio</label>
             <Input
               value={form.cart_empty_title}
               onChange={e => setForm(f => ({ ...f, cart_empty_title: e.target.value }))}
@@ -249,7 +249,7 @@ const SiteSettingsManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Subtítulo carrinho vazio</label>
+            <label className="text-xs text-muted-foreground">Mensagem embaixo do título quando está vazio</label>
             <Input
               value={form.cart_empty_subtitle}
               onChange={e => setForm(f => ({ ...f, cart_empty_subtitle: e.target.value }))}
@@ -258,7 +258,7 @@ const SiteSettingsManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Texto do botão finalizar</label>
+            <label className="text-xs text-muted-foreground">Texto do botão de finalizar pedido</label>
             <Input
               value={form.cart_button_text}
               onChange={e => setForm(f => ({ ...f, cart_button_text: e.target.value }))}
@@ -267,7 +267,7 @@ const SiteSettingsManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Placeholder da busca (início)</label>
+            <label className="text-xs text-muted-foreground">Texto da barra de pesquisa</label>
             <Input
               value={form.home_search_placeholder}
               onChange={e => setForm(f => ({ ...f, home_search_placeholder: e.target.value }))}
@@ -282,12 +282,12 @@ const SiteSettingsManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Type className="h-4 w-4 text-primary" /> Menu Inferior (Navegação)
+            <Type className="h-4 w-4 text-primary" /> 📱 Menu de Baixo (botões do rodapé)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground">Texto do botão "Início"</label>
+            <label className="text-xs text-muted-foreground">Texto do botão "Início" lá embaixo</label>
             <Input
               value={form.nav_home_label}
               onChange={e => setForm(f => ({ ...f, nav_home_label: e.target.value }))}
@@ -296,7 +296,7 @@ const SiteSettingsManager = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Texto do botão "Carrinho"</label>
+            <label className="text-xs text-muted-foreground">Texto do botão "Carrinho" lá embaixo</label>
             <Input
               value={form.nav_cart_label}
               onChange={e => setForm(f => ({ ...f, nav_cart_label: e.target.value }))}
@@ -311,7 +311,7 @@ const SiteSettingsManager = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Palette className="h-4 w-4 text-primary" /> Cor Principal
+            <Palette className="h-4 w-4 text-primary" /> 🎨 Cor do Site (botões, destaques, categorias)
           </CardTitle>
         </CardHeader>
         <CardContent>

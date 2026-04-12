@@ -807,11 +807,11 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
 
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
                     <button onClick={addIngredient} className="text-xs text-primary hover:underline flex items-center gap-1">
-                      <Plus className="h-3 w-3" /> Ingrediente
+                      <Plus className="h-3 w-3" /> Adicionar item
                     </button>
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-semibold text-foreground">
-                        Total: R$ {ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0).toFixed(2)}
+                        Custo total: R$ {ingredients.reduce((s, i) => s + (i.cost * i.quantity), 0).toFixed(2)}
                       </span>
                       <button
                         onClick={saveIngredients}

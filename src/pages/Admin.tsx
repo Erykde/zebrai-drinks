@@ -655,22 +655,30 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
 
   return (
     <div>
+      <div className="bg-card rounded-lg border border-border p-4 mb-4">
+        <p className="text-sm text-foreground font-medium">📋 Como usar:</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Clique em um produto → adicione os ingredientes com o preço que você paga → 
+          o sistema calcula quanto você deve cobrar para ter lucro.
+        </p>
+      </div>
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Produtos</p>
+          <p className="text-xs text-muted-foreground">Total de Produtos</p>
           <p className="text-2xl font-bold text-foreground">{products.length}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Com custo</p>
+          <p className="text-xs text-muted-foreground">✅ Com custo preenchido</p>
           <p className="text-2xl font-bold text-primary">{productsWithCost.length}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Sem custo</p>
+          <p className="text-xs text-muted-foreground">⚠️ Falta preencher</p>
           <p className="text-2xl font-bold text-destructive">{products.length - productsWithCost.length}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
-          <p className="text-xs text-muted-foreground">Margem média</p>
+          <p className="text-xs text-muted-foreground">📊 Margem média</p>
           <p className={`text-2xl font-bold ${avgMargin >= 50 ? 'text-green-500' : avgMargin >= 30 ? 'text-yellow-500' : 'text-orange-500'}`}>
             {avgMargin > 0 ? `${avgMargin.toFixed(0)}%` : '—'}
           </p>

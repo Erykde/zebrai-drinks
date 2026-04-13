@@ -127,19 +127,6 @@ const StoreConfigManager = () => {
               O cliente vê isso quando a loja está fechada
             </p>
           </div>
-              </div>
-              <Textarea
-                value={form.closed_message}
-                onChange={e => setForm(f => ({ ...f, closed_message: e.target.value }))}
-                placeholder="Ex: Voltamos amanhã às 18h! 🦓"
-                rows={2}
-                className="text-sm"
-              />
-              <p className="text-[10px] text-muted-foreground mt-1">
-                Essa mensagem aparece para os clientes quando sua loja está fechada
-              </p>
-            </div>
-          )}
 
           <div>
             <label className="text-xs text-muted-foreground">

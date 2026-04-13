@@ -39,7 +39,11 @@ const Index = () => {
     return matchCategory && matchSearch;
   });
 
-  const grouped = filtered.reduce<Record<string, DbProduct[]>>((acc, p) => {
+  // Separate promo products to show them first
+  const promoProducts = filtered.filter(p => p.is_promotion && p.promotion_price);
+  const regularProducts = filtered.filter(p => !(p.is_promotion && p.promotion_price));
+
+  const grouped = regularProducts.reduce<Record<string, DbProduct[]>>((acc, p) => {
     if (!acc[p.category]) acc[p.category] = [];
     acc[p.category].push(p);
     return acc;
@@ -131,22 +135,41 @@ const Index = () => {
             Nenhum produto encontrado.
           </p>
         ) : (
-          Object.entries(grouped).map(([cat, items]) => (
-            <section key={cat} className="mb-4 bg-card rounded-xl border-l-4 border-primary overflow-hidden">
-              <div className="px-4 pt-3 pb-2">
-                <h2 className="font-display text-xl text-primary">{cat}</h2>
-              </div>
-              <div className="divide-y divide-border">
-                {items.map(product => (
-                  <ProductListItem
-                    key={product.id}
-                    product={product}
-                    onClick={() => setSelectedProduct(product)}
-                  />
-                ))}
-              </div>
-            </section>
-          ))
+          <>
+            {promoProducts.length > 0 && (
+              <section className="mb-4 bg-card rounded-xl border-l-4 border-destructive overflow-hidden">
+                <div className="px-4 pt-3 pb-2 flex items-center gap-2">
+                  <span className="text-lg">🔥</span>
+                  <h2 className="font-display text-xl text-destructive">PROMOÇÕES</h2>
+                </div>
+                <div className="divide-y divide-border">
+                  {promoProducts.map(product => (
+                    <ProductListItem
+                      key={product.id}
+                      product={product}
+                      onClick={() => setSelectedProduct(product)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+            {Object.entries(grouped).map(([cat, items]) => (
+              <section key={cat} className="mb-4 bg-card rounded-xl border-l-4 border-primary overflow-hidden">
+                <div className="px-4 pt-3 pb-2">
+                  <h2 className="font-display text-xl text-primary">{cat}</h2>
+                </div>
+                <div className="divide-y divide-border">
+                  {items.map(product => (
+                    <ProductListItem
+                      key={product.id}
+                      product={product}
+                      onClick={() => setSelectedProduct(product)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </>
         )}
       </main>
 

@@ -158,10 +158,10 @@ Deno.serve(async (req) => {
 
     await supabase.from("orders").insert(legacyItems);
 
-    // Accumulate loyalty points (1 point per R$1 spent)
+    // Accumulate loyalty points (1 point per R$50 spent)
     if (customer_phone?.trim()) {
       const phone = customer_phone.trim();
-      const points = Math.floor(total);
+      const points = Math.floor(total / 50);
       const { data: existing } = await supabase
         .from("loyalty_points")
         .select("id, points, total_spent, order_count")

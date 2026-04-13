@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     const productNames = items.map((i: any) => i.product_name);
     const { data: products } = await supabase
       .from("products")
-      .select("name, price, cost_price, is_promotion, promotion_price");
+      .select("id, name, price, cost_price, is_promotion, promotion_price, stock");
 
     // Insert order
     const { data: orderData, error: orderError } = await supabase
@@ -145,6 +145,18 @@ Deno.serve(async (req) => {
       .insert(itemsToInsert);
 
     if (itemsError) throw itemsError;
+
+    // Decrease stock for each product sold
+    for (const item of items) {
+      const dbProduct = products?.find((p: any) => item.product_name.includes(p.name));
+      if (dbProduct && dbProduct.stock != null) {
+        const newStock = Math.max(0, dbProduct.stock - item.quantity);
+        await supabase
+          .from("products")
+          .update({ stock: newStock })
+          .eq("id", dbProduct.id);
+      }
+    }
 
     // Legacy orders table
     const legacyItems = itemsToInsert.map((item: any) => ({

@@ -17,6 +17,7 @@ import WhatsAppManager from '@/components/WhatsAppManager';
 import MotoboyManager from '@/components/MotoboyManager';
 import CashRegisterManager from '@/components/CashRegisterManager';
 import FinancialSummary from '@/components/FinancialSummary';
+import StockManager from '@/components/StockManager';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +41,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial' | 'stock';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -212,6 +213,7 @@ const Admin = () => {
   const navItems: { key: AdminTab; icon: typeof ClipboardList; label: string; badge?: number }[] = [
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
     { key: 'products', icon: Package, label: 'Produtos' },
+    { key: 'stock', icon: Package, label: 'Estoque' },
     { key: 'financial', icon: PieChart, label: 'Financeiro' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
     { key: 'pricing', icon: DollarSign, label: 'Precificação' },
@@ -321,6 +323,8 @@ const Admin = () => {
             <PricingTab products={products} queryClient={queryClient} />
           ) : activeTab === 'cashregister' ? (
             <CashRegisterManager />
+          ) : activeTab === 'stock' ? (
+            <StockManager />
           ) : (
             <ProductsTab
               products={products}

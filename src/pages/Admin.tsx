@@ -28,6 +28,7 @@ interface MixerOption {
   price: number;
   group?: string;
   flavors?: string[];
+  image_url?: string;
 }
 
 interface OrderRow {

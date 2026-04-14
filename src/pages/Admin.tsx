@@ -355,6 +355,54 @@ const Admin = () => {
   );
 };
 
+// === Mixer Image Upload (inline mini component) ===
+const MixerImageUpload = ({ currentUrl, onUpload, onRemove }: { currentUrl?: string; onUpload: (url: string) => void; onRemove: () => void }) => {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem!'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Imagem muito grande! Máx 5MB.'); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `mixer-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('product-images').getPublicUrl(fileName);
+      onUpload(data.publicUrl);
+      toast.success('Foto do mixer enviada!');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao enviar foto');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {currentUrl ? (
+        <div className="relative inline-block">
+          <img src={currentUrl} alt="Mixer" className="w-12 h-12 rounded-lg object-cover border border-border" />
+          <button type="button" onClick={onRemove} className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5">
+            <X className="h-2.5 w-2.5" />
+          </button>
+        </div>
+      ) : (
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+          className="flex items-center gap-1 px-2 py-1 rounded border border-dashed border-input bg-background text-muted-foreground text-xs hover:border-primary hover:text-primary transition-colors">
+          {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+          {uploading ? 'Enviando...' : '📷 Foto'}
+        </button>
+      )}
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+    </div>
+  );
+};
+
 // === Products Tab ===
 const ProductsTab = ({
   products, showForm, editingProduct, form, setForm, mixerOptions, setMixerOptions, saving,

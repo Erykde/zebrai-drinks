@@ -483,7 +483,7 @@ const ProductsTab = ({
           {mixerOptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum acompanhamento cadastrado.</p>
           ) : (
-            <div className="space-y-4">
+             <div className="space-y-4">
               {mixerOptions.map((m, i) => (
                 <div key={i} className="border border-border rounded-lg p-3 space-y-2">
                   <div className="flex gap-2 items-center">
@@ -491,6 +491,22 @@ const ProductsTab = ({
                     <input value={m.mixer} onChange={e => onUpdateMixer(i, 'mixer', e.target.value)} placeholder="Nome" className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
                     <input type="number" value={m.price} onChange={e => onUpdateMixer(i, 'price', parseFloat(e.target.value) || 0)} placeholder="Preço" step="0.01" min="0" className="w-24 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm" />
                     <button type="button" onClick={() => onRemoveMixer(i)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg"><X className="h-4 w-4" /></button>
+                  </div>
+                  {/* Mixer image upload */}
+                  <div className="ml-4">
+                    <MixerImageUpload
+                      currentUrl={m.image_url}
+                      onUpload={(url) => {
+                        const updated = [...mixerOptions];
+                        updated[i] = { ...updated[i], image_url: url };
+                        setMixerOptions(updated);
+                      }}
+                      onRemove={() => {
+                        const updated = [...mixerOptions];
+                        updated[i] = { ...updated[i], image_url: undefined };
+                        setMixerOptions(updated);
+                      }}
+                    />
                   </div>
                   <div className="ml-4">
                     <div className="flex items-center gap-2 mb-1">

@@ -334,6 +334,7 @@ const Admin = () => {
               form={form}
               setForm={setForm}
               mixerOptions={mixerOptions}
+              setMixerOptions={setMixerOptions}
               saving={saving}
               onResetForm={resetForm}
               onShowForm={() => { resetForm(); setShowForm(true); }}
@@ -356,7 +357,7 @@ const Admin = () => {
 
 // === Products Tab ===
 const ProductsTab = ({
-  products, showForm, editingProduct, form, setForm, mixerOptions, saving,
+  products, showForm, editingProduct, form, setForm, mixerOptions, setMixerOptions, saving,
   onResetForm, onShowForm, onEdit, onDelete, onSubmit, onAddMixer, onRemoveMixer, onUpdateMixer,
   onAddFlavor, onRemoveFlavor, onUpdateFlavor,
 }: {
@@ -366,6 +367,7 @@ const ProductsTab = ({
   form: any;
   setForm: (f: any) => void;
   mixerOptions: MixerOption[];
+  setMixerOptions: (m: MixerOption[]) => void;
   saving: boolean;
   onResetForm: () => void;
   onShowForm: () => void;

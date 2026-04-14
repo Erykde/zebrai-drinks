@@ -192,7 +192,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                         {grouped[groupName].map(option => {
                           const isSelected = sel?.mixer === option.mixer;
                           return (
-                            <div key={option.mixer}>
+                             <div key={option.mixer}>
                               <button
                                 onClick={() => handleSelectMixer(groupName, option.mixer)}
                                 className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all text-left ${
@@ -201,9 +201,14 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                                     : 'border-transparent bg-muted/30 hover:bg-muted/50'
                                 }`}
                               >
-                                <span className={`font-medium text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
-                                  {option.mixer}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                  {option.image_url && (
+                                    <img src={option.image_url} alt={option.mixer} className="w-10 h-10 rounded-lg object-cover border border-border" />
+                                  )}
+                                  <span className={`font-medium text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                    {option.mixer}
+                                  </span>
+                                </div>
                                 <span className="font-bold text-sm text-primary">R$ {option.price.toFixed(2)}</span>
                               </button>
 

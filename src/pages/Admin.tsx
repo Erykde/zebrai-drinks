@@ -149,7 +149,12 @@ const Admin = () => {
       isPromotion: product.is_promotion ?? false,
       promotionPrice: product.promotion_price?.toString() ?? '',
     });
-    setMixerOptions(product.mixer_options.length > 0 ? [...product.mixer_options] : []);
+    // Normalize old string[] flavors to FlavorOption[]
+    const normalizedMixers: MixerOption[] = (product.mixer_options || []).map(m => ({
+      ...m,
+      flavors: (m.flavors || []).map(f => typeof f === 'string' ? { name: f } : f) as FlavorOption[],
+    }));
+    setMixerOptions(normalizedMixers);
     setEditingProduct(product);
     setShowForm(true);
   };
@@ -163,17 +168,17 @@ const Admin = () => {
 
   const addMixer = () => setMixerOptions(prev => [...prev, { mixer: '', price: 0, group: '', flavors: [] }]);
   const removeMixer = (index: number) => setMixerOptions(prev => prev.filter((_, i) => i !== index));
-  const updateMixer = (index: number, field: keyof MixerOption, value: string | number | string[]) => {
+  const updateMixer = (index: number, field: keyof MixerOption, value: string | number | FlavorOption[]) => {
     setMixerOptions(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
   };
   const addFlavor = (mixerIndex: number) => {
-    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: [...(m.flavors || []), ''] } : m));
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: [...(m.flavors || []), { name: '' }] } : m));
   };
   const removeFlavor = (mixerIndex: number, flavorIndex: number) => {
     setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).filter((_, fi) => fi !== flavorIndex) } : m));
   };
-  const updateFlavor = (mixerIndex: number, flavorIndex: number, value: string) => {
-    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).map((f, fi) => fi === flavorIndex ? value : f) } : m));
+  const updateFlavor = (mixerIndex: number, flavorIndex: number, field: keyof FlavorOption, value: string) => {
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).map((f, fi) => fi === flavorIndex ? { ...f, [field]: value } : f) } : m));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

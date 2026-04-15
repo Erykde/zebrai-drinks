@@ -58,6 +58,7 @@ const Admin = () => {
   // Form state
   const [form, setForm] = useState({
     name: '', description: '', price: '', category: '', image: '🍹', stock: '', imageUrl: '', costPrice: '',
+    isPromotion: false, promotionPrice: '',
   });
   const [mixerOptions, setMixerOptions] = useState<MixerOption[]>([]);
   const [saving, setSaving] = useState(false);
@@ -124,7 +125,7 @@ const Admin = () => {
   }, [queryClient]);
 
   const resetForm = () => {
-    setForm({ name: '', description: '', price: '', category: '', image: '🍹', stock: '', imageUrl: '', costPrice: '' });
+    setForm({ name: '', description: '', price: '', category: '', image: '🍹', stock: '', imageUrl: '', costPrice: '', isPromotion: false, promotionPrice: '' });
     setMixerOptions([]);
     setEditingProduct(null);
     setShowForm(false);
@@ -140,6 +141,8 @@ const Admin = () => {
       stock: (product.stock ?? 99).toString(),
       imageUrl: product.image_url ?? '',
       costPrice: ((product as any).cost_price ?? 0).toString(),
+      isPromotion: product.is_promotion ?? false,
+      promotionPrice: product.promotion_price?.toString() ?? '',
     });
     setMixerOptions(product.mixer_options.length > 0 ? [...product.mixer_options] : []);
     setEditingProduct(product);
@@ -182,6 +185,8 @@ const Admin = () => {
       image_url: form.imageUrl || null,
       cost_price: parseFloat(form.costPrice) || 0,
       mixer_options: validMixers.length > 0 ? JSON.parse(JSON.stringify(validMixers)) : [],
+      is_promotion: form.isPromotion,
+      promotion_price: form.isPromotion && form.promotionPrice ? parseFloat(form.promotionPrice) : null,
     };
 
     if (editingProduct) {
@@ -508,6 +513,31 @@ const ProductsTab = ({
             className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
           <input value={form.image} onChange={e => setForm({...form, image: e.target.value})} placeholder="Emoji do produto" maxLength={4}
             className="px-4 py-2 rounded-lg border border-input bg-background text-foreground" />
+
+          {/* Promoção */}
+          <div className="md:col-span-2 flex flex-col gap-2 p-3 rounded-lg border border-border bg-muted/30">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.isPromotion}
+                onChange={e => setForm({...form, isPromotion: e.target.checked})}
+                className="w-4 h-4 accent-destructive"
+              />
+              <span className="font-medium text-sm text-card-foreground">🔥 Colocar em promoção</span>
+            </label>
+            {form.isPromotion && (
+              <input
+                type="number"
+                value={form.promotionPrice}
+                onChange={e => setForm({...form, promotionPrice: e.target.value})}
+                placeholder="Preço promocional (R$)"
+                step="0.01"
+                min="0"
+                required
+                className="px-4 py-2 rounded-lg border border-destructive/50 bg-background text-foreground"
+              />
+            )}
+          </div>
           <div className="md:col-span-2">
             <ImageUpload
               currentUrl={form.imageUrl || undefined}

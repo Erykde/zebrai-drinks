@@ -23,11 +23,16 @@ import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
+interface FlavorOption {
+  name: string;
+  image_url?: string;
+}
+
 interface MixerOption {
   mixer: string;
   price: number;
   group?: string;
-  flavors?: string[];
+  flavors?: FlavorOption[];
   image_url?: string;
 }
 

@@ -178,7 +178,7 @@ const Admin = () => {
     setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).filter((_, fi) => fi !== flavorIndex) } : m));
   };
   const updateFlavor = (mixerIndex: number, flavorIndex: number, field: keyof FlavorOption, value: string) => {
-    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).map((f, fi) => fi === flavorIndex ? { ...f, [field]: value } : f) } : m));
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).map((f, fi) => fi === flavorIndex ? { ...f, [field]: value || undefined } : f) } : m));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -439,10 +439,10 @@ const ProductsTab = ({
   onSubmit: (e: React.FormEvent) => void;
   onAddMixer: () => void;
   onRemoveMixer: (i: number) => void;
-  onUpdateMixer: (i: number, f: keyof MixerOption, v: string | number | string[]) => void;
+  onUpdateMixer: (i: number, f: keyof MixerOption, v: string | number | FlavorOption[]) => void;
   onAddFlavor: (i: number) => void;
   onRemoveFlavor: (mi: number, fi: number) => void;
-  onUpdateFlavor: (mi: number, fi: number, v: string) => void;
+  onUpdateFlavor: (mi: number, fi: number, field: keyof FlavorOption, v: string) => void;
 }) => {
   const [aiLoadingDesc, setAiLoadingDesc] = useState(false);
   const [aiLoadingImg, setAiLoadingImg] = useState(false);
@@ -604,9 +604,16 @@ const ProductsTab = ({
                       <button type="button" onClick={() => onAddFlavor(i)} className="text-xs text-primary hover:underline">+ Sabor</button>
                     </div>
                     {(m.flavors || []).map((f, fi) => (
-                      <div key={fi} className="flex gap-1 items-center mb-1">
-                        <input value={f} onChange={e => onUpdateFlavor(i, fi, e.target.value)} placeholder="Nome do sabor" className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground text-xs" />
-                        <button type="button" onClick={() => onRemoveFlavor(i, fi)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3 w-3" /></button>
+                      <div key={fi} className="space-y-1 mb-2 p-2 bg-muted/20 rounded-lg">
+                        <div className="flex gap-1 items-center">
+                          <input value={f.name} onChange={e => onUpdateFlavor(i, fi, 'name', e.target.value)} placeholder="Nome do sabor" className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground text-xs" />
+                          <button type="button" onClick={() => onRemoveFlavor(i, fi)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3 w-3" /></button>
+                        </div>
+                        <ImageUpload
+                          currentUrl={f.image_url}
+                          onUpload={(url) => onUpdateFlavor(i, fi, 'image_url', url)}
+                          onRemove={() => onUpdateFlavor(i, fi, 'image_url', '')}
+                        />
                       </div>
                     ))}
                   </div>

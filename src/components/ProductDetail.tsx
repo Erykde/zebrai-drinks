@@ -46,10 +46,10 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
   }, [selections, groupNames, product.mixer_options]);
 
   // For products with mixers, use the energético price (highest selected) as the product price
-  const currentPrice = hasMixers
-    ? selectedMixerPrices || product.price
-    : product.is_promotion && product.promotion_price
-      ? product.promotion_price
+  const currentPrice = product.is_promotion && product.promotion_price
+    ? product.promotion_price
+    : hasMixers
+      ? selectedMixerPrices || product.price
       : product.price;
 
   // Can add if all groups have a selection (and flavor if required)

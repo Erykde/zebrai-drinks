@@ -8,9 +8,10 @@ interface ProductListItemProps {
 const ProductListItem = ({ product, onClick }: ProductListItemProps) => {
   const hasMixers = product.mixer_options.length > 0;
 
-  const minPrice = hasMixers
+  const basePrice = hasMixers
     ? Math.min(...product.mixer_options.map(m => m.price))
-    : product.is_promotion && product.promotion_price ? product.promotion_price : product.price;
+    : product.price;
+  const minPrice = product.is_promotion && product.promotion_price ? product.promotion_price : basePrice;
 
   return (
     <button

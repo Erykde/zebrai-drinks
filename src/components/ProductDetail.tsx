@@ -217,19 +217,26 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                                 <div className="mt-2 ml-3 mr-1 space-y-1.5 pb-1">
                                   <p className="text-xs font-medium text-muted-foreground">Escolha o sabor:</p>
                                   <div className="flex flex-wrap gap-2">
-                                    {option.flavors.map(flavor => (
-                                      <button
-                                        key={flavor}
-                                        onClick={() => handleSelectFlavor(groupName, flavor)}
-                                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                                          sel?.flavor === flavor
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-foreground hover:bg-muted/80'
-                                        }`}
-                                      >
-                                        {flavor}
-                                      </button>
-                                    ))}
+                                    {option.flavors.map((flavorItem) => {
+                                      const flavorName = typeof flavorItem === 'string' ? flavorItem : flavorItem.name;
+                                      const flavorImage = typeof flavorItem === 'string' ? undefined : flavorItem.image_url;
+                                      return (
+                                        <button
+                                          key={flavorName}
+                                          onClick={() => handleSelectFlavor(groupName, flavorName)}
+                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                                            sel?.flavor === flavorName
+                                              ? 'bg-primary text-primary-foreground'
+                                              : 'bg-muted text-foreground hover:bg-muted/80'
+                                          }`}
+                                        >
+                                          {flavorImage && (
+                                            <img src={flavorImage} alt={flavorName} className="w-5 h-5 rounded-full object-cover" />
+                                          )}
+                                          {flavorName}
+                                        </button>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               )}

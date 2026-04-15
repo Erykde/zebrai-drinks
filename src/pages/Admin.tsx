@@ -23,11 +23,16 @@ import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
+interface FlavorOption {
+  name: string;
+  image_url?: string;
+}
+
 interface MixerOption {
   mixer: string;
   price: number;
   group?: string;
-  flavors?: string[];
+  flavors?: FlavorOption[];
   image_url?: string;
 }
 
@@ -144,7 +149,12 @@ const Admin = () => {
       isPromotion: product.is_promotion ?? false,
       promotionPrice: product.promotion_price?.toString() ?? '',
     });
-    setMixerOptions(product.mixer_options.length > 0 ? [...product.mixer_options] : []);
+    // Normalize old string[] flavors to FlavorOption[]
+    const normalizedMixers: MixerOption[] = (product.mixer_options || []).map(m => ({
+      ...m,
+      flavors: (m.flavors || []).map(f => typeof f === 'string' ? { name: f } : f) as FlavorOption[],
+    }));
+    setMixerOptions(normalizedMixers);
     setEditingProduct(product);
     setShowForm(true);
   };
@@ -158,17 +168,17 @@ const Admin = () => {
 
   const addMixer = () => setMixerOptions(prev => [...prev, { mixer: '', price: 0, group: '', flavors: [] }]);
   const removeMixer = (index: number) => setMixerOptions(prev => prev.filter((_, i) => i !== index));
-  const updateMixer = (index: number, field: keyof MixerOption, value: string | number | string[]) => {
+  const updateMixer = (index: number, field: keyof MixerOption, value: string | number | FlavorOption[]) => {
     setMixerOptions(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
   };
   const addFlavor = (mixerIndex: number) => {
-    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: [...(m.flavors || []), ''] } : m));
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: [...(m.flavors || []), { name: '' }] } : m));
   };
   const removeFlavor = (mixerIndex: number, flavorIndex: number) => {
     setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).filter((_, fi) => fi !== flavorIndex) } : m));
   };
-  const updateFlavor = (mixerIndex: number, flavorIndex: number, value: string) => {
-    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).map((f, fi) => fi === flavorIndex ? value : f) } : m));
+  const updateFlavor = (mixerIndex: number, flavorIndex: number, field: keyof FlavorOption, value: string) => {
+    setMixerOptions(prev => prev.map((m, i) => i === mixerIndex ? { ...m, flavors: (m.flavors || []).map((f, fi) => fi === flavorIndex ? { ...f, [field]: value || undefined } : f) } : m));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -429,10 +439,10 @@ const ProductsTab = ({
   onSubmit: (e: React.FormEvent) => void;
   onAddMixer: () => void;
   onRemoveMixer: (i: number) => void;
-  onUpdateMixer: (i: number, f: keyof MixerOption, v: string | number | string[]) => void;
+  onUpdateMixer: (i: number, f: keyof MixerOption, v: string | number | FlavorOption[]) => void;
   onAddFlavor: (i: number) => void;
   onRemoveFlavor: (mi: number, fi: number) => void;
-  onUpdateFlavor: (mi: number, fi: number, v: string) => void;
+  onUpdateFlavor: (mi: number, fi: number, field: keyof FlavorOption, v: string) => void;
 }) => {
   const [aiLoadingDesc, setAiLoadingDesc] = useState(false);
   const [aiLoadingImg, setAiLoadingImg] = useState(false);
@@ -594,9 +604,16 @@ const ProductsTab = ({
                       <button type="button" onClick={() => onAddFlavor(i)} className="text-xs text-primary hover:underline">+ Sabor</button>
                     </div>
                     {(m.flavors || []).map((f, fi) => (
-                      <div key={fi} className="flex gap-1 items-center mb-1">
-                        <input value={f} onChange={e => onUpdateFlavor(i, fi, e.target.value)} placeholder="Nome do sabor" className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground text-xs" />
-                        <button type="button" onClick={() => onRemoveFlavor(i, fi)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3 w-3" /></button>
+                      <div key={fi} className="space-y-1 mb-2 p-2 bg-muted/20 rounded-lg">
+                        <div className="flex gap-1 items-center">
+                          <input value={f.name} onChange={e => onUpdateFlavor(i, fi, 'name', e.target.value)} placeholder="Nome do sabor" className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground text-xs" />
+                          <button type="button" onClick={() => onRemoveFlavor(i, fi)} className="p-1 text-destructive hover:bg-destructive/10 rounded"><X className="h-3 w-3" /></button>
+                        </div>
+                        <ImageUpload
+                          currentUrl={f.image_url}
+                          onUpload={(url) => onUpdateFlavor(i, fi, 'image_url', url)}
+                          onRemove={() => onUpdateFlavor(i, fi, 'image_url', '')}
+                        />
                       </div>
                     ))}
                   </div>

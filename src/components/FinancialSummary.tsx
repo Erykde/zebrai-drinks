@@ -1,8 +1,22 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, TrendingDown, ArrowDown, ArrowUp, Users, Wallet } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { DollarSign, TrendingUp, TrendingDown, ArrowDown, ArrowUp, Users, Wallet, Plus, Trash2 } from 'lucide-react';
+
+interface Partner {
+  id: string;
+  name: string;
+  percent: number;
+}
+
+const PARTNERS_KEY = 'zebrai_partners_v1';
+const defaultPartners: Partner[] = [
+  { id: '1', name: 'Você', percent: 50 },
+  { id: '2', name: 'Geovana', percent: 50 },
+];
 
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -22,6 +36,27 @@ interface CashTransaction {
 
 const FinancialSummary = () => {
   const [period, setPeriod] = useState<'today' | 'month' | 'all'>('month');
+  const [partners, setPartners] = useState<Partner[]>(() => {
+    try {
+      const raw = localStorage.getItem(PARTNERS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return defaultPartners;
+  });
+  const [editingPartners, setEditingPartners] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(PARTNERS_KEY, JSON.stringify(partners));
+  }, [partners]);
+
+  const totalPercent = partners.reduce((s, p) => s + (Number(p.percent) || 0), 0);
+
+  const addPartner = () => setPartners([...partners, { id: Date.now().toString(), name: 'Novo', percent: 0 }]);
+  const removePartner = (id: string) => setPartners(partners.filter(p => p.id !== id));
+  const updatePartner = (id: string, field: 'name' | 'percent', value: string) => {
+    setPartners(partners.map(p => p.id === id ? { ...p, [field]: field === 'percent' ? Number(value) || 0 : value } : p));
+  };
+
 
   const { data: orders = [] } = useQuery({
     queryKey: ['orders'],
@@ -92,10 +127,6 @@ const FinancialSummary = () => {
     // Gross profit (just sales)
     const grossProfit = salesRevenue - salesCost;
 
-    // Partner split 50/50
-    const yourShare = netProfit / 2;
-    const geovanaShare = netProfit / 2;
-
     return {
       salesRevenue,
       salesCost,
@@ -107,8 +138,6 @@ const FinancialSummary = () => {
       totalOut,
       grossProfit,
       netProfit,
-      yourShare,
-      geovanaShare,
       orderCount: filteredOrders.length,
     };
   }, [orders, transactions, customerOrders, period]);
@@ -175,27 +204,60 @@ const FinancialSummary = () => {
         </CardContent>
       </Card>
 
-      {/* Partner split */}
+      {/* Partner / Employee split */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" /> 💑 Divisão do Lucro (50% / 50%)
+            <Users className="h-4 w-4 text-primary" /> 💑 Divisão do Lucro
           </CardTitle>
+          <Button size="sm" variant="outline" onClick={() => setEditingPartners(v => !v)}>
+            {editingPartners ? 'Concluir' : 'Editar'}
+          </Button>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-muted rounded-xl p-4 text-center">
-              <p className="text-xs font-semibold text-muted-foreground mb-1">🧑 Você</p>
-              <p className={`text-xl font-bold ${stats.yourShare >= 0 ? 'text-green-500' : 'text-destructive'}`}>
-                {fmt(stats.yourShare)}
+        <CardContent className="space-y-3">
+          {editingPartners && (
+            <div className="space-y-2">
+              {partners.map(p => (
+                <div key={p.id} className="flex items-center gap-2">
+                  <Input
+                    value={p.name}
+                    onChange={e => updatePartner(p.id, 'name', e.target.value)}
+                    placeholder="Nome"
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    value={p.percent}
+                    onChange={e => updatePartner(p.id, 'percent', e.target.value)}
+                    placeholder="%"
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
+                  <Button size="icon" variant="ghost" onClick={() => removePartner(p.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+              <Button size="sm" variant="outline" onClick={addPartner} className="w-full">
+                <Plus className="h-4 w-4 mr-1" /> Adicionar pessoa
+              </Button>
+              <p className={`text-xs text-center ${totalPercent === 100 ? 'text-green-500' : 'text-destructive'}`}>
+                Total: {totalPercent}% {totalPercent !== 100 && '(precisa somar 100%)'}
               </p>
             </div>
-            <div className="bg-muted rounded-xl p-4 text-center">
-              <p className="text-xs font-semibold text-muted-foreground mb-1">👩 Geovana</p>
-              <p className={`text-xl font-bold ${stats.geovanaShare >= 0 ? 'text-green-500' : 'text-destructive'}`}>
-                {fmt(stats.geovanaShare)}
-              </p>
-            </div>
+          )}
+          <div className={`grid gap-3 ${partners.length <= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {partners.map(p => {
+              const share = stats.netProfit * (p.percent / 100);
+              return (
+                <div key={p.id} className="bg-muted rounded-xl p-4 text-center">
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">{p.name} ({p.percent}%)</p>
+                  <p className={`text-xl font-bold ${share >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                    {fmt(share)}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

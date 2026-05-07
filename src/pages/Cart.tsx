@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Header from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 import CheckoutForm from '@/components/CheckoutForm';
 
 const Cart = () => {
@@ -18,7 +19,7 @@ const Cart = () => {
 
   if (cart.length === 0 && !showCheckout) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-24">
         <Header />
         <div className="container mx-auto px-4 py-20 text-center">
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-muted mb-6">
@@ -33,13 +34,14 @@ const Cart = () => {
             <ArrowLeft className="h-4 w-4" /> Ver Cardápio
           </Link>
         </div>
+        <BottomNav />
       </div>
     );
   }
 
   if (showCheckout) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-24">
         <Header />
         <div className="container mx-auto px-4 py-8 max-w-lg">
           <button
@@ -50,14 +52,21 @@ const Cart = () => {
           </button>
           <CheckoutForm />
         </div>
+        <BottomNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24">
       <Header />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors text-sm"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar ao cardápio
+        </Link>
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-gold mb-3">
             <ShoppingCart className="h-7 w-7 text-primary-foreground" />
@@ -125,6 +134,7 @@ const Cart = () => {
           </button>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 };

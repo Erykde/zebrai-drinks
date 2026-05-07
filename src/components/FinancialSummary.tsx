@@ -1,8 +1,22 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, TrendingDown, ArrowDown, ArrowUp, Users, Wallet } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { DollarSign, TrendingUp, TrendingDown, ArrowDown, ArrowUp, Users, Wallet, Plus, Trash2 } from 'lucide-react';
+
+interface Partner {
+  id: string;
+  name: string;
+  percent: number;
+}
+
+const PARTNERS_KEY = 'zebrai_partners_v1';
+const defaultPartners: Partner[] = [
+  { id: '1', name: 'Você', percent: 50 },
+  { id: '2', name: 'Geovana', percent: 50 },
+];
 
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 

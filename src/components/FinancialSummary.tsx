@@ -36,6 +36,27 @@ interface CashTransaction {
 
 const FinancialSummary = () => {
   const [period, setPeriod] = useState<'today' | 'month' | 'all'>('month');
+  const [partners, setPartners] = useState<Partner[]>(() => {
+    try {
+      const raw = localStorage.getItem(PARTNERS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return defaultPartners;
+  });
+  const [editingPartners, setEditingPartners] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(PARTNERS_KEY, JSON.stringify(partners));
+  }, [partners]);
+
+  const totalPercent = partners.reduce((s, p) => s + (Number(p.percent) || 0), 0);
+
+  const addPartner = () => setPartners([...partners, { id: Date.now().toString(), name: 'Novo', percent: 0 }]);
+  const removePartner = (id: string) => setPartners(partners.filter(p => p.id !== id));
+  const updatePartner = (id: string, field: 'name' | 'percent', value: string) => {
+    setPartners(partners.map(p => p.id === id ? { ...p, [field]: field === 'percent' ? Number(value) || 0 : value } : p));
+  };
+
 
   const { data: orders = [] } = useQuery({
     queryKey: ['orders'],

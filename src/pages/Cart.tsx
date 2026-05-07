@@ -67,28 +67,6 @@ const Cart = () => {
         >
           <ArrowLeft className="h-4 w-4" /> Voltar ao cardápio
         </Link>
-
-  if (showCheckout) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8 max-w-lg">
-          <button
-            onClick={() => setShowCheckout(false)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors text-sm"
-          >
-            <ArrowLeft className="h-4 w-4" /> Voltar ao carrinho
-          </button>
-          <CheckoutForm />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-gold mb-3">
             <ShoppingCart className="h-7 w-7 text-primary-foreground" />
@@ -156,6 +134,7 @@ const Cart = () => {
           </button>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 };

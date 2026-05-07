@@ -186,63 +186,81 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                       }
                     </button>
 
-                    {/* Group items */}
+                    {/* Group items - vertical scrollable list with big images */}
                     {isExpanded && (
-                      <div className="p-2 space-y-2 bg-card">
-                        {grouped[groupName].map(option => {
-                          const isSelected = sel?.mixer === option.mixer;
-                          return (
-                             <div key={option.mixer}>
-                              <button
-                                onClick={() => handleSelectMixer(groupName, option.mixer)}
-                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all text-left ${
-                                  isSelected
-                                    ? 'border-primary bg-primary/10'
-                                    : 'border-transparent bg-muted/30 hover:bg-muted/50'
-                                }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  {option.image_url && (
-                                    <img src={option.image_url} alt={option.mixer} className="w-10 h-10 rounded-lg object-cover border border-border" />
-                                  )}
-                                  <span className={`font-medium text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
-                                    {option.mixer}
-                                  </span>
-                                </div>
-                                <span className="font-bold text-sm text-primary">R$ {option.price.toFixed(2)}</span>
-                              </button>
-
-                              {/* Flavor sub-selection */}
-                              {isSelected && option.flavors && option.flavors.length > 0 && (
-                                <div className="mt-2 ml-3 mr-1 space-y-1.5 pb-1">
-                                  <p className="text-xs font-medium text-muted-foreground">Escolha o sabor:</p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {option.flavors.map((flavorItem) => {
-                                      const flavorName = typeof flavorItem === 'string' ? flavorItem : flavorItem.name;
-                                      const flavorImage = typeof flavorItem === 'string' ? undefined : flavorItem.image_url;
-                                      return (
-                                        <button
-                                          key={flavorName}
-                                          onClick={() => handleSelectFlavor(groupName, flavorName)}
-                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                                            sel?.flavor === flavorName
-                                              ? 'bg-primary text-primary-foreground'
-                                              : 'bg-muted text-foreground hover:bg-muted/80'
-                                          }`}
-                                        >
-                                          {flavorImage && (
-                                            <img src={flavorImage} alt={flavorName} className="w-5 h-5 rounded-full object-cover" />
-                                          )}
-                                          {flavorName}
-                                        </button>
-                                      );
-                                    })}
+                      <div className="bg-card">
+                        <div className="max-h-[420px] overflow-y-auto p-3 space-y-3">
+                          {grouped[groupName].map(option => {
+                            const isSelected = sel?.mixer === option.mixer;
+                            return (
+                              <div key={option.mixer} className="space-y-2">
+                                <button
+                                  onClick={() => handleSelectMixer(groupName, option.mixer)}
+                                  className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                                    isSelected
+                                      ? 'border-primary bg-primary/10'
+                                      : 'border-border bg-muted/20 hover:bg-muted/40'
+                                  }`}
+                                >
+                                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
+                                    {option.image_url ? (
+                                      <img src={option.image_url} alt={option.mixer} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <span className="text-3xl">🥤</span>
+                                    )}
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                      {option.mixer}
+                                    </p>
+                                    <p className="font-bold text-base text-primary mt-1">R$ {option.price.toFixed(2)}</p>
+                                  </div>
+                                  {isSelected && (
+                                    <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full font-bold shrink-0">
+                                      ✓
+                                    </span>
+                                  )}
+                                </button>
+
+                                {/* Flavor sub-selection - grid with images */}
+                                {isSelected && option.flavors && option.flavors.length > 0 && (
+                                  <div className="ml-2 space-y-2 pb-2">
+                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Escolha o sabor:</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {option.flavors.map((flavorItem) => {
+                                        const flavorName = typeof flavorItem === 'string' ? flavorItem : flavorItem.name;
+                                        const flavorImage = typeof flavorItem === 'string' ? undefined : flavorItem.image_url;
+                                        const flavorSelected = sel?.flavor === flavorName;
+                                        return (
+                                          <button
+                                            key={flavorName}
+                                            onClick={() => handleSelectFlavor(groupName, flavorName)}
+                                            className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all ${
+                                              flavorSelected
+                                                ? 'border-primary bg-primary/10'
+                                                : 'border-border bg-muted/20 hover:bg-muted/40'
+                                            }`}
+                                          >
+                                            <div className="w-full aspect-square rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                                              {flavorImage ? (
+                                                <img src={flavorImage} alt={flavorName} className="w-full h-full object-cover" />
+                                              ) : (
+                                                <span className="text-2xl">🍓</span>
+                                              )}
+                                            </div>
+                                            <span className={`text-[11px] font-medium text-center leading-tight ${flavorSelected ? 'text-primary' : 'text-foreground'}`}>
+                                              {flavorName}
+                                            </span>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>

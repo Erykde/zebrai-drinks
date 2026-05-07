@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from '@/contexts/StoreContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import Header from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 import CheckoutForm from '@/components/CheckoutForm';
 
 const Cart = () => {

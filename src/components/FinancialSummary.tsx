@@ -204,27 +204,60 @@ const FinancialSummary = () => {
         </CardContent>
       </Card>
 
-      {/* Partner split */}
+      {/* Partner / Employee split */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" /> 💑 Divisão do Lucro (50% / 50%)
+            <Users className="h-4 w-4 text-primary" /> 💑 Divisão do Lucro
           </CardTitle>
+          <Button size="sm" variant="outline" onClick={() => setEditingPartners(v => !v)}>
+            {editingPartners ? 'Concluir' : 'Editar'}
+          </Button>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-muted rounded-xl p-4 text-center">
-              <p className="text-xs font-semibold text-muted-foreground mb-1">🧑 Você</p>
-              <p className={`text-xl font-bold ${stats.yourShare >= 0 ? 'text-green-500' : 'text-destructive'}`}>
-                {fmt(stats.yourShare)}
+        <CardContent className="space-y-3">
+          {editingPartners && (
+            <div className="space-y-2">
+              {partners.map(p => (
+                <div key={p.id} className="flex items-center gap-2">
+                  <Input
+                    value={p.name}
+                    onChange={e => updatePartner(p.id, 'name', e.target.value)}
+                    placeholder="Nome"
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    value={p.percent}
+                    onChange={e => updatePartner(p.id, 'percent', e.target.value)}
+                    placeholder="%"
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
+                  <Button size="icon" variant="ghost" onClick={() => removePartner(p.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+              <Button size="sm" variant="outline" onClick={addPartner} className="w-full">
+                <Plus className="h-4 w-4 mr-1" /> Adicionar pessoa
+              </Button>
+              <p className={`text-xs text-center ${totalPercent === 100 ? 'text-green-500' : 'text-destructive'}`}>
+                Total: {totalPercent}% {totalPercent !== 100 && '(precisa somar 100%)'}
               </p>
             </div>
-            <div className="bg-muted rounded-xl p-4 text-center">
-              <p className="text-xs font-semibold text-muted-foreground mb-1">👩 Geovana</p>
-              <p className={`text-xl font-bold ${stats.geovanaShare >= 0 ? 'text-green-500' : 'text-destructive'}`}>
-                {fmt(stats.geovanaShare)}
-              </p>
-            </div>
+          )}
+          <div className={`grid gap-3 ${partners.length <= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {partners.map(p => {
+              const share = stats.netProfit * (p.percent / 100);
+              return (
+                <div key={p.id} className="bg-muted rounded-xl p-4 text-center">
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">{p.name} ({p.percent}%)</p>
+                  <p className={`text-xl font-bold ${share >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                    {fmt(share)}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

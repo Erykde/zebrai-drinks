@@ -127,10 +127,6 @@ const FinancialSummary = () => {
     // Gross profit (just sales)
     const grossProfit = salesRevenue - salesCost;
 
-    // Partner split 50/50
-    const yourShare = netProfit / 2;
-    const geovanaShare = netProfit / 2;
-
     return {
       salesRevenue,
       salesCost,
@@ -142,8 +138,6 @@ const FinancialSummary = () => {
       totalOut,
       grossProfit,
       netProfit,
-      yourShare,
-      geovanaShare,
       orderCount: filteredOrders.length,
     };
   }, [orders, transactions, customerOrders, period]);

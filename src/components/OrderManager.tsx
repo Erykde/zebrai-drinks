@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCustomerOrders, CustomerOrder } from '@/hooks/useCustomerOrders';
-import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike } from 'lucide-react';
+import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { printOrderReceipt, printPrefs } from '@/lib/thermalPrint';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface Motoboy {
   id: string;

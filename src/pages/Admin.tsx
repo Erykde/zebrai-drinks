@@ -720,17 +720,24 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
     setLoadingIngredients(true);
     const prodIngredients = allIngredients.filter((i: any) => i.product_id === productId);
     setIngredients(prodIngredients.length > 0
-      ? prodIngredients.map((i: any) => ({ id: i.id, name: i.name, cost: Number(i.cost), quantity: Number(i.quantity), unit: i.unit }))
-      : [{ name: '', cost: 0, quantity: 1, unit: 'un' }]
+      ? prodIngredients.map((i: any) => ({ id: i.id, name: i.name, cost: Number(i.cost), quantity: Number(i.quantity), unit: i.unit, stock: i.stock != null ? Number(i.stock) : null }))
+      : [{ name: '', cost: 0, quantity: 1, unit: 'un', stock: null }]
     );
     setExpandedId(productId);
     setLoadingIngredients(false);
   };
 
-  const addIngredient = () => setIngredients(prev => [...prev, { name: '', cost: 0, quantity: 1, unit: 'un' }]);
+  const addIngredient = () => setIngredients(prev => [...prev, { name: '', cost: 0, quantity: 1, unit: 'un', stock: null }]);
   const removeIngredient = (idx: number) => setIngredients(prev => prev.filter((_, i) => i !== idx));
-  const updateIngredient = (idx: number, field: keyof Ingredient, value: string | number) => {
+  const updateIngredient = (idx: number, field: keyof Ingredient, value: string | number | null) => {
     setIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, [field]: value } : ing));
+  };
+
+  const applyPrice = async (productId: string, newPrice: number) => {
+    const { error } = await supabase.from('products').update({ price: newPrice } as any).eq('id', productId);
+    if (error) { toast.error('Erro ao atualizar preço'); return; }
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    toast.success(`Preço atualizado para R$ ${newPrice.toFixed(2)}`);
   };
 
   const saveIngredients = async () => {

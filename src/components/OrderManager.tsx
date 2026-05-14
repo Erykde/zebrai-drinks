@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCustomerOrders, CustomerOrder } from '@/hooks/useCustomerOrders';
-import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike } from 'lucide-react';
+import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { printOrderReceipt, printPrefs } from '@/lib/thermalPrint';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface Motoboy {
   id: string;
@@ -26,6 +28,7 @@ const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', curren
 
 const OrderManager = () => {
   const { data: orders = [], isLoading, updateStatus } = useCustomerOrders();
+  const { data: siteSettings } = useSiteSettings();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<CustomerOrder['status'] | 'all'>('all');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -33,6 +36,38 @@ const OrderManager = () => {
   const [editForm, setEditForm] = useState({ customer_name: '', customer_phone: '', customer_address: '', notes: '' });
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
   const [assigningMotoboy, setAssigningMotoboy] = useState<string | null>(null);
+  const [autoPrint, setAutoPrint] = useState<boolean>(() => printPrefs.getAutoPrint());
+  const [printWidth, setPrintWidth] = useState<'58mm' | '80mm'>(() => printPrefs.getWidth());
+  const initialOrdersLoaded = useRef(false);
+
+  const printOrder = (order: CustomerOrder) => {
+    printOrderReceipt(order, {
+      width: printWidth,
+      storeName: siteSettings?.site_name || 'ZEBRAI DRINKS',
+    });
+    printPrefs.markPrinted(order.id);
+  };
+
+  // Auto-print newly arrived orders (only after initial load)
+  useEffect(() => {
+    if (!autoPrint) return;
+    if (!initialOrdersLoaded.current) {
+      // First load: mark all existing as already seen, don't print
+      orders.forEach(o => printPrefs.markPrinted(o.id));
+      if (orders.length > 0 || !isLoading) initialOrdersLoaded.current = true;
+      return;
+    }
+    const newOnes = orders.filter(o => !printPrefs.wasPrinted(o.id) && o.status === 'pending');
+    newOnes.forEach((o, idx) => {
+      // Stagger so multiple receipts open in sequence
+      setTimeout(() => {
+        printOrder(o);
+        toast.success(`🖨️ Imprimindo pedido de ${o.customer_name}`);
+      }, idx * 1500);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, autoPrint, isLoading]);
+
 
   const { data: motoboys = [] } = useQuery({
     queryKey: ['motoboys-active'],
@@ -242,6 +277,42 @@ const OrderManager = () => {
 
   return (
     <div className="space-y-4">
+      {/* Printer toolbar */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
+        <Printer className="h-4 w-4 text-primary" />
+        <span className="text-sm font-medium">Impressora térmica</span>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={autoPrint}
+            onChange={e => {
+              setAutoPrint(e.target.checked);
+              printPrefs.setAutoPrint(e.target.checked);
+              if (e.target.checked) toast.success('Auto-impressão ativada');
+            }}
+            className="h-4 w-4 accent-primary"
+          />
+          Imprimir automaticamente novos pedidos
+        </label>
+        <div className="flex items-center gap-1 text-sm">
+          <span className="text-muted-foreground">Largura:</span>
+          {(['58mm', '80mm'] as const).map(w => (
+            <button
+              key={w}
+              onClick={() => { setPrintWidth(w); printPrefs.setWidth(w); }}
+              className={`px-2 py-1 rounded text-xs font-medium ${
+                printWidth === w ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-muted-foreground ml-auto">
+          Conecte a impressora ao dispositivo (USB/Bluetooth) e defina-a como padrão.
+        </span>
+      </div>
+
       {/* Status filter pills */}
       <div className="flex flex-wrap gap-2">
         <FilterPill active={filter === 'all'} onClick={() => setFilter('all')} label="Todos" count={orders.length} />
@@ -448,6 +519,14 @@ const OrderManager = () => {
                           <Pencil className="h-3.5 w-3.5" /> Editar
                         </button>
                       )}
+
+                      <button
+                        onClick={() => { printOrder(order); toast.success('Enviado para impressão'); }}
+                        className="flex items-center gap-1 border border-primary/40 text-primary px-3 py-2 rounded-lg text-sm hover:bg-primary/10 transition-colors"
+                      >
+                        <Printer className="h-3.5 w-3.5" /> Imprimir
+                      </button>
+
 
                       {isDeleting ? (
                         <div className="flex items-center gap-2">

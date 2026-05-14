@@ -922,23 +922,6 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                         </div>
                       </div>
                     ))}
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">R$</span>
-                          <input
-                            type="number"
-                            value={ing.cost}
-                            onChange={e => updateIngredient(idx, 'cost', parseFloat(e.target.value) || 0)}
-                            placeholder="Custo"
-                            step="0.01"
-                            min="0"
-                            className="w-16 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-right"
-                          />
-                        </div>
-                        <button onClick={() => removeIngredient(idx)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
                   </div>
 
                   {/* Suggested prices */}

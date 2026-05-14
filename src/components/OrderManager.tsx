@@ -28,6 +28,7 @@ const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', curren
 
 const OrderManager = () => {
   const { data: orders = [], isLoading, updateStatus } = useCustomerOrders();
+  const { data: siteSettings } = useSiteSettings();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<CustomerOrder['status'] | 'all'>('all');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -35,6 +36,38 @@ const OrderManager = () => {
   const [editForm, setEditForm] = useState({ customer_name: '', customer_phone: '', customer_address: '', notes: '' });
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
   const [assigningMotoboy, setAssigningMotoboy] = useState<string | null>(null);
+  const [autoPrint, setAutoPrint] = useState<boolean>(() => printPrefs.getAutoPrint());
+  const [printWidth, setPrintWidth] = useState<'58mm' | '80mm'>(() => printPrefs.getWidth());
+  const initialOrdersLoaded = useRef(false);
+
+  const printOrder = (order: CustomerOrder) => {
+    printOrderReceipt(order, {
+      width: printWidth,
+      storeName: siteSettings?.store_name || 'ZEBRAI DRINKS',
+    });
+    printPrefs.markPrinted(order.id);
+  };
+
+  // Auto-print newly arrived orders (only after initial load)
+  useEffect(() => {
+    if (!autoPrint) return;
+    if (!initialOrdersLoaded.current) {
+      // First load: mark all existing as already seen, don't print
+      orders.forEach(o => printPrefs.markPrinted(o.id));
+      if (orders.length > 0 || !isLoading) initialOrdersLoaded.current = true;
+      return;
+    }
+    const newOnes = orders.filter(o => !printPrefs.wasPrinted(o.id) && o.status === 'pending');
+    newOnes.forEach((o, idx) => {
+      // Stagger so multiple receipts open in sequence
+      setTimeout(() => {
+        printOrder(o);
+        toast.success(`🖨️ Imprimindo pedido de ${o.customer_name}`);
+      }, idx * 1500);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, autoPrint, isLoading]);
+
 
   const { data: motoboys = [] } = useQuery({
     queryKey: ['motoboys-active'],

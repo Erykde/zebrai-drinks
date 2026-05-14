@@ -277,6 +277,42 @@ const OrderManager = () => {
 
   return (
     <div className="space-y-4">
+      {/* Printer toolbar */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
+        <Printer className="h-4 w-4 text-primary" />
+        <span className="text-sm font-medium">Impressora térmica</span>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={autoPrint}
+            onChange={e => {
+              setAutoPrint(e.target.checked);
+              printPrefs.setAutoPrint(e.target.checked);
+              if (e.target.checked) toast.success('Auto-impressão ativada');
+            }}
+            className="h-4 w-4 accent-primary"
+          />
+          Imprimir automaticamente novos pedidos
+        </label>
+        <div className="flex items-center gap-1 text-sm">
+          <span className="text-muted-foreground">Largura:</span>
+          {(['58mm', '80mm'] as const).map(w => (
+            <button
+              key={w}
+              onClick={() => { setPrintWidth(w); printPrefs.setWidth(w); }}
+              className={`px-2 py-1 rounded text-xs font-medium ${
+                printWidth === w ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-muted-foreground ml-auto">
+          Conecte a impressora ao dispositivo (USB/Bluetooth) e defina-a como padrão.
+        </span>
+      </div>
+
       {/* Status filter pills */}
       <div className="flex flex-wrap gap-2">
         <FilterPill active={filter === 'all'} onClick={() => setFilter('all')} label="Todos" count={orders.length} />

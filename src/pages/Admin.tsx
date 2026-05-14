@@ -855,33 +855,73 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                   <p className="text-[10px] text-muted-foreground mb-2">Adicione tudo que vai no produto e quanto custa cada coisa</p>
                   <div className="space-y-2">
                     {ingredients.map((ing, idx) => (
-                      <div key={idx} className="flex gap-2 items-center">
-                        <input
-                          value={ing.name}
-                          onChange={e => updateIngredient(idx, 'name', e.target.value)}
-                          placeholder="Nome (ex: Leite, Vodka...)"
-                          className="flex-1 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs"
-                        />
-                        <input
-                          type="number"
-                          value={ing.quantity}
-                          onChange={e => updateIngredient(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                          placeholder="Qtd"
-                          step="0.1"
-                          min="0"
-                          className="w-14 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-center"
-                        />
-                        <select
-                          value={ing.unit}
-                          onChange={e => updateIngredient(idx, 'unit', e.target.value)}
-                          className="w-16 px-1 py-1.5 rounded border border-input bg-background text-foreground text-xs"
-                        >
-                          <option value="un">un</option>
-                          <option value="ml">ml</option>
-                          <option value="L">L</option>
-                          <option value="g">g</option>
-                          <option value="kg">kg</option>
-                        </select>
+                      <div key={idx} className="space-y-1.5 p-2 rounded border border-border/50 bg-background/40">
+                        <div className="flex gap-2 items-center">
+                          <input
+                            value={ing.name}
+                            onChange={e => updateIngredient(idx, 'name', e.target.value)}
+                            placeholder="Nome (ex: Leite, Vodka...)"
+                            className="flex-1 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs"
+                          />
+                          <input
+                            type="number"
+                            value={ing.quantity}
+                            onChange={e => updateIngredient(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                            placeholder="Qtd"
+                            step="0.1"
+                            min="0"
+                            className="w-14 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-center"
+                          />
+                          <select
+                            value={ing.unit}
+                            onChange={e => updateIngredient(idx, 'unit', e.target.value)}
+                            className="w-16 px-1 py-1.5 rounded border border-input bg-background text-foreground text-xs"
+                          >
+                            <option value="un">un</option>
+                            <option value="ml">ml</option>
+                            <option value="L">L</option>
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                          </select>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">R$</span>
+                            <input
+                              type="number"
+                              value={ing.cost}
+                              onChange={e => updateIngredient(idx, 'cost', parseFloat(e.target.value) || 0)}
+                              placeholder="Custo"
+                              step="0.01"
+                              min="0"
+                              className="w-16 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-right"
+                            />
+                          </div>
+                          <button onClick={() => removeIngredient(idx)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 pl-1">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">📦 Estoque</span>
+                          <input
+                            type="number"
+                            value={ing.stock ?? ''}
+                            onChange={e => updateIngredient(idx, 'stock', e.target.value === '' ? null : parseFloat(e.target.value))}
+                            placeholder="(não controlar)"
+                            step="0.1"
+                            min="0"
+                            className="w-24 px-2 py-1 rounded border border-input bg-background text-foreground text-xs text-right"
+                          />
+                          <span className="text-[10px] text-muted-foreground">{ing.unit}</span>
+                          {ing.stock != null && ing.stock <= ing.quantity * 3 && (
+                            <span className="text-[10px] font-bold text-destructive">⚠️ Acabando!</span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground ml-auto">
+                            {ing.stock != null && ing.quantity > 0
+                              ? `≈ ${Math.floor(ing.stock / ing.quantity)} pedidos restantes`
+                              : 'estoque livre'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                         <div className="flex items-center gap-1">
                           <span className="text-xs text-muted-foreground">R$</span>
                           <input

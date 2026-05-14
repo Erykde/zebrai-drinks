@@ -687,6 +687,7 @@ interface Ingredient {
   cost: number;
   quantity: number;
   unit: string;
+  stock: number | null;
 }
 
 const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryClient: any }) => {

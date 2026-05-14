@@ -687,6 +687,7 @@ interface Ingredient {
   cost: number;
   quantity: number;
   unit: string;
+  stock: number | null;
 }
 
 const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryClient: any }) => {
@@ -719,17 +720,24 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
     setLoadingIngredients(true);
     const prodIngredients = allIngredients.filter((i: any) => i.product_id === productId);
     setIngredients(prodIngredients.length > 0
-      ? prodIngredients.map((i: any) => ({ id: i.id, name: i.name, cost: Number(i.cost), quantity: Number(i.quantity), unit: i.unit }))
-      : [{ name: '', cost: 0, quantity: 1, unit: 'un' }]
+      ? prodIngredients.map((i: any) => ({ id: i.id, name: i.name, cost: Number(i.cost), quantity: Number(i.quantity), unit: i.unit, stock: i.stock != null ? Number(i.stock) : null }))
+      : [{ name: '', cost: 0, quantity: 1, unit: 'un', stock: null }]
     );
     setExpandedId(productId);
     setLoadingIngredients(false);
   };
 
-  const addIngredient = () => setIngredients(prev => [...prev, { name: '', cost: 0, quantity: 1, unit: 'un' }]);
+  const addIngredient = () => setIngredients(prev => [...prev, { name: '', cost: 0, quantity: 1, unit: 'un', stock: null }]);
   const removeIngredient = (idx: number) => setIngredients(prev => prev.filter((_, i) => i !== idx));
-  const updateIngredient = (idx: number, field: keyof Ingredient, value: string | number) => {
+  const updateIngredient = (idx: number, field: keyof Ingredient, value: string | number | null) => {
     setIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, [field]: value } : ing));
+  };
+
+  const applyPrice = async (productId: string, newPrice: number) => {
+    const { error } = await supabase.from('products').update({ price: newPrice } as any).eq('id', productId);
+    if (error) { toast.error('Erro ao atualizar preço'); return; }
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    toast.success(`Preço atualizado para R$ ${newPrice.toFixed(2)}`);
   };
 
   const saveIngredients = async () => {
@@ -748,6 +756,7 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
         cost: i.cost,
         quantity: i.quantity,
         unit: i.unit,
+        stock: i.stock,
       }));
       const { error } = await supabase.from('product_ingredients' as any).insert(rows);
       if (error) { toast.error('Erro ao salvar ingredientes'); setSavingIngredients(false); return; }
@@ -846,48 +855,71 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                   <p className="text-[10px] text-muted-foreground mb-2">Adicione tudo que vai no produto e quanto custa cada coisa</p>
                   <div className="space-y-2">
                     {ingredients.map((ing, idx) => (
-                      <div key={idx} className="flex gap-2 items-center">
-                        <input
-                          value={ing.name}
-                          onChange={e => updateIngredient(idx, 'name', e.target.value)}
-                          placeholder="Nome (ex: Leite, Vodka...)"
-                          className="flex-1 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs"
-                        />
-                        <input
-                          type="number"
-                          value={ing.quantity}
-                          onChange={e => updateIngredient(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                          placeholder="Qtd"
-                          step="0.1"
-                          min="0"
-                          className="w-14 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-center"
-                        />
-                        <select
-                          value={ing.unit}
-                          onChange={e => updateIngredient(idx, 'unit', e.target.value)}
-                          className="w-16 px-1 py-1.5 rounded border border-input bg-background text-foreground text-xs"
-                        >
-                          <option value="un">un</option>
-                          <option value="ml">ml</option>
-                          <option value="L">L</option>
-                          <option value="g">g</option>
-                          <option value="kg">kg</option>
-                        </select>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">R$</span>
+                      <div key={idx} className="space-y-1.5 p-2 rounded border border-border/50 bg-background/40">
+                        <div className="flex gap-2 items-center">
+                          <input
+                            value={ing.name}
+                            onChange={e => updateIngredient(idx, 'name', e.target.value)}
+                            placeholder="Nome (ex: Leite, Vodka...)"
+                            className="flex-1 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs"
+                          />
                           <input
                             type="number"
-                            value={ing.cost}
-                            onChange={e => updateIngredient(idx, 'cost', parseFloat(e.target.value) || 0)}
-                            placeholder="Custo"
-                            step="0.01"
+                            value={ing.quantity}
+                            onChange={e => updateIngredient(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                            placeholder="Qtd"
+                            step="0.1"
                             min="0"
-                            className="w-16 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-right"
+                            className="w-14 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-center"
                           />
+                          <select
+                            value={ing.unit}
+                            onChange={e => updateIngredient(idx, 'unit', e.target.value)}
+                            className="w-16 px-1 py-1.5 rounded border border-input bg-background text-foreground text-xs"
+                          >
+                            <option value="un">un</option>
+                            <option value="ml">ml</option>
+                            <option value="L">L</option>
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                          </select>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">R$</span>
+                            <input
+                              type="number"
+                              value={ing.cost}
+                              onChange={e => updateIngredient(idx, 'cost', parseFloat(e.target.value) || 0)}
+                              placeholder="Custo"
+                              step="0.01"
+                              min="0"
+                              className="w-16 px-2 py-1.5 rounded border border-input bg-background text-foreground text-xs text-right"
+                            />
+                          </div>
+                          <button onClick={() => removeIngredient(idx)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
+                            <X className="h-3 w-3" />
+                          </button>
                         </div>
-                        <button onClick={() => removeIngredient(idx)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
-                          <X className="h-3 w-3" />
-                        </button>
+                        <div className="flex items-center gap-2 pl-1">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">📦 Estoque</span>
+                          <input
+                            type="number"
+                            value={ing.stock ?? ''}
+                            onChange={e => updateIngredient(idx, 'stock', e.target.value === '' ? null : parseFloat(e.target.value))}
+                            placeholder="(não controlar)"
+                            step="0.1"
+                            min="0"
+                            className="w-24 px-2 py-1 rounded border border-input bg-background text-foreground text-xs text-right"
+                          />
+                          <span className="text-[10px] text-muted-foreground">{ing.unit}</span>
+                          {ing.stock != null && ing.stock <= ing.quantity * 3 && (
+                            <span className="text-[10px] font-bold text-destructive">⚠️ Acabando!</span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground ml-auto">
+                            {ing.stock != null && ing.quantity > 0
+                              ? `≈ ${Math.floor(ing.stock / ing.quantity)} pedidos restantes`
+                              : 'estoque livre'}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -905,13 +937,22 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                       <div className="mt-3 pt-2 border-t border-border">
                         <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">💡 Por quanto você deveria vender</p>
                         <div className="grid grid-cols-3 gap-2">
-                          {suggestions.map(s => (
-                            <div key={s.label} className={`rounded-lg border border-border p-2 text-center ${p.price < s.price ? 'bg-destructive/5 border-destructive/30' : 'bg-muted/50'}`}>
-                              <p className="text-[10px] text-muted-foreground">{s.desc}</p>
-                              <p className={`text-sm font-bold ${s.color}`}>R$ {s.price.toFixed(2)}</p>
-                              <p className="text-[10px] text-muted-foreground">Margem {s.label}</p>
-                            </div>
-                          ))}
+                          {suggestions.map(s => {
+                            const rounded = Math.round(s.price * 100) / 100;
+                            return (
+                              <div key={s.label} className={`rounded-lg border border-border p-2 text-center flex flex-col gap-1.5 ${p.price < s.price ? 'bg-destructive/5 border-destructive/30' : 'bg-muted/50'}`}>
+                                <p className="text-[10px] text-muted-foreground">{s.desc}</p>
+                                <p className={`text-sm font-bold ${s.color}`}>R$ {s.price.toFixed(2)}</p>
+                                <p className="text-[10px] text-muted-foreground">Margem {s.label}</p>
+                                <button
+                                  onClick={() => applyPrice(p.id, rounded)}
+                                  className="text-[10px] font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded px-1.5 py-1 transition-colors"
+                                >
+                                  Usar este preço
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
                         {p.price < totalCost && (
                           <div className="mt-2 bg-destructive/10 border border-destructive/30 rounded-lg p-2 text-center">

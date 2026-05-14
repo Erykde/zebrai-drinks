@@ -43,7 +43,7 @@ const OrderManager = () => {
   const printOrder = (order: CustomerOrder) => {
     printOrderReceipt(order, {
       width: printWidth,
-      storeName: siteSettings?.store_name || 'ZEBRAI DRINKS',
+      storeName: siteSettings?.site_name || 'ZEBRAI DRINKS',
     });
     printPrefs.markPrinted(order.id);
   };

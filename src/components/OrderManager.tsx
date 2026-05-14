@@ -520,6 +520,14 @@ const OrderManager = () => {
                         </button>
                       )}
 
+                      <button
+                        onClick={() => { printOrder(order); toast.success('Enviado para impressão'); }}
+                        className="flex items-center gap-1 border border-primary/40 text-primary px-3 py-2 rounded-lg text-sm hover:bg-primary/10 transition-colors"
+                      >
+                        <Printer className="h-3.5 w-3.5" /> Imprimir
+                      </button>
+
+
                       {isDeleting ? (
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-destructive font-medium">Apagar?</span>

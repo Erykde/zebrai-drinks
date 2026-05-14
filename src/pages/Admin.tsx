@@ -937,13 +937,22 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
                       <div className="mt-3 pt-2 border-t border-border">
                         <p className="text-[10px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">💡 Por quanto você deveria vender</p>
                         <div className="grid grid-cols-3 gap-2">
-                          {suggestions.map(s => (
-                            <div key={s.label} className={`rounded-lg border border-border p-2 text-center ${p.price < s.price ? 'bg-destructive/5 border-destructive/30' : 'bg-muted/50'}`}>
-                              <p className="text-[10px] text-muted-foreground">{s.desc}</p>
-                              <p className={`text-sm font-bold ${s.color}`}>R$ {s.price.toFixed(2)}</p>
-                              <p className="text-[10px] text-muted-foreground">Margem {s.label}</p>
-                            </div>
-                          ))}
+                          {suggestions.map(s => {
+                            const rounded = Math.round(s.price * 100) / 100;
+                            return (
+                              <div key={s.label} className={`rounded-lg border border-border p-2 text-center flex flex-col gap-1.5 ${p.price < s.price ? 'bg-destructive/5 border-destructive/30' : 'bg-muted/50'}`}>
+                                <p className="text-[10px] text-muted-foreground">{s.desc}</p>
+                                <p className={`text-sm font-bold ${s.color}`}>R$ {s.price.toFixed(2)}</p>
+                                <p className="text-[10px] text-muted-foreground">Margem {s.label}</p>
+                                <button
+                                  onClick={() => applyPrice(p.id, rounded)}
+                                  className="text-[10px] font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded px-1.5 py-1 transition-colors"
+                                >
+                                  Usar este preço
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
                         {p.price < totalCost && (
                           <div className="mt-2 bg-destructive/10 border border-destructive/30 rounded-lg p-2 text-center">

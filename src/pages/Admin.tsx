@@ -756,6 +756,7 @@ const PricingTab = ({ products, queryClient }: { products: DbProduct[]; queryCli
         cost: i.cost,
         quantity: i.quantity,
         unit: i.unit,
+        stock: i.stock,
       }));
       const { error } = await supabase.from('product_ingredients' as any).insert(rows);
       if (error) { toast.error('Erro ao salvar ingredientes'); setSavingIngredients(false); return; }

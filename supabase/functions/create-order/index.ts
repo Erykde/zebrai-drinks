@@ -146,17 +146,37 @@ Deno.serve(async (req) => {
 
     if (itemsError) throw itemsError;
 
-    // Decrease stock for each product sold
+    // Decrease stock for each product sold (and its tracked ingredients)
     for (const item of items) {
       const dbProduct = products?.find((p: any) => item.product_name.includes(p.name));
-      if (dbProduct && dbProduct.stock != null) {
+      if (!dbProduct) continue;
+
+      // Product stock
+      if (dbProduct.stock != null) {
         const newStock = Math.max(0, dbProduct.stock - item.quantity);
         await supabase
           .from("products")
           .update({ stock: newStock })
           .eq("id", dbProduct.id);
       }
+
+      // Ingredient stock — deduct (ingredient.quantity * item.quantity) for each tracked ingredient
+      const { data: ingredients } = await supabase
+        .from("product_ingredients")
+        .select("id, quantity, stock, name")
+        .eq("product_id", dbProduct.id);
+
+      for (const ing of ingredients ?? []) {
+        if (ing.stock == null) continue; // not tracked
+        const used = Number(ing.quantity) * item.quantity;
+        const newIngStock = Math.max(0, Number(ing.stock) - used);
+        await supabase
+          .from("product_ingredients")
+          .update({ stock: newIngStock })
+          .eq("id", ing.id);
+      }
     }
+
 
     // Legacy orders table
     const legacyItems = itemsToInsert.map((item: any) => ({

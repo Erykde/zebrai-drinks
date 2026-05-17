@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart, Receipt } from 'lucide-react';
 import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';

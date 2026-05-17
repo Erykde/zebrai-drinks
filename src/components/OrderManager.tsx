@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCustomerOrders, CustomerOrder } from '@/hooks/useCustomerOrders';
-import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike, Printer } from 'lucide-react';
+import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike, Printer, Copy, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient, useQuery } from '@tanstack/react-query';

@@ -18,6 +18,7 @@ import MotoboyManager from '@/components/MotoboyManager';
 import CashRegisterManager from '@/components/CashRegisterManager';
 import FinancialSummary from '@/components/FinancialSummary';
 import StockManager from '@/components/StockManager';
+import ExpensesManager from '@/components/ExpensesManager';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';

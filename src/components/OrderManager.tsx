@@ -567,6 +567,20 @@ const OrderManager = () => {
                         <Printer className="h-3.5 w-3.5" /> Imprimir
                       </button>
 
+                      <button
+                        onClick={() => copyOrderMessage(order)}
+                        className="flex items-center gap-1 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+                      >
+                        <Copy className="h-3.5 w-3.5" /> Copiar mensagem
+                      </button>
+
+                      <button
+                        onClick={() => sendOrderWhatsApp(order)}
+                        className="flex items-center gap-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" /> Enviar WhatsApp
+                      </button>
+
 
                       {isDeleting ? (
                         <div className="flex items-center gap-2">

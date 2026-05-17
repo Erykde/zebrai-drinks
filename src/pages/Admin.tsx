@@ -232,6 +232,7 @@ const Admin = () => {
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'stock', icon: Package, label: 'Estoque' },
     { key: 'financial', icon: PieChart, label: 'Financeiro' },
+    { key: 'expenses', icon: Receipt, label: 'Despesas' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
     { key: 'pricing', icon: DollarSign, label: 'Precificação' },
     { key: 'cashregister', icon: Wallet, label: 'Caixa' },

@@ -48,6 +48,46 @@ const OrderManager = () => {
     printPrefs.markPrinted(order.id);
   };
 
+  const buildOrderMessage = (order: CustomerOrder) => {
+    const itemsText = (order.items || [])
+      .map(i => `• *${i.quantity}x* ${i.product_name}${i.mixer ? ` _(${i.mixer})_` : ''} — ${fmt(i.total)}`)
+      .join('\n');
+    const subtotal = order.total - (order.delivery_fee || 0);
+    const store = siteSettings?.site_name || 'ZEBRAI DRINKS';
+    return (
+      `🦓 *${store}* — Confirmação de Pedido\n\n` +
+      `Olá *${order.customer_name}*! 👋\n` +
+      `Aqui está o resumo do seu pedido:\n\n` +
+      `📋 *Pedido #${order.id.substring(0, 8).toUpperCase()}*\n` +
+      `${itemsText}\n\n` +
+      `Subtotal: ${fmt(subtotal)}\n` +
+      (order.delivery_fee > 0 ? `🛵 Entrega: ${fmt(order.delivery_fee)}\n` : '') +
+      `💲 *Total: ${fmt(order.total)}*\n` +
+      (order.customer_address ? `\n📍 Endereço: ${order.customer_address}\n` : '') +
+      (order.notes ? `\n📝 Obs: ${order.notes}\n` : '') +
+      `\nObrigado pela preferência! 🍹`
+    );
+  };
+
+  const copyOrderMessage = async (order: CustomerOrder) => {
+    const msg = buildOrderMessage(order);
+    try {
+      await navigator.clipboard.writeText(msg);
+      toast.success('Mensagem copiada! Cole no WhatsApp do cliente.');
+    } catch {
+      toast.error('Não foi possível copiar. Tente novamente.');
+    }
+  };
+
+  const sendOrderWhatsApp = (order: CustomerOrder) => {
+    const msg = buildOrderMessage(order);
+    const phone = (order.customer_phone || '').replace(/\D/g, '');
+    const url = phone
+      ? `https://wa.me/55${phone.replace(/^55/, '')}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
   // Auto-print newly arrived orders (only after initial load)
   useEffect(() => {
     if (!autoPrint) return;

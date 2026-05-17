@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCustomerOrders, CustomerOrder } from '@/hooks/useCustomerOrders';
-import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike, Printer } from 'lucide-react';
+import { Clock, ChefHat, Truck, CheckCircle, XCircle, Phone, MapPin, User, ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Bike, Printer, Copy, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -46,6 +46,46 @@ const OrderManager = () => {
       storeName: siteSettings?.site_name || 'ZEBRAI DRINKS',
     });
     printPrefs.markPrinted(order.id);
+  };
+
+  const buildOrderMessage = (order: CustomerOrder) => {
+    const itemsText = (order.items || [])
+      .map(i => `• *${i.quantity}x* ${i.product_name}${i.mixer ? ` _(${i.mixer})_` : ''} — ${fmt(i.total)}`)
+      .join('\n');
+    const subtotal = order.total - (order.delivery_fee || 0);
+    const store = siteSettings?.site_name || 'ZEBRAI DRINKS';
+    return (
+      `🦓 *${store}* — Confirmação de Pedido\n\n` +
+      `Olá *${order.customer_name}*! 👋\n` +
+      `Aqui está o resumo do seu pedido:\n\n` +
+      `📋 *Pedido #${order.id.substring(0, 8).toUpperCase()}*\n` +
+      `${itemsText}\n\n` +
+      `Subtotal: ${fmt(subtotal)}\n` +
+      (order.delivery_fee > 0 ? `🛵 Entrega: ${fmt(order.delivery_fee)}\n` : '') +
+      `💲 *Total: ${fmt(order.total)}*\n` +
+      (order.customer_address ? `\n📍 Endereço: ${order.customer_address}\n` : '') +
+      (order.notes ? `\n📝 Obs: ${order.notes}\n` : '') +
+      `\nObrigado pela preferência! 🍹`
+    );
+  };
+
+  const copyOrderMessage = async (order: CustomerOrder) => {
+    const msg = buildOrderMessage(order);
+    try {
+      await navigator.clipboard.writeText(msg);
+      toast.success('Mensagem copiada! Cole no WhatsApp do cliente.');
+    } catch {
+      toast.error('Não foi possível copiar. Tente novamente.');
+    }
+  };
+
+  const sendOrderWhatsApp = (order: CustomerOrder) => {
+    const msg = buildOrderMessage(order);
+    const phone = (order.customer_phone || '').replace(/\D/g, '');
+    const url = phone
+      ? `https://wa.me/55${phone.replace(/^55/, '')}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
   };
 
   // Auto-print newly arrived orders (only after initial load)
@@ -525,6 +565,20 @@ const OrderManager = () => {
                         className="flex items-center gap-1 border border-primary/40 text-primary px-3 py-2 rounded-lg text-sm hover:bg-primary/10 transition-colors"
                       >
                         <Printer className="h-3.5 w-3.5" /> Imprimir
+                      </button>
+
+                      <button
+                        onClick={() => copyOrderMessage(order)}
+                        className="flex items-center gap-1 border border-border text-foreground px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+                      >
+                        <Copy className="h-3.5 w-3.5" /> Copiar mensagem
+                      </button>
+
+                      <button
+                        onClick={() => sendOrderWhatsApp(order)}
+                        className="flex items-center gap-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" /> Enviar WhatsApp
                       </button>
 
 

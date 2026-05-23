@@ -230,6 +230,7 @@ const Admin = () => {
 
   const navItems: { key: AdminTab; icon: typeof ClipboardList; label: string; badge?: number }[] = [
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
+    { key: 'tasks', icon: ListTodo, label: 'Minhas Tarefas' },
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'stock', icon: Package, label: 'Estoque' },
     { key: 'financial', icon: PieChart, label: 'Financeiro' },

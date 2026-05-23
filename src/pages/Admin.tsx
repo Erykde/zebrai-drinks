@@ -49,7 +49,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial' | 'stock' | 'expenses';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial' | 'stock' | 'expenses' | 'tasks';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();

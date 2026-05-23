@@ -316,6 +316,8 @@ const Admin = () => {
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           {activeTab === 'orders' ? (
             <OrderManager />
+          ) : activeTab === 'tasks' ? (
+            <DailyTasksManager />
           ) : activeTab === 'financial' ? (
             <FinancialSummary />
           ) : activeTab === 'expenses' ? (

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart, Receipt } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart, Receipt, ListTodo } from 'lucide-react';
+import DailyTasksManager from '@/components/DailyTasksManager';
 import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
 import DeliveryManager from '@/components/DeliveryManager';
@@ -48,7 +49,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial' | 'stock' | 'expenses';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'whatsapp' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial' | 'stock' | 'expenses' | 'tasks';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -229,6 +230,7 @@ const Admin = () => {
 
   const navItems: { key: AdminTab; icon: typeof ClipboardList; label: string; badge?: number }[] = [
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
+    { key: 'tasks', icon: ListTodo, label: 'Minhas Tarefas' },
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'stock', icon: Package, label: 'Estoque' },
     { key: 'financial', icon: PieChart, label: 'Financeiro' },
@@ -314,6 +316,8 @@ const Admin = () => {
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           {activeTab === 'orders' ? (
             <OrderManager />
+          ) : activeTab === 'tasks' ? (
+            <DailyTasksManager />
           ) : activeTab === 'financial' ? (
             <FinancialSummary />
           ) : activeTab === 'expenses' ? (

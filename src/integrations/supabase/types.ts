@@ -323,6 +323,48 @@ export type Database = {
           },
         ]
       }
+      daily_tasks: {
+        Row: {
+          ai_suggestion: string | null
+          completed: boolean
+          created_at: string
+          created_by: string | null
+          due_time: string | null
+          id: string
+          notes: string | null
+          priority: string
+          task_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_suggestion?: string | null
+          completed?: boolean
+          created_at?: string
+          created_by?: string | null
+          due_time?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          task_date?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_suggestion?: string | null
+          completed?: boolean
+          created_at?: string
+          created_by?: string | null
+          due_time?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          task_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       delivery_zones: {
         Row: {
           created_at: string

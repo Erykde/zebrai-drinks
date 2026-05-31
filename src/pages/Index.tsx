@@ -175,7 +175,7 @@ const Index = () => {
 
       {/* WhatsApp Help Button */}
       {(() => {
-        const phone = (settings?.store_phone || '5541984296633').replace(/\D/g, '');
+        const phone = (siteSettings?.store_phone || '5541984296633').replace(/\D/g, '');
         const fullPhone = phone.startsWith('55') ? phone : `55${phone}`;
         return (
           <a

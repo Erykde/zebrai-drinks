@@ -52,20 +52,30 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
       ? selectedMixerPrices || product.price
       : product.price;
 
-  // Can add if all groups have a selection (and flavor if required)
-  const canAdd = !hasMixers || groupNames.every(g => {
-    const sel = selections[g];
-    if (!sel) return false;
-    const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
-    if (opt?.flavors && opt.flavors.length > 0 && !sel.flavor) return false;
-    return true;
-  });
+  // First group missing a selection (mixer or required flavor)
+  const firstIncompleteGroup = useMemo(() => {
+    if (!hasMixers) return null;
+    for (const g of groupNames) {
+      const sel = selections[g];
+      if (!sel) return g;
+      const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
+      if (opt?.flavors && opt.flavors.length > 0 && !sel.flavor) return g;
+    }
+    return null;
+  }, [selections, groupNames, hasMixers, product.mixer_options]);
+
+  const canAdd = firstIncompleteGroup === null;
 
   const handleSelectMixer = (groupName: string, mixer: string) => {
     setSelections(prev => ({
       ...prev,
       [groupName]: { mixer, flavor: null },
     }));
+    // Keep the group open so user can pick a flavor if required
+    const opt = product.mixer_options.find(m => m.mixer === mixer);
+    if (opt?.flavors && opt.flavors.length > 0) {
+      setExpandedGroup(groupName);
+    }
   };
 
   const handleSelectFlavor = (groupName: string, flavor: string) => {
@@ -73,6 +83,17 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
       ...prev,
       [groupName]: { ...prev[groupName], flavor },
     }));
+  };
+
+  const handleIncompleteClick = () => {
+    if (!firstIncompleteGroup) return;
+    setExpandedGroup(firstIncompleteGroup);
+    const sel = selections[firstIncompleteGroup];
+    if (sel) {
+      toast.error(`Escolha o sabor de ${sel.mixer}`);
+    } else {
+      toast.error(`Escolha uma opção em "${firstIncompleteGroup}"`);
+    }
   };
 
   const handleAddToCart = () => {
@@ -161,16 +182,18 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                 const sel = selections[groupName];
                 const isExpanded = expandedGroup === groupName;
                 const hasSelection = !!sel;
+                const selOpt = sel ? product.mixer_options.find(m => m.mixer === sel.mixer) : null;
+                const needsFlavor = !!(selOpt?.flavors && selOpt.flavors.length > 0 && !sel?.flavor);
 
                 return (
-                  <div key={groupName} className="border border-border rounded-xl overflow-hidden">
+                  <div key={groupName} className={`border rounded-xl overflow-hidden ${needsFlavor ? 'border-destructive' : 'border-border'}`}>
                     {/* Group header */}
                     <button
                       type="button"
                       onClick={() => setExpandedGroup(prev => prev === groupName ? null : groupName)}
                       className="w-full flex items-center justify-between p-3.5 bg-muted/50 hover:bg-muted transition-colors"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm text-foreground">
                           {groupName}
                         </span>
@@ -179,12 +202,18 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                             {sel.mixer}{sel.flavor ? ` - ${sel.flavor}` : ''}
                           </span>
                         )}
+                        {needsFlavor && (
+                          <span className="text-xs bg-destructive/15 text-destructive px-2 py-0.5 rounded-full font-medium">
+                            Escolha o sabor
+                          </span>
+                        )}
                       </div>
                       {isExpanded
                         ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
                         : <ChevronDown className="h-4 w-4 text-muted-foreground" />
                       }
                     </button>
+
 
                     {/* Group items - vertical scrollable list with big images */}
                     {isExpanded && (
@@ -290,13 +319,18 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
 
           {/* Add to cart */}
           <button
-            onClick={handleAddToCart}
-            disabled={!canAdd}
-            className="w-full bg-primary text-primary-foreground py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-colors disabled:opacity-50"
+            onClick={canAdd ? handleAddToCart : handleIncompleteClick}
+            className={`w-full py-4 rounded-lg font-bold text-lg transition-colors ${
+              canAdd
+                ? 'bg-primary text-primary-foreground hover:opacity-90'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
           >
             {canAdd
               ? `Adicionar R$ ${(currentPrice * quantity).toFixed(2)}`
-              : 'Selecione todas as opções'
+              : firstIncompleteGroup
+                ? `Falta escolher em "${firstIncompleteGroup}"`
+                : 'Selecione todas as opções'
             }
           </button>
         </div>

@@ -182,14 +182,32 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                 const sel = selections[groupName];
                 const isExpanded = expandedGroup === groupName;
                 const hasSelection = !!sel;
+                const selOpt = sel ? product.mixer_options.find(m => m.mixer === sel.mixer) : null;
+                const needsFlavor = !!(selOpt?.flavors && selOpt.flavors.length > 0 && !sel?.flavor);
 
                 return (
-                  <div key={groupName} className="border border-border rounded-xl overflow-hidden">
+                  <div key={groupName} className={`border rounded-xl overflow-hidden ${needsFlavor ? 'border-destructive' : 'border-border'}`}>
                     {/* Group header */}
                     <button
                       type="button"
                       onClick={() => setExpandedGroup(prev => prev === groupName ? null : groupName)}
                       className="w-full flex items-center justify-between p-3.5 bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-sm text-foreground">
+                          {groupName}
+                        </span>
+                        {hasSelection && (
+                          <span className="text-xs bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">
+                            {sel.mixer}{sel.flavor ? ` - ${sel.flavor}` : ''}
+                          </span>
+                        )}
+                        {needsFlavor && (
+                          <span className="text-xs bg-destructive/15 text-destructive px-2 py-0.5 rounded-full font-medium">
+                            Escolha o sabor
+                          </span>
+                        )}
+                      </div>
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-foreground">

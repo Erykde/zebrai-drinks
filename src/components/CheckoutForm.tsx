@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useStore } from '@/contexts/StoreContext';
 import { useNavigate } from 'react-router-dom';
@@ -56,9 +56,50 @@ const CheckoutForm = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState<number>(0);
+  const [deliveryKm, setDeliveryKm] = useState<number | null>(null);
+  const [calculatingFee, setCalculatingFee] = useState(false);
+  const [feeError, setFeeError] = useState<string | null>(null);
 
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
-  const orderTotal = Math.max(0, cartTotal - discountAmount);
+  const effectiveDeliveryFee = deliveryType === 'delivery' ? deliveryFee : 0;
+  const orderTotal = Math.max(0, cartTotal - discountAmount) + effectiveDeliveryFee;
+
+  // Debounced delivery fee calculation
+  useEffect(() => {
+    if (deliveryType !== 'delivery') {
+      setDeliveryFee(0); setDeliveryKm(null); setFeeError(null);
+      return;
+    }
+    const addr = address.trim();
+    if (addr.length < 8) {
+      setDeliveryFee(0); setDeliveryKm(null); setFeeError(null);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setCalculatingFee(true);
+      setFeeError(null);
+      try {
+        const { data, error } = await supabase.functions.invoke('calc-delivery-fee', {
+          body: { address: addr },
+        });
+        if (error || !data || (data as any).error) {
+          setFeeError((data as any)?.error || 'Não foi possível calcular o frete');
+          setDeliveryFee(7);
+          setDeliveryKm(null);
+        } else {
+          setDeliveryFee((data as any).fee);
+          setDeliveryKm((data as any).km);
+        }
+      } catch {
+        setFeeError('Erro ao calcular frete');
+        setDeliveryFee(7);
+      } finally {
+        setCalculatingFee(false);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [address, deliveryType]);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -465,6 +506,19 @@ const CheckoutForm = () => {
             <span className="opacity-70">🏪 Retirada</span>
             <span className="text-green-400 font-medium">Grátis</span>
           </div>
+        )}
+        {deliveryType === 'delivery' && (
+          <div className="flex justify-between text-sm">
+            <span className="opacity-70">
+              🛵 Entrega{deliveryKm !== null ? ` (${deliveryKm.toFixed(1)} km)` : ''}
+            </span>
+            <span className="font-medium">
+              {calculatingFee ? 'calculando...' : effectiveDeliveryFee > 0 ? `R$ ${effectiveDeliveryFee.toFixed(2)}` : '—'}
+            </span>
+          </div>
+        )}
+        {feeError && deliveryType === 'delivery' && (
+          <p className="text-xs text-amber-300/80">⚠️ {feeError} (taxa mínima aplicada)</p>
         )}
         <div className="border-t border-zebra-white/20 pt-3 flex justify-between items-center">
           <span className="font-medium">Total</span>

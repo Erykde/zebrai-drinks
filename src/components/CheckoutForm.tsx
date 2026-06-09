@@ -507,6 +507,19 @@ const CheckoutForm = () => {
             <span className="text-green-400 font-medium">Grátis</span>
           </div>
         )}
+        {deliveryType === 'delivery' && (
+          <div className="flex justify-between text-sm">
+            <span className="opacity-70">
+              🛵 Entrega{deliveryKm !== null ? ` (${deliveryKm.toFixed(1)} km)` : ''}
+            </span>
+            <span className="font-medium">
+              {calculatingFee ? 'calculando...' : effectiveDeliveryFee > 0 ? `R$ ${effectiveDeliveryFee.toFixed(2)}` : '—'}
+            </span>
+          </div>
+        )}
+        {feeError && deliveryType === 'delivery' && (
+          <p className="text-xs text-amber-300/80">⚠️ {feeError} (taxa mínima aplicada)</p>
+        )}
         <div className="border-t border-zebra-white/20 pt-3 flex justify-between items-center">
           <span className="font-medium">Total</span>
           <span className="font-display text-3xl text-primary">R$ {orderTotal.toFixed(2)}</span>

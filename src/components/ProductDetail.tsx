@@ -52,20 +52,30 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
       ? selectedMixerPrices || product.price
       : product.price;
 
-  // Can add if all groups have a selection (and flavor if required)
-  const canAdd = !hasMixers || groupNames.every(g => {
-    const sel = selections[g];
-    if (!sel) return false;
-    const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
-    if (opt?.flavors && opt.flavors.length > 0 && !sel.flavor) return false;
-    return true;
-  });
+  // First group missing a selection (mixer or required flavor)
+  const firstIncompleteGroup = useMemo(() => {
+    if (!hasMixers) return null;
+    for (const g of groupNames) {
+      const sel = selections[g];
+      if (!sel) return g;
+      const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
+      if (opt?.flavors && opt.flavors.length > 0 && !sel.flavor) return g;
+    }
+    return null;
+  }, [selections, groupNames, hasMixers, product.mixer_options]);
+
+  const canAdd = firstIncompleteGroup === null;
 
   const handleSelectMixer = (groupName: string, mixer: string) => {
     setSelections(prev => ({
       ...prev,
       [groupName]: { mixer, flavor: null },
     }));
+    // Keep the group open so user can pick a flavor if required
+    const opt = product.mixer_options.find(m => m.mixer === mixer);
+    if (opt?.flavors && opt.flavors.length > 0) {
+      setExpandedGroup(groupName);
+    }
   };
 
   const handleSelectFlavor = (groupName: string, flavor: string) => {
@@ -73,6 +83,17 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
       ...prev,
       [groupName]: { ...prev[groupName], flavor },
     }));
+  };
+
+  const handleIncompleteClick = () => {
+    if (!firstIncompleteGroup) return;
+    setExpandedGroup(firstIncompleteGroup);
+    const sel = selections[firstIncompleteGroup];
+    if (sel) {
+      toast.error(`Escolha o sabor de ${sel.mixer}`);
+    } else {
+      toast.error(`Escolha uma opção em "${firstIncompleteGroup}"`);
+    }
   };
 
   const handleAddToCart = () => {

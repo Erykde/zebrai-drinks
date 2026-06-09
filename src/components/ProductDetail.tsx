@@ -208,22 +208,12 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                           </span>
                         )}
                       </div>
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-foreground">
-                          {groupName}
-                        </span>
-                        {hasSelection && (
-                          <span className="text-xs bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">
-                            {sel.mixer}{sel.flavor ? ` - ${sel.flavor}` : ''}
-                          </span>
-                        )}
-                      </div>
                       {isExpanded
                         ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
                         : <ChevronDown className="h-4 w-4 text-muted-foreground" />
                       }
                     </button>
+
 
                     {/* Group items - vertical scrollable list with big images */}
                     {isExpanded && (

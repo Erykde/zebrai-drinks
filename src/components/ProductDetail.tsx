@@ -319,13 +319,18 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
 
           {/* Add to cart */}
           <button
-            onClick={handleAddToCart}
-            disabled={!canAdd}
-            className="w-full bg-primary text-primary-foreground py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-colors disabled:opacity-50"
+            onClick={canAdd ? handleAddToCart : handleIncompleteClick}
+            className={`w-full py-4 rounded-lg font-bold text-lg transition-colors ${
+              canAdd
+                ? 'bg-primary text-primary-foreground hover:opacity-90'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
           >
             {canAdd
               ? `Adicionar R$ ${(currentPrice * quantity).toFixed(2)}`
-              : 'Selecione todas as opções'
+              : firstIncompleteGroup
+                ? `Falta escolher em "${firstIncompleteGroup}"`
+                : 'Selecione todas as opções'
             }
           </button>
         </div>

@@ -640,6 +640,7 @@ export type Database = {
           cart_title: string | null
           closed_message: string | null
           delivery_enabled: boolean | null
+          free_delivery_active: boolean
           home_search_placeholder: string | null
           id: string
           logo_url: string | null
@@ -668,6 +669,7 @@ export type Database = {
           cart_title?: string | null
           closed_message?: string | null
           delivery_enabled?: boolean | null
+          free_delivery_active?: boolean
           home_search_placeholder?: string | null
           id?: string
           logo_url?: string | null
@@ -696,6 +698,7 @@ export type Database = {
           cart_title?: string | null
           closed_message?: string | null
           delivery_enabled?: boolean | null
+          free_delivery_active?: boolean
           home_search_placeholder?: string | null
           id?: string
           logo_url?: string | null

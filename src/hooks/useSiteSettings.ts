@@ -28,6 +28,7 @@ export interface SiteSettings {
   store_address: string | null;
   store_phone: string | null;
   closed_message: string | null;
+  free_delivery_active: boolean | null;
 }
 
 export const useSiteSettings = () => {

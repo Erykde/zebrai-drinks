@@ -63,7 +63,8 @@ const CheckoutForm = () => {
   const [outOfRange, setOutOfRange] = useState(false);
 
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
-  const effectiveDeliveryFee = deliveryType === 'delivery' ? deliveryFee : 0;
+  const freeDeliveryActive = !!siteSettings?.free_delivery_active;
+  const effectiveDeliveryFee = deliveryType === 'delivery' && !freeDeliveryActive ? deliveryFee : 0;
   const orderTotal = Math.max(0, cartTotal - discountAmount) + effectiveDeliveryFee;
 
   // Debounced delivery fee calculation
@@ -536,9 +537,14 @@ const CheckoutForm = () => {
               🛵 Entrega{deliveryKm !== null ? ` (${deliveryKm.toFixed(1)} km)` : ''}
             </span>
             <span className="font-medium">
-              {calculatingFee ? 'calculando...' : effectiveDeliveryFee > 0 ? `R$ ${effectiveDeliveryFee.toFixed(2)}` : '—'}
+              {freeDeliveryActive ? (
+                <span className="text-green-400 font-bold">🎉 GRÁTIS</span>
+              ) : calculatingFee ? 'calculando...' : effectiveDeliveryFee > 0 ? `R$ ${effectiveDeliveryFee.toFixed(2)}` : '—'}
             </span>
           </div>
+        )}
+        {freeDeliveryActive && deliveryType === 'delivery' && (
+          <p className="text-xs text-green-400 font-semibold">🎁 Promoção: frete grátis ativo hoje!</p>
         )}
         {feeError && deliveryType === 'delivery' && (
           <p className="text-xs text-amber-300/80">⚠️ {feeError} (taxa mínima aplicada)</p>

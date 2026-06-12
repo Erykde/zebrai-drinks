@@ -60,6 +60,7 @@ const CheckoutForm = () => {
   const [deliveryKm, setDeliveryKm] = useState<number | null>(null);
   const [calculatingFee, setCalculatingFee] = useState(false);
   const [feeError, setFeeError] = useState<string | null>(null);
+  const [outOfRange, setOutOfRange] = useState(false);
 
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
   const effectiveDeliveryFee = deliveryType === 'delivery' ? deliveryFee : 0;
@@ -68,32 +69,39 @@ const CheckoutForm = () => {
   // Debounced delivery fee calculation
   useEffect(() => {
     if (deliveryType !== 'delivery') {
-      setDeliveryFee(0); setDeliveryKm(null); setFeeError(null);
+      setDeliveryFee(0); setDeliveryKm(null); setFeeError(null); setOutOfRange(false);
       return;
     }
     const addr = address.trim();
     if (addr.length < 8) {
-      setDeliveryFee(0); setDeliveryKm(null); setFeeError(null);
+      setDeliveryFee(0); setDeliveryKm(null); setFeeError(null); setOutOfRange(false);
       return;
     }
     const timer = setTimeout(async () => {
       setCalculatingFee(true);
       setFeeError(null);
+      setOutOfRange(false);
       try {
         const { data, error } = await supabase.functions.invoke('calc-delivery-fee', {
           body: { address: addr },
         });
-        if (error || !data || (data as any).error) {
-          setFeeError((data as any)?.error || 'Não foi possível calcular o frete');
-          setDeliveryFee(7);
+        const payload: any = data ?? {};
+        if (payload.outOfRange) {
+          setOutOfRange(true);
+          setFeeError(payload.error);
+          setDeliveryFee(0);
+          setDeliveryKm(payload.km ?? null);
+        } else if (error || !data || payload.error) {
+          setFeeError(payload.error || 'Não foi possível calcular o frete. Verifique o endereço.');
+          setDeliveryFee(0);
           setDeliveryKm(null);
         } else {
-          setDeliveryFee((data as any).fee);
-          setDeliveryKm((data as any).km);
+          setDeliveryFee(payload.fee);
+          setDeliveryKm(payload.km);
         }
       } catch {
-        setFeeError('Erro ao calcular frete');
-        setDeliveryFee(7);
+        setFeeError('Erro ao calcular frete. Verifique o endereço.');
+        setDeliveryFee(0);
       } finally {
         setCalculatingFee(false);
       }
@@ -162,6 +170,21 @@ const CheckoutForm = () => {
       const firstError = validation.error.errors[0];
       toast.error(firstError.message);
       return;
+    }
+
+    if (deliveryType === 'delivery') {
+      if (calculatingFee) {
+        toast.error('Aguarde o cálculo do frete terminar');
+        return;
+      }
+      if (outOfRange) {
+        toast.error('Endereço fora da área de entrega. Escolha retirada ou ajuste o endereço.');
+        return;
+      }
+      if (feeError) {
+        toast.error('Não foi possível calcular o frete. Confira o endereço.');
+        return;
+      }
     }
 
     if (deliveryType === 'delivery' && (!address.trim() || address.trim().length < 5)) {
@@ -528,7 +551,7 @@ const CheckoutForm = () => {
 
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || (deliveryType === 'delivery' && (calculatingFee || outOfRange))}
         className="w-full bg-gradient-gold text-primary-foreground py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-gold disabled:opacity-50 active:scale-[0.98]"
       >
         {submitting ? (

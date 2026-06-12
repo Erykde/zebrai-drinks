@@ -551,7 +551,7 @@ const CheckoutForm = () => {
 
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || (deliveryType === 'delivery' && (calculatingFee || outOfRange))}
         className="w-full bg-gradient-gold text-primary-foreground py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-gold disabled:opacity-50 active:scale-[0.98]"
       >
         {submitting ? (

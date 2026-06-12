@@ -172,6 +172,21 @@ const CheckoutForm = () => {
       return;
     }
 
+    if (deliveryType === 'delivery') {
+      if (calculatingFee) {
+        toast.error('Aguarde o cálculo do frete terminar');
+        return;
+      }
+      if (outOfRange) {
+        toast.error('Endereço fora da área de entrega. Escolha retirada ou ajuste o endereço.');
+        return;
+      }
+      if (feeError) {
+        toast.error('Não foi possível calcular o frete. Confira o endereço.');
+        return;
+      }
+    }
+
     if (deliveryType === 'delivery' && (!address.trim() || address.trim().length < 5)) {
       toast.error('Preencha o endereço completo para delivery!');
       return;

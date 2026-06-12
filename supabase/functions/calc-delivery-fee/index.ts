@@ -8,6 +8,9 @@ const BodySchema = z.object({
   address: z.string().trim().min(5).max(300),
 });
 
+// Maximum delivery radius (km). Beyond this, the order is refused.
+const MAX_DELIVERY_KM = 25;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 

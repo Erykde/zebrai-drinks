@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         origins: [{ waypoint: { address: ORIGIN } }],
-        destinations: [{ waypoint: { address: `${address}, Brasil` } }],
+        destinations: [{ waypoint: { address: `${address}, São José dos Pinhais, PR, Brasil` } }],
         travelMode: 'DRIVE',
       }),
     });
@@ -64,6 +64,17 @@ Deno.serve(async (req) => {
     }
 
     const km = first.distanceMeters / 1000;
+
+    if (km > MAX_DELIVERY_KM) {
+      return new Response(JSON.stringify({
+        error: `Fora da área de entrega (${Math.round(km)} km). Máximo: ${MAX_DELIVERY_KM} km. Confira o endereço (rua, número, bairro e cidade).`,
+        outOfRange: true,
+        km: Math.round(km * 10) / 10,
+      }), {
+        status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const fee = Math.max(7, Math.round(km));
 
     return new Response(JSON.stringify({ km: Math.round(km * 10) / 10, fee }), {

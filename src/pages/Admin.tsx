@@ -230,6 +230,7 @@ const Admin = () => {
 
   const navItems: { key: AdminTab; icon: typeof ClipboardList; label: string; badge?: number }[] = [
     { key: 'orders', icon: ClipboardList, label: 'Pedidos', badge: pendingOrderCount },
+    { key: 'assistant', icon: Bot, label: '✨ Assistente IA' },
     { key: 'tasks', icon: ListTodo, label: 'Minhas Tarefas' },
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'stock', icon: Package, label: 'Estoque' },
@@ -240,7 +241,6 @@ const Admin = () => {
     { key: 'cashregister', icon: Wallet, label: 'Caixa' },
     { key: 'delivery', icon: Bike, label: 'Entregas' },
     { key: 'marketing', icon: Megaphone, label: 'Marketing' },
-    { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
     { key: 'settings', icon: Settings, label: 'Visual do Site' },
     { key: 'store', icon: Store, label: 'Config. da Loja' },
   ];

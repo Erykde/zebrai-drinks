@@ -327,7 +327,6 @@ const Admin = () => {
           ) : activeTab === 'delivery' ? (
             <div className="space-y-6">
               <DeliveryManager />
-              <DeliveryTab zones={deliveryZones} queryClient={queryClient} />
               <MotoboyManager />
             </div>
           ) : activeTab === 'marketing' ? (
@@ -337,8 +336,8 @@ const Admin = () => {
               <LoyaltyManager />
               <CampaignsManager />
             </div>
-          ) : activeTab === 'whatsapp' ? (
-            <WhatsAppManager />
+          ) : activeTab === 'assistant' ? (
+            <AdminAssistant />
           ) : activeTab === 'settings' ? (
             <SiteSettingsManager />
           ) : activeTab === 'store' ? (

@@ -362,6 +362,7 @@ const CheckoutForm = () => {
               type="text"
               value={address}
               onChange={e => setAddress(e.target.value)}
+              onFocus={e => setTimeout(() => e.currentTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-background text-foreground focus:ring-2 focus:ring-ring outline-none text-sm"
               placeholder="Rua, número, bairro..."
               required
@@ -370,6 +371,9 @@ const CheckoutForm = () => {
           </div>
         )}
       </div>
+
+      {/* spacer so on-screen keyboard never covers the action area */}
+      <div className="h-72 sm:h-0" aria-hidden="true" />
 
       {/* Payment */}
       <div className="bg-card rounded-2xl border border-border p-5 space-y-4">

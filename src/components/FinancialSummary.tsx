@@ -148,15 +148,26 @@ const FinancialSummary = () => {
     all: '📅 Todo Período',
   };
 
+  const inItems = [
+    { label: '💰 Vendas (faturamento)', value: stats.salesRevenue, hint: `${stats.orderCount} ${stats.orderCount === 1 ? 'venda' : 'vendas'}` },
+    { label: '🛵 Taxas de entrega recebidas', value: stats.deliveryFees },
+    { label: '🔺 Reforços de caixa', value: stats.cashEntries },
+  ].filter(i => i.value > 0);
+
+  const outItems = [
+    { label: '📦 Custo dos produtos vendidos', value: stats.salesCost, hint: 'O que você pagou pelos ingredientes' },
+    { label: '💸 Despesas e sangrias', value: stats.cashExits },
+  ].filter(i => i.value > 0);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-6">
       {/* Period selector */}
       <div className="flex gap-2">
         {(['today', 'month', 'all'] as const).map(p => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               period === p
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-card border border-border text-muted-foreground hover:bg-muted'
@@ -167,7 +178,7 @@ const FinancialSummary = () => {
         ))}
       </div>
 
-      {/* Main summary */}
+      {/* Big summary */}
       <div className="grid grid-cols-2 gap-3">
         <Card className="border-green-500/30 bg-green-500/5">
           <CardContent className="p-4">
@@ -175,8 +186,7 @@ const FinancialSummary = () => {
               <ArrowUp className="h-4 w-4 text-green-500" />
               <p className="text-xs text-muted-foreground font-semibold">💰 ENTROU</p>
             </div>
-            <p className="text-xl font-bold text-green-500">{fmt(stats.totalIn)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">{stats.orderCount} vendas</p>
+            <p className="text-2xl font-bold text-green-500">{fmt(stats.totalIn)}</p>
           </CardContent>
         </Card>
         <Card className="border-destructive/30 bg-destructive/5">
@@ -185,26 +195,78 @@ const FinancialSummary = () => {
               <ArrowDown className="h-4 w-4 text-destructive" />
               <p className="text-xs text-muted-foreground font-semibold">💸 SAIU</p>
             </div>
-            <p className="text-xl font-bold text-destructive">{fmt(stats.totalOut)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Custos + despesas</p>
+            <p className="text-2xl font-bold text-destructive">{fmt(stats.totalOut)}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Net profit */}
-      <Card className={stats.netProfit >= 0 ? 'border-primary/30' : 'border-destructive/30'}>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-1">
+      <Card className={stats.netProfit >= 0 ? 'border-primary/30 bg-primary/5' : 'border-destructive/30 bg-destructive/5'}>
+        <CardContent className="p-5 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
             <TrendingUp className="h-5 w-5 text-primary" />
             <p className="text-sm font-semibold text-foreground">🏆 LUCRO LÍQUIDO</p>
           </div>
-          <p className={`text-3xl font-bold ${stats.netProfit >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+          <p className={`text-4xl font-bold ${stats.netProfit >= 0 ? 'text-green-500' : 'text-destructive'}`}>
             {fmt(stats.netProfit)}
           </p>
+          <p className="text-xs text-muted-foreground mt-1">Entrou − Saiu</p>
         </CardContent>
       </Card>
 
-      {/* Partner / Employee split */}
+      {/* ENTRADAS — detail */}
+      <Card className="border-green-500/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2 text-green-600 dark:text-green-500">
+            <ArrowUp className="h-4 w-4" /> O que ENTROU
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          {inItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-3">Nenhuma entrada no período.</p>
+          ) : inItems.map(item => (
+            <div key={item.label} className="flex justify-between items-center py-2.5 border-b border-border last:border-0">
+              <div>
+                <p className="text-sm text-foreground">{item.label}</p>
+                {item.hint && <p className="text-xs text-muted-foreground">{item.hint}</p>}
+              </div>
+              <span className="text-sm font-bold text-green-500">+ {fmt(item.value)}</span>
+            </div>
+          ))}
+          <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-green-500/30">
+            <span className="text-sm font-bold text-foreground">Total que entrou</span>
+            <span className="text-base font-bold text-green-500">{fmt(stats.totalIn)}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* SAÍDAS — detail */}
+      <Card className="border-destructive/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2 text-destructive">
+            <ArrowDown className="h-4 w-4" /> O que SAIU
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          {outItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-3">Nenhuma saída no período.</p>
+          ) : outItems.map(item => (
+            <div key={item.label} className="flex justify-between items-center py-2.5 border-b border-border last:border-0">
+              <div>
+                <p className="text-sm text-foreground">{item.label}</p>
+                {item.hint && <p className="text-xs text-muted-foreground">{item.hint}</p>}
+              </div>
+              <span className="text-sm font-bold text-destructive">− {fmt(item.value)}</span>
+            </div>
+          ))}
+          <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-destructive/30">
+            <span className="text-sm font-bold text-foreground">Total que saiu</span>
+            <span className="text-base font-bold text-destructive">{fmt(stats.totalOut)}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Partner split */}
       <Card>
         <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base flex items-center gap-2">
@@ -258,47 +320,6 @@ const FinancialSummary = () => {
                 </div>
               );
             })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Breakdown */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-primary" /> 📊 Detalhamento
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex justify-between items-center py-2 border-b border-border">
-            <span className="text-sm text-foreground">💰 Vendas (faturamento)</span>
-            <span className="text-sm font-semibold text-green-500">{fmt(stats.salesRevenue)}</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-border">
-            <span className="text-sm text-foreground">📦 Custo dos produtos</span>
-            <span className="text-sm font-semibold text-destructive">- {fmt(stats.salesCost)}</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-border">
-            <span className="text-sm text-foreground">🛵 Taxas de entrega</span>
-            <span className="text-sm font-semibold text-green-500">{fmt(stats.deliveryFees)}</span>
-          </div>
-          {stats.cashEntries > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm text-foreground">🔺 Reforço de caixa</span>
-              <span className="text-sm font-semibold text-green-500">{fmt(stats.cashEntries)}</span>
-            </div>
-          )}
-          {stats.cashExits > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm text-foreground">🔻 Saídas de caixa</span>
-              <span className="text-sm font-semibold text-destructive">- {fmt(stats.cashExits)}</span>
-            </div>
-          )}
-          <div className="flex justify-between items-center py-2 pt-3">
-            <span className="text-sm font-bold text-foreground">🏆 Lucro final</span>
-            <span className={`text-lg font-bold ${stats.netProfit >= 0 ? 'text-green-500' : 'text-destructive'}`}>
-              {fmt(stats.netProfit)}
-            </span>
           </div>
         </CardContent>
       </Card>

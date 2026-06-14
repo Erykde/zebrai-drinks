@@ -12,9 +12,10 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className,
         )}
         ref={ref}
+        {...props}
         onFocus={(e) => {
           onFocus?.(e);
-          // Make sure the focused input is not hidden behind the on-screen keyboard on mobile.
+          // Keep input visible above the on-screen keyboard on mobile.
           const el = e.currentTarget;
           setTimeout(() => {
             try {
@@ -22,7 +23,6 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
             } catch {}
           }, 300);
         }}
-        {...props}
       />
     );
   },

@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, onFocus, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -13,6 +13,16 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         )}
         ref={ref}
         {...props}
+        onFocus={(e) => {
+          onFocus?.(e);
+          // Keep input visible above the on-screen keyboard on mobile.
+          const el = e.currentTarget;
+          setTimeout(() => {
+            try {
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch {}
+          }, 300);
+        }}
       />
     );
   },

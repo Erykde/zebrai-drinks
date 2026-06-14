@@ -362,6 +362,7 @@ const CheckoutForm = () => {
               type="text"
               value={address}
               onChange={e => setAddress(e.target.value)}
+              onFocus={e => setTimeout(() => e.currentTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-background text-foreground focus:ring-2 focus:ring-ring outline-none text-sm"
               placeholder="Rua, número, bairro..."
               required
@@ -569,6 +570,9 @@ const CheckoutForm = () => {
           'Enviar Pedido 🎉'
         )}
       </button>
+
+      {/* Spacer for on-screen keyboard on mobile */}
+      <div className="h-40 lg:h-0" aria-hidden="true" />
     </form>
   );
 };

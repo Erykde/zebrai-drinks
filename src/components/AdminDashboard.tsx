@@ -370,79 +370,83 @@ const AdminDashboard = ({ orders, products, deliveryZones, customerOrders }: Adm
               {orders.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8 px-6">Nenhuma venda registrada ainda.</p>
               ) : (
-                <div className="overflow-x-auto">
+                <div>
                   {ordersByDate.map(([dateKey, dateOrders]) => {
                     const dayRevenue = dateOrders.reduce((s, o) => s + o.total, 0);
                     const dayCost = dateOrders.reduce((s, o) => s + o.cost_price * o.quantity, 0);
                     const dayProfit = dayRevenue - dayCost;
                     return (
                       <div key={dateKey}>
-                        <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border-b border-border">
+                        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 bg-secondary/50 border-b border-border">
                           <span className="text-sm font-semibold text-card-foreground">{formatDateLabel(dateKey)}</span>
-                          <div className="flex items-center gap-4 text-xs">
+                          <div className="flex flex-wrap items-center gap-3 text-xs">
                             <span className="text-muted-foreground">{dateOrders.length} vendas</span>
                             <span className="text-primary font-medium">{fmt(dayRevenue)}</span>
                             <span className="text-green-500 font-medium">Lucro: {fmt(dayProfit)}</span>
                           </div>
                         </div>
-                        <table className="w-full text-sm">
-                          <thead className="bg-secondary text-secondary-foreground">
-                            <tr>
-                              <th className="text-left p-3">Produto</th>
-                              <th className="text-center p-3">Qtd</th>
-                              <th className="text-right p-3">Total</th>
-                              <th className="text-right p-3">Lucro</th>
-                              <th className="text-right p-3">Hora</th>
-                              <th className="text-center p-3">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {dateOrders.map(o => (
-                              <tr key={o.id} className="border-t border-border">
-                                <td className="p-3 text-card-foreground">{o.product_name}{o.mixer ? ` + ${o.mixer}` : ''}</td>
-                                <td className="p-3 text-center">
-                                  {editingOrder === o.id ? (
-                                    <Input type="number" value={editValues.quantity} onChange={e => setEditValues(v => ({ ...v, quantity: +e.target.value }))} className="h-7 w-16 text-center text-xs" />
-                                  ) : <span className="text-muted-foreground">{o.quantity}</span>}
-                                </td>
-                                <td className="p-3 text-right">
-                                  {editingOrder === o.id ? (
-                                    <Input type="number" step="0.01" value={editValues.total} onChange={e => setEditValues(v => ({ ...v, total: +e.target.value }))} className="h-7 w-20 text-xs ml-auto" />
-                                  ) : <span className="text-primary font-medium">{fmt(o.total)}</span>}
-                                </td>
-                                <td className="p-3 text-right text-green-500 font-medium">
-                                  {editingOrder === o.id
-                                    ? fmt(editValues.total - editValues.cost_price * editValues.quantity)
-                                    : fmt(o.total - o.cost_price * o.quantity)}
-                                </td>
-                                <td className="p-3 text-right text-muted-foreground text-xs">
-                                  {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                </td>
-                                <td className="p-3">
-                                  {editingOrder === o.id ? (
-                                    <div className="flex items-center justify-center gap-2">
-                                      <Button size="sm" variant="default" className="h-7 px-2 text-xs" onClick={() => saveEditOrder(o.id)}>
-                                        <Check className="h-3.5 w-3.5 mr-1" /> Salvar
-                                      </Button>
-                                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setEditingOrder(null)}>
-                                        Cancelar
-                                      </Button>
+                        <div className="divide-y divide-border">
+                          {dateOrders.map(o => {
+                            const isEditing = editingOrder === o.id;
+                            const profit = isEditing
+                              ? editValues.total - editValues.cost_price * editValues.quantity
+                              : o.total - o.cost_price * o.quantity;
+                            return (
+                              <div key={o.id} className="p-3 sm:p-4 space-y-2">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium text-card-foreground break-words">{o.product_name}{o.mixer ? ` + ${o.mixer}` : ''}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    {isEditing ? (
+                                      <Input type="number" step="0.01" value={editValues.total} onChange={e => setEditValues(v => ({ ...v, total: +e.target.value }))} className="h-8 w-24 text-xs" />
+                                    ) : <span className="text-primary font-semibold text-sm">{fmt(o.total)}</span>}
+                                    <p className="text-xs text-green-500 font-medium">Lucro: {fmt(profit)}</p>
+                                  </div>
+                                </div>
+                                {isEditing && (
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="text-[10px] text-muted-foreground">Qtd</label>
+                                      <Input type="number" value={editValues.quantity} onChange={e => setEditValues(v => ({ ...v, quantity: +e.target.value }))} className="h-8 text-xs" />
                                     </div>
-                                  ) : (
-                                    <div className="flex items-center justify-center gap-2">
-                                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => startEditOrder(o)}>
-                                        <Pencil className="h-3 w-3 mr-1" /> Editar
-                                      </Button>
-                                      <Button size="sm" variant="destructive" className="h-7 px-2 text-xs" onClick={() => deleteOrder(o.id)}>
-                                        <Trash2 className="h-3 w-3 mr-1" /> Excluir
-                                      </Button>
+                                    <div>
+                                      <label className="text-[10px] text-muted-foreground">Custo unit.</label>
+                                      <Input type="number" step="0.01" value={editValues.cost_price} onChange={e => setEditValues(v => ({ ...v, cost_price: +e.target.value }))} className="h-8 text-xs" />
                                     </div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                  </div>
+                                )}
+                                <div className="flex items-center justify-between gap-2">
+                                  {!isEditing && <span className="text-xs text-muted-foreground">Qtd: {o.quantity}</span>}
+                                  <div className="flex items-center gap-2 ml-auto">
+                                    {isEditing ? (
+                                      <>
+                                        <Button size="sm" variant="default" className="h-8 px-3 text-xs" onClick={() => saveEditOrder(o.id)}>
+                                          <Check className="h-3.5 w-3.5 mr-1" /> Salvar
+                                        </Button>
+                                        <Button size="sm" variant="ghost" className="h-8 px-3 text-xs" onClick={() => setEditingOrder(null)}>
+                                          Cancelar
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={() => startEditOrder(o)}>
+                                          <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
+                                        </Button>
+                                        <Button size="sm" variant="destructive" className="h-8 px-3 text-xs" onClick={() => deleteOrder(o.id)}>
+                                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     );
                   })}

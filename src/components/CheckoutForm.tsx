@@ -372,9 +372,6 @@ const CheckoutForm = () => {
         )}
       </div>
 
-      {/* spacer so on-screen keyboard never covers the action area */}
-      <div className="h-72 sm:h-0" aria-hidden="true" />
-
       {/* Payment */}
       <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pagamento</p>

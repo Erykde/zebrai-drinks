@@ -570,6 +570,9 @@ const CheckoutForm = () => {
           'Enviar Pedido 🎉'
         )}
       </button>
+
+      {/* Spacer for on-screen keyboard on mobile */}
+      <div className="h-40 lg:h-0" aria-hidden="true" />
     </form>
   );
 };

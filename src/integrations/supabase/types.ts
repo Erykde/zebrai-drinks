@@ -641,9 +641,13 @@ export type Database = {
           closed_message: string | null
           delivery_enabled: boolean | null
           free_delivery_active: boolean
+          free_delivery_km: number
           home_search_placeholder: string | null
           id: string
           logo_url: string | null
+          loyalty_description: string | null
+          loyalty_divisor: number
+          loyalty_tiers: Json | null
           min_order_value: number | null
           nav_cart_label: string | null
           nav_home_label: string | null
@@ -670,9 +674,13 @@ export type Database = {
           closed_message?: string | null
           delivery_enabled?: boolean | null
           free_delivery_active?: boolean
+          free_delivery_km?: number
           home_search_placeholder?: string | null
           id?: string
           logo_url?: string | null
+          loyalty_description?: string | null
+          loyalty_divisor?: number
+          loyalty_tiers?: Json | null
           min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null
@@ -699,9 +707,13 @@ export type Database = {
           closed_message?: string | null
           delivery_enabled?: boolean | null
           free_delivery_active?: boolean
+          free_delivery_km?: number
           home_search_placeholder?: string | null
           id?: string
           logo_url?: string | null
+          loyalty_description?: string | null
+          loyalty_divisor?: number
+          loyalty_tiers?: Json | null
           min_order_value?: number | null
           nav_cart_label?: string | null
           nav_home_label?: string | null

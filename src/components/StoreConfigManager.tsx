@@ -20,6 +20,7 @@ const StoreConfigManager = () => {
     delivery_enabled: true,
     pickup_enabled: false,
     free_delivery_active: false,
+    free_delivery_km: 0,
     payment_methods: ['PIX', 'Dinheiro', 'Cartão de Crédito', 'Cartão de Débito'] as string[],
     opening_hours: { weekdays: '18:00 às 23:00', weekend: '18:00 às 22:00' },
     prep_time: '10 a 20 minutos',
@@ -38,6 +39,7 @@ const StoreConfigManager = () => {
         delivery_enabled: settings.delivery_enabled ?? true,
         pickup_enabled: settings.pickup_enabled ?? false,
         free_delivery_active: (settings as any).free_delivery_active ?? false,
+        free_delivery_km: Number((settings as any).free_delivery_km ?? 0),
         payment_methods: (settings.payment_methods as string[]) || ['PIX', 'Dinheiro'],
         opening_hours: (settings.opening_hours as any) || { weekdays: '18:00 às 23:00', weekend: '18:00 às 22:00' },
         prep_time: settings.prep_time || '10 a 20 minutos',
@@ -174,7 +176,7 @@ const StoreConfigManager = () => {
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
                 <p className="text-sm font-semibold text-foreground">
-                  🎁 Frete Grátis {form.free_delivery_active ? '(ATIVO)' : ''}
+                  🎁 Frete Grátis para TODOS {form.free_delivery_active ? '(ATIVO)' : ''}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
                   Ligue quando bater a meta — todos os pedidos saem com frete grátis até você desligar.
@@ -182,6 +184,24 @@ const StoreConfigManager = () => {
               </div>
               <Switch checked={form.free_delivery_active} onCheckedChange={v => setForm(f => ({ ...f, free_delivery_active: v }))} />
             </div>
+          </div>
+
+          <div className="rounded-lg p-3 border border-border bg-muted/30">
+            <label className="text-sm font-semibold text-foreground">
+              📍 Frete grátis para quem está perto (km)
+            </label>
+            <Input
+              type="number"
+              value={form.free_delivery_km}
+              onChange={e => setForm(f => ({ ...f, free_delivery_km: parseFloat(e.target.value) || 0 }))}
+              step="0.5"
+              min="0"
+              className="mt-2"
+              placeholder="Ex: 3"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Clientes dentro dessa distância da sua loja recebem frete grátis automaticamente. Coloque 0 para desativar.
+            </p>
           </div>
         </CardContent>
       </Card>

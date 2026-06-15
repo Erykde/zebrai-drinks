@@ -29,6 +29,10 @@ export interface SiteSettings {
   store_phone: string | null;
   closed_message: string | null;
   free_delivery_active: boolean | null;
+  free_delivery_km: number | null;
+  loyalty_divisor: number | null;
+  loyalty_description: string | null;
+  loyalty_tiers: Array<{ name: string; min_points: number; perk: string }> | null;
 }
 
 export const useSiteSettings = () => {

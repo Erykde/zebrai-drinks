@@ -542,7 +542,7 @@ const CheckoutForm = () => {
               🛵 Entrega{deliveryKm !== null ? ` (${deliveryKm.toFixed(1)} km)` : ''}
             </span>
             <span className="font-medium">
-              {freeDeliveryActive ? (
+              {isFreeDelivery ? (
                 <span className="text-green-400 font-bold">🎉 GRÁTIS</span>
               ) : calculatingFee ? 'calculando...' : effectiveDeliveryFee > 0 ? `R$ ${effectiveDeliveryFee.toFixed(2)}` : '—'}
             </span>
@@ -550,6 +550,9 @@ const CheckoutForm = () => {
         )}
         {freeDeliveryActive && deliveryType === 'delivery' && (
           <p className="text-xs text-green-400 font-semibold">🎁 Promoção: frete grátis ativo hoje!</p>
+        )}
+        {!freeDeliveryActive && withinFreeRadius && deliveryType === 'delivery' && (
+          <p className="text-xs text-green-400 font-semibold">🎁 Você está pertinho — frete grátis até {freeDeliveryKm} km!</p>
         )}
         {feeError && deliveryType === 'delivery' && (
           <p className="text-xs text-amber-300/80">⚠️ {feeError} (taxa mínima aplicada)</p>

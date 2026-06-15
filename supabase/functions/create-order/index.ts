@@ -190,10 +190,16 @@ Deno.serve(async (req) => {
 
     await supabase.from("orders").insert(legacyItems);
 
-    // Accumulate loyalty points (1 point per R$50 spent)
+    // Accumulate loyalty points (divisor configured in site_settings)
     if (customer_phone?.trim()) {
       const phone = customer_phone.trim();
-      const points = Math.floor(total / 50);
+      const { data: cfg } = await supabase
+        .from("site_settings")
+        .select("loyalty_divisor")
+        .limit(1)
+        .maybeSingle();
+      const divisor = Number((cfg as any)?.loyalty_divisor) > 0 ? Number((cfg as any).loyalty_divisor) : 50;
+      const points = Math.floor(total / divisor);
       const { data: existing } = await supabase
         .from("loyalty_points")
         .select("id, points, total_spent, order_count")
@@ -218,6 +224,7 @@ Deno.serve(async (req) => {
         });
       }
     }
+
 
     return new Response(
       JSON.stringify({ id: orderData.id }),

@@ -64,8 +64,12 @@ const CheckoutForm = () => {
 
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
   const freeDeliveryActive = !!siteSettings?.free_delivery_active;
-  const effectiveDeliveryFee = deliveryType === 'delivery' && !freeDeliveryActive ? deliveryFee : 0;
+  const freeDeliveryKm = Number(siteSettings?.free_delivery_km ?? 0);
+  const withinFreeRadius = freeDeliveryKm > 0 && deliveryKm != null && deliveryKm <= freeDeliveryKm;
+  const isFreeDelivery = freeDeliveryActive || withinFreeRadius;
+  const effectiveDeliveryFee = deliveryType === 'delivery' && !isFreeDelivery ? deliveryFee : 0;
   const orderTotal = Math.max(0, cartTotal - discountAmount) + effectiveDeliveryFee;
+
 
   // Debounced delivery fee calculation
   useEffect(() => {

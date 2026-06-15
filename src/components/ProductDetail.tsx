@@ -32,32 +32,32 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
 
   const groupNames = Object.keys(grouped);
 
-  // Calculate total price: base product price + sum of selected mixer prices
+  // Sum of all selected mixer prices (mixers are ADDITIONS to the product price)
   const selectedMixerPrices = useMemo(() => {
     let total = 0;
     for (const groupName of groupNames) {
       const sel = selections[groupName];
       if (sel) {
         const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
-        if (opt) total = Math.max(total, opt.price); // Use highest price among selections
+        if (opt) total += opt.price;
       }
     }
     return total;
   }, [selections, groupNames, product.mixer_options]);
 
-  // For products with mixers, use the energético price (highest selected) as the product price
-  const currentPrice = product.is_promotion && product.promotion_price
+  // Base product price (with promo) + selected mixers
+  const basePrice = product.is_promotion && product.promotion_price
     ? product.promotion_price
-    : hasMixers
-      ? selectedMixerPrices || product.price
-      : product.price;
+    : product.price;
+  const currentPrice = basePrice + selectedMixerPrices;
 
-  // First group missing a selection (mixer or required flavor)
+  // Only block when a mixer is selected but its required flavor is missing.
+  // Mixers themselves are OPTIONAL — customer can buy just the product.
   const firstIncompleteGroup = useMemo(() => {
     if (!hasMixers) return null;
     for (const g of groupNames) {
       const sel = selections[g];
-      if (!sel) return g;
+      if (!sel) continue; // optional — skip
       const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
       if (opt?.flavors && opt.flavors.length > 0 && !sel.flavor) return g;
     }
@@ -65,6 +65,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
   }, [selections, groupNames, hasMixers, product.mixer_options]);
 
   const canAdd = firstIncompleteGroup === null;
+
 
   const handleSelectMixer = (groupName: string, mixer: string) => {
     setSelections(prev => ({

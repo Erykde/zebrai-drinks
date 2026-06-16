@@ -1,5 +1,9 @@
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'npm:zod@3.23.8';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_maps';
 const ORIGIN = 'Rua Monte Sinai, 38 - Costeira, São José dos Pinhais - PR, Brasil';
@@ -10,6 +14,19 @@ const BodySchema = z.object({
 
 // Maximum delivery radius (km). Beyond this, the order is refused.
 const MAX_DELIVERY_KM = 25;
+const DEFAULT_FEE = 7;
+
+const normalizeAddress = (value: string) => value
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase();
+
+const nearbyEstimateKm = (address: string) => {
+  const normalized = normalizeAddress(address);
+  if (normalized.includes('monte sinai')) return 0.2;
+  if (normalized.includes('costeira')) return 2.5;
+  return null;
+};
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });

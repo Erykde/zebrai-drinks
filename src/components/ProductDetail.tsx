@@ -38,7 +38,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
     for (const groupName of groupNames) {
       const sel = selections[groupName];
       if (sel) {
-        const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
+        const opt = product.mixer_options.find(m => (m.group || 'Outros') === groupName && m.mixer === sel.mixer);
         if (opt) total += opt.price;
       }
     }
@@ -58,7 +58,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
     for (const g of groupNames) {
       const sel = selections[g];
       if (!sel) continue; // optional — skip
-      const opt = product.mixer_options.find(m => m.mixer === sel.mixer);
+      const opt = product.mixer_options.find(m => (m.group || 'Outros') === g && m.mixer === sel.mixer);
       if (opt?.flavors && opt.flavors.length > 0 && !sel.flavor) return g;
     }
     return null;
@@ -125,6 +125,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
     }
 
     toast.success(`${quantity}x ${product.name}${mixerLabel ? ` + ${mixerLabel}` : ''} adicionado!`);
+    onBack();
   };
 
   return (
@@ -183,7 +184,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
                 const sel = selections[groupName];
                 const isExpanded = expandedGroup === groupName;
                 const hasSelection = !!sel;
-                const selOpt = sel ? product.mixer_options.find(m => m.mixer === sel.mixer) : null;
+                const selOpt = sel ? product.mixer_options.find(m => (m.group || 'Outros') === groupName && m.mixer === sel.mixer) : null;
                 const needsFlavor = !!(selOpt?.flavors && selOpt.flavors.length > 0 && !sel?.flavor);
 
                 return (
@@ -328,7 +329,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
             }`}
           >
             {canAdd
-              ? `Adicionar R$ ${(currentPrice * quantity).toFixed(2)}`
+              ? `Adicionar ao carrinho • R$ ${(currentPrice * quantity).toFixed(2)}`
               : firstIncompleteGroup
                 ? `Falta escolher em "${firstIncompleteGroup}"`
                 : 'Selecione todas as opções'

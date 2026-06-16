@@ -25,6 +25,7 @@ interface AppliedCoupon {
 }
 
 const CUSTOMER_STORAGE_KEY = 'zebrai-customer-data';
+const DEFAULT_DELIVERY_FEE = 7;
 
 const loadSavedCustomer = () => {
   try {
@@ -105,16 +106,16 @@ const CheckoutForm = () => {
           setDeliveryFee(0);
           setDeliveryKm(payload.km ?? null);
         } else if (!res.ok || payload.error) {
-          setFeeError(payload.error || 'Não foi possível calcular o frete. Verifique o endereço.');
-          setDeliveryFee(0);
-          setDeliveryKm(null);
+          setFeeError(payload.error || 'Frete padrão aplicado; a loja confirma se precisar ajustar.');
+          setDeliveryFee(Number(payload.fee ?? DEFAULT_DELIVERY_FEE));
+          setDeliveryKm(payload.km ?? null);
         } else {
           setDeliveryFee(payload.fee);
           setDeliveryKm(payload.km);
         }
       } catch {
-        setFeeError('Erro ao calcular frete. Verifique o endereço.');
-        setDeliveryFee(0);
+        setFeeError('Frete padrão aplicado; a loja confirma se precisar ajustar.');
+        setDeliveryFee(DEFAULT_DELIVERY_FEE);
       } finally {
         setCalculatingFee(false);
       }
@@ -192,10 +193,6 @@ const CheckoutForm = () => {
       }
       if (outOfRange) {
         toast.error('Endereço fora da área de entrega. Escolha retirada ou ajuste o endereço.');
-        return;
-      }
-      if (feeError) {
-        toast.error('Não foi possível calcular o frete. Confira o endereço.');
         return;
       }
     }

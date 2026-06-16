@@ -226,6 +226,7 @@ const CheckoutForm = () => {
         customer_name: name.trim(),
         customer_phone: phone.trim(),
         customer_address: deliveryType === 'delivery' ? address.trim() : undefined,
+        delivery_fee: effectiveDeliveryFee,
         total: orderTotal,
         items: orderItems,
       });
@@ -244,8 +245,11 @@ const CheckoutForm = () => {
             .eq('id', (couponData as any).id);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving order:', err);
+      setSubmitting(false);
+      toast.error(err?.message || 'Não foi possível enviar o pedido. Tente novamente.');
+      return;
     }
 
     const order: Order = {

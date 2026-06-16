@@ -87,16 +87,24 @@ const CheckoutForm = () => {
       setFeeError(null);
       setOutOfRange(false);
       try {
-        const { data, error } = await supabase.functions.invoke('calc-delivery-fee', {
-          body: { address: addr },
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const res = await fetch(`${supabaseUrl}/functions/v1/calc-delivery-fee`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': anonKey,
+            'Authorization': `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({ address: addr }),
         });
-        const payload: any = data ?? {};
+        const payload: any = await res.json().catch(() => ({}));
         if (payload.outOfRange) {
           setOutOfRange(true);
-          setFeeError(payload.error);
+          setFeeError(payload.error || 'Fora da área de entrega');
           setDeliveryFee(0);
           setDeliveryKm(payload.km ?? null);
-        } else if (error || !data || payload.error) {
+        } else if (!res.ok || payload.error) {
           setFeeError(payload.error || 'Não foi possível calcular o frete. Verifique o endereço.');
           setDeliveryFee(0);
           setDeliveryKm(null);
@@ -218,6 +226,7 @@ const CheckoutForm = () => {
         customer_name: name.trim(),
         customer_phone: phone.trim(),
         customer_address: deliveryType === 'delivery' ? address.trim() : undefined,
+        delivery_fee: effectiveDeliveryFee,
         total: orderTotal,
         items: orderItems,
       });
@@ -236,8 +245,11 @@ const CheckoutForm = () => {
             .eq('id', (couponData as any).id);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving order:', err);
+      setSubmitting(false);
+      toast.error(err?.message || 'Não foi possível enviar o pedido. Tente novamente.');
+      return;
     }
 
     const order: Order = {

@@ -125,6 +125,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
     }
 
     toast.success(`${quantity}x ${product.name}${mixerLabel ? ` + ${mixerLabel}` : ''} adicionado!`);
+    onBack();
   };
 
   return (
@@ -328,7 +329,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
             }`}
           >
             {canAdd
-              ? `Adicionar R$ ${(currentPrice * quantity).toFixed(2)}`
+              ? `Adicionar ao carrinho • R$ ${(currentPrice * quantity).toFixed(2)}`
               : firstIncompleteGroup
                 ? `Falta escolher em "${firstIncompleteGroup}"`
                 : 'Selecione todas as opções'

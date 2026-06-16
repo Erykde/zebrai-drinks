@@ -32,14 +32,6 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
-    if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
-      return new Response(JSON.stringify({ error: 'Missing Google Maps credentials' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: 'Endereço inválido' }), {
@@ -47,6 +39,21 @@ Deno.serve(async (req) => {
       });
     }
     const { address } = parsed.data;
+
+    const localEstimate = nearbyEstimateKm(address);
+    if (localEstimate !== null) {
+      return new Response(JSON.stringify({ km: localEstimate, fee: DEFAULT_FEE, estimated: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
+      return new Response(JSON.stringify({ error: 'Frete padrão aplicado; a loja confirma se precisar ajustar.', fee: DEFAULT_FEE }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Use Routes API computeRouteMatrix
     const res = await fetch(`${GATEWAY_URL}/routes/distanceMatrix/v2:computeRouteMatrix`, {

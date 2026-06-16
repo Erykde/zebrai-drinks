@@ -74,16 +74,16 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       const txt = await res.text();
       console.error('Routes API error', res.status, txt);
-      return new Response(JSON.stringify({ error: 'Falha ao calcular distância' }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: 'Frete padrão aplicado; a loja confirma se precisar ajustar.', fee: DEFAULT_FEE }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const data = await res.json();
     const first = Array.isArray(data) ? data[0] : data;
     if (!first || first.condition !== 'ROUTE_EXISTS' || typeof first.distanceMeters !== 'number') {
-      return new Response(JSON.stringify({ error: 'Endereço não encontrado' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: 'Frete padrão aplicado; a loja confirma se precisar ajustar.', fee: DEFAULT_FEE }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -99,15 +99,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    const fee = Math.max(7, Math.round(km));
+    const fee = Math.max(DEFAULT_FEE, Math.round(km));
 
     return new Response(JSON.stringify({ km: Math.round(km * 10) / 10, fee }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
     console.error(e);
-    return new Response(JSON.stringify({ error: 'Erro interno' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ error: 'Frete padrão aplicado; a loja confirma se precisar ajustar.', fee: DEFAULT_FEE }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

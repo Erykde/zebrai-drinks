@@ -16,7 +16,7 @@ const Index = () => {
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = ['Todos'] } = useCategories();
   const { data: siteSettings } = useSiteSettings();
-  const { cartCount } = useStore();
+  const { cartCount, cartTotal } = useStore();
   const [category, setCategory] = useState('Todos');
   const [selectedProduct, setSelectedProduct] = useState<DbProduct | null>(null);
   const [search, setSearch] = useState('');

@@ -4,7 +4,7 @@ import { useProducts, useCategories, DbProduct } from '@/hooks/useProducts';
 import SplashScreen from '@/components/SplashScreen';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import ProductDetail from '@/components/ProductDetail';
-import { Home, ShoppingCart, Search, ClipboardList, User, Info, Share2 } from 'lucide-react';
+import { ShoppingCart, Search } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 import zebraiLogo from '@/assets/zebrai-logo.jpg';
 import bannerDrinks from '@/assets/banner-drinks.jpg';
@@ -191,6 +191,25 @@ const Index = () => {
           </a>
         );
       })()}
+
+      {cartCount > 0 && (
+        <div className="fixed left-0 right-0 bottom-16 z-40 px-4 pb-3">
+          <div className="mx-auto max-w-lg rounded-t-2xl bg-primary/10 border border-primary/20 p-3 shadow-lg backdrop-blur">
+            <Link
+              to="/cart"
+              className="flex items-center justify-between gap-4 rounded-2xl bg-gradient-gold px-5 py-4 text-primary-foreground font-bold shadow-gold active:scale-[0.98] transition-all"
+            >
+              <span className="text-lg">Ir ao carrinho</span>
+              <span className="flex items-center gap-2">
+                <span>R$ {cartTotal.toFixed(2)}</span>
+                <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-background px-2 text-sm text-foreground">
+                  {cartCount}
+                </span>
+              </span>
+            </Link>
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>

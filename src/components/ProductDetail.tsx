@@ -39,7 +39,7 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
       const sel = selections[groupName];
       if (sel) {
         const opt = product.mixer_options.find(m => (m.group || 'Outros') === groupName && m.mixer === sel.mixer);
-        if (opt) total += opt.price;
+        if (opt) total += Math.max(0, Number(opt.price) || 0);
       }
     }
     return total;
@@ -98,6 +98,11 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
   };
 
   const handleAddToCart = () => {
+    if (!canAdd) {
+      handleIncompleteClick();
+      return;
+    }
+
     const cartProduct = {
       id: product.id,
       name: product.name,
@@ -321,7 +326,8 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
 
           {/* Add to cart */}
           <button
-            onClick={canAdd ? handleAddToCart : handleIncompleteClick}
+            type="button"
+            onClick={handleAddToCart}
             className={`w-full py-4 rounded-lg font-bold text-lg transition-colors ${
               canAdd
                 ? 'bg-primary text-primary-foreground hover:opacity-90'

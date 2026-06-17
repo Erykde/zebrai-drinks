@@ -103,7 +103,6 @@ Deno.serve(async (req) => {
     );
 
     // Look up actual prices from DB to prevent price manipulation
-    const productNames = items.map((i: any) => i.product_name);
     const { data: products } = await supabase
       .from("products")
       .select("id, name, price, cost_price, is_promotion, promotion_price, stock");
@@ -126,11 +125,13 @@ Deno.serve(async (req) => {
 
     // Insert items (use server-side cost_price from DB)
     const itemsToInsert = items.map((item: any) => {
-      const dbProduct = products?.find((p) => item.product_name.includes(p.name));
+      const dbProduct = products?.find((p) => p.id === item.product_id)
+        ?? products?.find((p) => item.product_name.includes(p.name));
       const costPrice = dbProduct?.cost_price ?? 0;
 
       return {
         order_id: orderData.id,
+        product_id: dbProduct?.id ?? null,
         product_name: item.product_name.substring(0, 200),
         quantity: item.quantity,
         unit_price: item.unit_price,
@@ -148,7 +149,8 @@ Deno.serve(async (req) => {
 
     // Decrease stock for each product sold (and its tracked ingredients)
     for (const item of items) {
-      const dbProduct = products?.find((p: any) => item.product_name.includes(p.name));
+      const dbProduct = products?.find((p: any) => p.id === item.product_id)
+        ?? products?.find((p: any) => item.product_name.includes(p.name));
       if (!dbProduct) continue;
 
       // Product stock
@@ -180,6 +182,7 @@ Deno.serve(async (req) => {
 
     // Legacy orders table
     const legacyItems = itemsToInsert.map((item: any) => ({
+      product_id: item.product_id,
       product_name: item.product_name,
       quantity: item.quantity,
       unit_price: item.unit_price,

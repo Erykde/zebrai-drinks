@@ -116,6 +116,7 @@ export const createCustomerOrder = async (order: {
     headers: {
       'Content-Type': 'application/json',
       'apikey': anonKey,
+      'Authorization': `Bearer ${anonKey}`,
     },
     body: JSON.stringify({
       customer_name: order.customer_name,
@@ -125,6 +126,7 @@ export const createCustomerOrder = async (order: {
       delivery_fee: order.delivery_fee ?? 0,
       total: order.total,
       items: order.items.map(item => ({
+        product_id: item.product_id || null,
         product_name: item.product_name,
         quantity: item.quantity,
         unit_price: item.unit_price,

@@ -64,6 +64,8 @@ const CheckoutForm = () => {
   const [outOfRange, setOutOfRange] = useState(false);
 
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
+  const deliveryEnabled = siteSettings?.delivery_enabled !== false;
+  const pickupEnabled = siteSettings?.pickup_enabled !== false;
   const freeDeliveryActive = !!siteSettings?.free_delivery_active;
   const freeDeliveryKm = Number(siteSettings?.free_delivery_km ?? 0);
   const withinFreeRadius = freeDeliveryKm > 0 && deliveryKm != null && deliveryKm <= freeDeliveryKm;
@@ -71,6 +73,13 @@ const CheckoutForm = () => {
   const effectiveDeliveryFee = deliveryType === 'delivery' && !isFreeDelivery ? deliveryFee : 0;
   const orderTotal = Math.max(0, cartTotal - discountAmount) + effectiveDeliveryFee;
 
+
+  // Debounced delivery fee calculation
+  useEffect(() => {
+    if (!deliveryEnabled && pickupEnabled) {
+      setDeliveryType('pickup');
+    }
+  }, [deliveryEnabled, pickupEnabled]);
 
   // Debounced delivery fee calculation
   useEffect(() => {
@@ -212,6 +221,7 @@ const CheckoutForm = () => {
     let savedOrderId: string | null = null;
     try {
       const orderItems = cart.map(i => ({
+        product_id: i.product.id,
         product_name: i.selectedMixer ? `${i.product.name} + ${i.selectedMixer}` : i.product.name,
         quantity: i.quantity,
         unit_price: i.finalPrice ?? i.product.price,

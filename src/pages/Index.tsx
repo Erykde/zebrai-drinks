@@ -193,20 +193,30 @@ const Index = () => {
       })()}
 
       {cartCount > 0 && (
-        <div className="fixed left-0 right-0 bottom-16 z-40 px-4 pb-3">
-          <div className="mx-auto max-w-lg rounded-t-2xl bg-primary/10 border border-primary/20 p-3 shadow-lg backdrop-blur">
-            <Link
-              to="/cart"
-              className="flex items-center justify-between gap-4 rounded-2xl bg-gradient-gold px-5 py-4 text-primary-foreground font-bold shadow-gold active:scale-[0.98] transition-all"
-            >
-              <span className="text-lg">Ir ao carrinho</span>
-              <span className="flex items-center gap-2">
-                <span>R$ {cartTotal.toFixed(2)}</span>
-                <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-background px-2 text-sm text-foreground">
+        <div className="fixed left-0 right-0 bottom-16 z-40 px-3 pb-2">
+          <div className="mx-auto max-w-lg rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl border border-black/5 overflow-hidden">
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 text-center py-1.5 text-[13px] font-semibold text-emerald-700 dark:text-emerald-400">
+              <span className="font-bold">Desconto máximo</span> aplicado
+            </div>
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex flex-col">
+                <span className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 leading-tight">
+                  R$ {cartTotal.toFixed(2).replace('.', ',')}
+                </span>
+                <span className="text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 leading-tight">
+                  Entrega grátis
+                </span>
+              </div>
+              <Link
+                to="/cart"
+                className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-bold rounded-full px-5 py-3 shadow-md active:scale-95 transition-all"
+              >
+                <span className="text-[15px]">Ver sacola</span>
+                <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-zinc-900 text-white text-xs font-bold px-1.5">
                   {cartCount}
                 </span>
-              </span>
-            </Link>
+              </Link>
+            </div>
           </div>
         </div>
       )}

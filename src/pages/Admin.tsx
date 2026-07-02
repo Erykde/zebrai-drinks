@@ -235,6 +235,7 @@ const Admin = () => {
     { key: 'tasks', icon: ListTodo, label: 'Minhas Tarefas' },
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'stock', icon: Package, label: 'Estoque' },
+    { key: 'purchase', icon: ShoppingCart, label: 'Ordem de Compra' },
     { key: 'financial', icon: PieChart, label: 'Financeiro' },
     { key: 'expenses', icon: Receipt, label: 'Despesas' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },

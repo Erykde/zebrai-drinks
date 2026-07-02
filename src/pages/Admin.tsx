@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, DbProduct } from '@/hooks/useProducts';
-import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart, Receipt, ListTodo, Bot } from 'lucide-react';
+import { Pencil, Trash2, Plus, Package, LogOut, BarChart3, X, MapPin, ClipboardList, QrCode, Ticket, Trophy, Megaphone, Settings, MessageCircle, Menu, Bike, Store, Sparkles, ImagePlus, Loader2, DollarSign, Wallet, PieChart, Receipt, ListTodo, Bot, ShoppingCart } from 'lucide-react';
 import DailyTasksManager from '@/components/DailyTasksManager';
 import MenuQualityScore from '@/components/MenuQualityScore';
 import OrderManager from '@/components/OrderManager';
@@ -20,6 +20,7 @@ import FinancialSummary from '@/components/FinancialSummary';
 import StockManager from '@/components/StockManager';
 import ExpensesManager from '@/components/ExpensesManager';
 import AdminAssistant from '@/components/AdminAssistant';
+import PurchaseOrderManager from '@/components/PurchaseOrderManager';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,7 +50,7 @@ interface OrderRow {
   created_at: string;
 }
 
-type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'assistant' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial' | 'stock' | 'expenses' | 'tasks';
+type AdminTab = 'orders' | 'products' | 'dashboard' | 'delivery' | 'marketing' | 'assistant' | 'settings' | 'store' | 'pricing' | 'cashregister' | 'financial' | 'stock' | 'expenses' | 'tasks' | 'purchase';
 
 const Admin = () => {
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -234,6 +235,7 @@ const Admin = () => {
     { key: 'tasks', icon: ListTodo, label: 'Minhas Tarefas' },
     { key: 'products', icon: Package, label: 'Produtos' },
     { key: 'stock', icon: Package, label: 'Estoque' },
+    { key: 'purchase', icon: ShoppingCart, label: 'Ordem de Compra' },
     { key: 'financial', icon: PieChart, label: 'Financeiro' },
     { key: 'expenses', icon: Receipt, label: 'Despesas' },
     { key: 'dashboard', icon: BarChart3, label: 'Dashboard' },
@@ -322,6 +324,8 @@ const Admin = () => {
             <FinancialSummary />
           ) : activeTab === 'expenses' ? (
             <ExpensesManager />
+          ) : activeTab === 'purchase' ? (
+            <PurchaseOrderManager products={products} />
           ) : activeTab === 'dashboard' ? (
             <AdminDashboard orders={orders} products={products} deliveryZones={deliveryZones} customerOrders={customerOrders} />
           ) : activeTab === 'delivery' ? (

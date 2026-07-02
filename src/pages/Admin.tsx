@@ -324,6 +324,8 @@ const Admin = () => {
             <FinancialSummary />
           ) : activeTab === 'expenses' ? (
             <ExpensesManager />
+          ) : activeTab === 'purchase' ? (
+            <PurchaseOrderManager products={products} />
           ) : activeTab === 'dashboard' ? (
             <AdminDashboard orders={orders} products={products} deliveryZones={deliveryZones} customerOrders={customerOrders} />
           ) : activeTab === 'delivery' ? (

@@ -68,13 +68,17 @@ const ProductDetail = ({ product, onBack }: ProductDetailProps) => {
 
 
   const handleSelectMixer = (groupName: string, mixer: string) => {
-    setSelections(prev => ({
-      ...prev,
-      [groupName]: { mixer, flavor: null },
-    }));
-    // Keep the group open so user can pick a flavor if required
+    setSelections(prev => {
+      // Toggle off if clicking the same one already selected
+      if (prev[groupName]?.mixer === mixer) {
+        const next = { ...prev };
+        delete next[groupName];
+        return next;
+      }
+      return { ...prev, [groupName]: { mixer, flavor: null } };
+    });
     const opt = product.mixer_options.find(m => m.mixer === mixer);
-    if (opt?.flavors && opt.flavors.length > 0) {
+    if (opt?.flavors && opt.flavors.length > 0 && selections[groupName]?.mixer !== mixer) {
       setExpandedGroup(groupName);
     }
   };
